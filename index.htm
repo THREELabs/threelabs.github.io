@@ -1,219 +1,447 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockPro Analyzer | Advanced Stock Analysis Tools</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <title>CryptoTrade Pro - Advanced Crypto Trading Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        .gradient-bg {
-            background: linear-gradient(90deg, #4a90e2, #63b3ed);
-        }
-        .hero-image {
-            background-image: url('https://source.unsplash.com/1600x900/?stock,market');
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            background-image: url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
             background-size: cover;
             background-position: center;
-            height: 60vh;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.8);
+            min-height: 100vh;
+        }
+        .content {
+            padding-top: 60px;
+            padding-bottom: 60px;
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .mode-section {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        .modal-content {
+            background: rgba(28, 28, 38, 0.95);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .feature-detail-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .feature-detail-list li {
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .feature-detail-list li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #667eea;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark gradient-bg">
-        <div class="container">
-            <a class="navbar-brand" href="#">StockPro Analyzer</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#features">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#pricing">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#contact">Contact</a>
-                    </li>
-                </ul>
+    <div class="overlay">
+        <div class="container content text-white">
+            <!-- Previous sections remain the same until Key Performance Features -->
+            
+            <div class="row justify-content-center mb-5">
+                <div class="col-md-10 text-center">
+                    <h1 class="display-4 fw-bold mb-4">CryptoTrade Pro</h1>
+                    <h2 class="h3 mb-4">Advanced AI-Powered Crypto Trading Bot</h2>
+                    <p class="lead mb-5">Experience the power of automated trading with our sophisticated bot featuring dual trading modes, real-time analytics, and advanced risk management.</p>
+                </div>
             </div>
-        </div>
-    </nav>
 
-    <header class="hero-image d-flex align-items-center">
-        <div class="container text-center text-white">
-            <h1 class="display-4 fw-bold mb-4">Advanced Stock Analysis Tools</h1>
-            <p class="lead mb-5">Empower your investment decisions with cutting-edge analytics</p>
-            <a href="#" class="btn btn-primary btn-lg">Start Free Trial</a>
-        </div>
-    </header>
-
-    <section id="features" class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-5">Key Features</h2>
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <img src="/api/placeholder/400/300" class="card-img-top" alt="Single Stock Analysis">
-                        <div class="card-body">
-                            <h5 class="card-title">Single Stock Analysis</h5>
-                            <ul class="list-unstyled">
-                                <li>✓ Detailed stock information</li>
-                                <li>✓ Performance metrics</li>
-                                <li>✓ Buy/sell recommendations</li>
-                            </ul>
-                        </div>
+            <div class="row mb-5">
+                <div class="col-md-4">
+                    <div class="feature-card" data-bs-toggle="modal" data-bs-target="#securityModal">
+                        <i class="fas fa-shield-alt feature-icon"></i>
+                        <h4>Enhanced Security</h4>
+                        <ul class="list-unstyled">
+                            <li>✓ Balance Protection System</li>
+                            <li>✓ Emergency Trade Handling</li>
+                            <li>✓ Automated Risk Management</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <img src="/api/placeholder/400/300" class="card-img-top" alt="Promising Stock Search">
-                        <div class="card-body">
-                            <h5 class="card-title">Promising Stock Search</h5>
-                            <ul class="list-unstyled">
-                                <li>✓ Analyze up to 1000 stocks</li>
-                                <li>✓ Multiple technical indicators</li>
-                                <li>✓ Potential gain calculations</li>
-                            </ul>
-                        </div>
+                <div class="col-md-4">
+                    <div class="feature-card" data-bs-toggle="modal" data-bs-target="#analyticsModal">
+                        <i class="fas fa-chart-bar feature-icon"></i>
+                        <h4>Real-Time Analytics</h4>
+                        <ul class="list-unstyled">
+                            <li>✓ Live Performance Metrics</li>
+                            <li>✓ Detailed Trade Statistics</li>
+                            <li>✓ Historical Data Analysis</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <img src="/api/placeholder/400/300" class="card-img-top" alt="Advanced Technical Analysis">
-                        <div class="card-body">
-                            <h5 class="card-title">Advanced Technical Analysis</h5>
-                            <ul class="list-unstyled">
-                                <li>✓ RSI calculations</li>
-                                <li>✓ Moving averages</li>
-                                <li>✓ Price change analysis</li>
-                            </ul>
-                        </div>
+                <div class="col-md-4">
+                    <div class="feature-card" data-bs-toggle="modal" data-bs-target="#advancedModal">
+                        <i class="fas fa-cog feature-icon"></i>
+                        <h4>Advanced Features</h4>
+                        <ul class="list-unstyled">
+                            <li>✓ Auto-Optimized Parameters</li>
+                            <li>✓ Volatility Analysis</li>
+                            <li>✓ Custom Trading Strategies</li>
+                        </ul>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <section class="py-5 bg-light">
-        <div class="container">
-            <h2 class="text-center mb-5">Why Choose StockPro Analyzer?</h2>
             <div class="row">
-                <div class="col-md-3 mb-4">
-                    <div class="text-center">
-                        <img src="/api/placeholder/100/100" class="rounded-circle mb-3" alt="Comprehensive Analysis">
-                        <h5>Comprehensive Analysis</h5>
-                        <p>Get in-depth insights on stocks and market trends</p>
+                <div class="col-md-6">
+                    <div class="mode-section">
+                        <h3><i class="fas fa-user-cog me-2"></i> Manual Mode</h3>
+                        <ul class="list-unstyled">
+                            <li>• Custom cryptocurrency selection</li>
+                            <li>• Adjustable trading parameters</li>
+                            <li>• Flexible cycle configuration</li>
+                            <li>• Real-time performance monitoring</li>
+                            <li>• Detailed trade logging</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-md-3 mb-4">
-                    <div class="text-center">
-                        <img src="/api/placeholder/100/100" class="rounded-circle mb-3" alt="Lightning-Fast Results">
-                        <h5>Lightning-Fast Results</h5>
-                        <p>Multithreaded processing for quick analysis</p>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="text-center">
-                        <img src="/api/placeholder/100/100" class="rounded-circle mb-3" alt="Customizable Parameters">
-                        <h5>Customizable Parameters</h5>
-                        <p>Tailor analysis to your specific needs</p>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="text-center">
-                        <img src="/api/placeholder/100/100" class="rounded-circle mb-3" alt="User-Friendly Interface">
-                        <h5>User-Friendly Interface</h5>
-                        <p>Easy-to-use tools for beginners and pros alike</p>
+                <div class="col-md-6">
+                    <div class="mode-section">
+                        <h3><i class="fas fa-robot me-2"></i> Auto-Pilot Mode</h3>
+                        <ul class="list-unstyled">
+                            <li>• Intelligent crypto selection</li>
+                            <li>• Automated parameter optimization</li>
+                            <li>• Volatility-based trading</li>
+                            <li>• Continuous market analysis</li>
+                            <li>• Self-adjusting strategies</li>
+                        </ul>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <section id="pricing" class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-5">Choose Your Plan</h2>
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="text-center">Basic</h3>
-                        </div>
-                        <div class="card-body">
-                            <h4 class="card-title text-center">$19<small class="text-muted">/month</small></h4>
-                            <ul class="list-unstyled">
-                                <li>✓ Single Stock Analysis</li>
-                                <li>✓ Basic Technical Indicators</li>
-                                <li>✓ Daily Updates</li>
-                            </ul>
-                            <div class="text-center mt-3">
-                                <a href="#" class="btn btn-outline-primary">Get Started</a>
+            <div class="row mt-5">
+                <div class="col-md-12 text-center">
+                    <h3 class="mb-4">Key Performance Features</h3>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="feature-card" data-bs-toggle="modal" data-bs-target="#monitoringModal">
+                                <i class="fas fa-tachometer-alt feature-icon"></i>
+                                <h5>Real-Time Monitoring</h5>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card border-primary">
-                        <div class="card-header bg-primary text-white">
-                            <h3 class="text-center">Pro</h3>
-                        </div>
-                        <div class="card-body">
-                            <h4 class="card-title text-center">$49<small class="text-muted">/month</small></h4>
-                            <ul class="list-unstyled">
-                                <li>✓ All Basic Features</li>
-                                <li>✓ Promising Stock Search</li>
-                                <li>✓ Advanced Technical Analysis</li>
-                                <li>✓ Real-time Alerts</li>
-                            </ul>
-                            <div class="text-center mt-3">
-                                <a href="#" class="btn btn-primary">Get Started</a>
+                        <div class="col-md-3">
+                            <div class="feature-card" data-bs-toggle="modal" data-bs-target="#balanceModal">
+                                <i class="fas fa-balance-scale feature-icon"></i>
+                                <h5>Balance Tracking</h5>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="text-center">Enterprise</h3>
+                        <div class="col-md-3">
+                            <div class="feature-card" data-bs-toggle="modal" data-bs-target="#intervalModal">
+                                <i class="fas fa-clock feature-icon"></i>
+                                <h5>Interval Trading</h5>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <h4 class="card-title text-center">Custom</h4>
-                            <ul class="list-unstyled">
-                                <li>✓ All Pro Features</li>
-                                <li>✓ Custom Integrations</li>
-                                <li>✓ Dedicated Support</li>
-                                <li>✓ Unlimited Analysis</li>
-                            </ul>
-                            <div class="text-center mt-3">
-                                <a href="#" class="btn btn-outline-primary">Contact Sales</a>
+                        <div class="col-md-3">
+                            <div class="feature-card" data-bs-toggle="modal" data-bs-target="#riskModal">
+                                <i class="fas fa-exclamation-triangle feature-icon"></i>
+                                <h5>Risk Management</h5>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <section id="contact" class="py-5 bg-light">
-        <div class="container text-center">
-            <h2 class="mb-4">Ready to Get Started?</h2>
-            <p class="lead mb-5">Join thousands of investors who trust StockPro Analyzer for their market insights</p>
-            <a href="#" class="btn btn-primary btn-lg">Start Your Free Trial</a>
-        </div>
-    </section>
-
-    <footer class="bg-dark text-white py-4">
-        <div class="container text-center">
-            <p>&copy; 2024 StockPro Analyzer. All rights reserved.</p>
-            <div>
-                <a href="#" class="text-white me-3">Privacy Policy</a>
-                <a href="#" class="text-white me-3">Terms of Service</a>
-                <a href="#" class="text-white">Contact Us</a>
+    <!-- Modals -->
+    <div class="modal fade" id="monitoringModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Real-Time Monitoring System</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-tachometer-alt modal-icon text-gradient"></i>
+                    <p class="lead">Advanced real-time monitoring system that provides comprehensive oversight of your trading activities.</p>
+                    <ul class="feature-detail-list text-start">
+                        <li>Live tracking of all active trades and orders</li>
+                        <li>Real-time profit/loss calculations and performance metrics</li>
+                        <li>Dynamic status page with current cycle information</li>
+                        <li>Continuous price monitoring and trend analysis</li>
+                        <li>Automated logging system with detailed trade history</li>
+                        <li>Performance statistics with success rate tracking</li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </footer>
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <div class="modal fade" id="balanceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Balance Tracking System</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-balance-scale modal-icon text-gradient"></i>
+                    <p class="lead">Sophisticated balance tracking system ensuring accurate portfolio management and trade execution.</p>
+                    <ul class="feature-detail-list text-start">
+                        <li>Continuous monitoring of crypto balances across trades</li>
+                        <li>Automated balance verification before new trade cycles</li>
+                        <li>Multiple balance check confirmations for safety</li>
+                        <li>Track total bought and sold amounts</li>
+                        <li>Historical balance changes monitoring</li>
+                        <li>Automatic trade pairing and reconciliation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="intervalModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Interval Trading System</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-clock modal-icon text-gradient"></i>
+                    <p class="lead">Precision-based interval trading system with customizable timing and execution parameters.</p>
+                    <ul class="feature-detail-list text-start">
+                        <li>Configurable trading cycles with custom intervals</li>
+                        <li>Smart delay system between trades for optimal timing</li>
+                        <li>Automated trade execution at specified intervals</li>
+                        <li>Dynamic adjustment of trading frequency</li>
+                        <li>Interval-based performance analytics</li>
+                        <li>Time-based risk management controls</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="riskModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Risk Management System</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-exclamation-triangle modal-icon text-gradient"></i>
+                    <p class="lead">Comprehensive risk management system with multiple layers of protection and emergency handling.</p>
+                    <ul class="feature-detail-list text-start">
+                        <li>Emergency sell functionality for unexpected market conditions</li>
+                        <li>Automated risk assessment before each trade</li>
+                        <li>Balance protection mechanisms</li>
+                        <li>Order pair verification system</li>
+                        <li>Volatility-based trading restrictions</li>
+                        <li>Multiple failure recovery systems</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Feature Modals -->
+    <div class="modal fade" id="securityModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Enhanced Security Features</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-shield-alt modal-icon text-gradient"></i>
+                    <p class="lead">Comprehensive security features ensuring safe and protected trading operations</p>
+                    <ul class="feature-detail-list text-start">
+                        <li><strong>Balance Protection System</strong>
+                            <ul>
+                                <li>Continuous balance monitoring before each trade</li>
+                                <li>Multiple balance verification checks</li>
+                                <li>Automatic trade suspension if balance inconsistencies detected</li>
+                            </ul>
+                        </li>
+                        <li><strong>Emergency Trade Handling</strong>
+                            <ul>
+                                <li>Automated emergency sell procedures</li>
+                                <li>Critical situation detection and response</li>
+                                <li>Failsafe mechanisms for unpaired orders</li>
+                            </ul>
+                        </li>
+                        <li><strong>Order Verification System</strong>
+                            <ul>
+                                <li>Continuous tracking of buy/sell order pairs</li>
+                                <li>Automated verification of order completion</li>
+                                <li>Real-time order status monitoring</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="analyticsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Real-Time Analytics Features</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-chart-bar modal-icon text-gradient"></i>
+                    <p class="lead">Comprehensive real-time analytics and performance tracking system</p>
+                    <ul class="feature-detail-list text-start">
+                        <li><strong>Live Performance Metrics</strong>
+                            <ul>
+                                <li>Real-time profit/loss calculations</li>
+                                <li>Success rate tracking</li>
+                                <li>Average profit per trade analysis</li>
+                            </ul>
+                        </li>
+                        <li><strong>Trade Statistics</strong>
+                            <ul>
+                                <li>Detailed tracking of buy/sell orders</li>
+                                <li>Emergency trade monitoring</li>
+                                <li>Complete trade cycle analysis</li>
+                            </ul>
+                        </li>
+                        <li><strong>Historical Analysis</strong>
+                            <ul>
+                                <li>30-day historical data analysis</li>
+                                <li>Volatility calculations</li>
+                                <li>Volume analysis and trending</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="advancedModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Advanced Trading Features</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-cog modal-icon text-gradient"></i>
+                    <p class="lead">Sophisticated trading features with intelligent optimization</p>
+                    <ul class="feature-detail-list text-start">
+                        <li><strong>Auto-Optimized Parameters</strong>
+                            <ul>
+                                <li>Dynamic parameter adjustment based on market conditions</li>
+                                <li>Automatic calculation of optimal trade percentages</li>
+                                <li>Self-adjusting trading strategies</li>
+                            </ul>
+                        </li>
+                        <li><strong>Volatility Analysis</strong>
+                            <ul>
+                                <li>Real-time volatility calculations</li>
+                                <li>Market trend analysis</li>
+                                <li>Risk-adjusted trading decisions</li>
+                            </ul>
+                        </li>
+                        <li><strong>Custom Trading Strategies</strong>
+                            <ul>
+                                <li>Manual and Auto-pilot modes</li>
+                                <li>Configurable trading parameters</li>
+                                <li>Flexible cycle management</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Form Section -->
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card bg-dark text-white">
+                    <div class="card-body">
+                        <h4 class="text-center mb-4">Contact Us</h4>
+                        <form action="mailto:project.kev@gmail.com" method="post" enctype="text/plain">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email address</label>
+                                <input type="email" class="form-control bg-dark text-white" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Message</label>
+                                <textarea class="form-control bg-dark text-white" id="message" name="message" rows="4" required></textarea>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-gradient">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
