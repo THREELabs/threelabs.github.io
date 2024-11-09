@@ -1,420 +1,443 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Spell Casting Game</title>
+    <title>Mage Battle</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.70.0/phaser.min.js"></script>
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
             margin: 0;
-            padding: 20px;
-        }
-        
-        .game-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        canvas {
-            border: 2px solid #333;
-        }
-        
-        .instructions {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .title {
-            color: #4169E1;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        
-        .instruction-text {
-            color: #666;
-            line-height: 1.5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #2c3e50;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="title">Spell Casting Game</div>
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div class="instructions">
-            <div style="color: #4169E1; font-weight: bold; margin-bottom: 10px;">
-                You are the BLUE wizard!
-            </div>
-            <div class="instruction-text">
-                • Hold left mouse button to move your character<br>
-                • Click on the red enemy to target/untarget them (targeting persists while moving)<br>
-                • Press R to cast Magic Arrow while moving (costs 20 mana)<br>
-                • Use walls and houses for cover!<br>
-                • You can move and cast spells at the same time!
-            </div>
-        </div>
-    </div>
+<script>
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
 
-    <script>
-        const GAME_WIDTH = 800;
-        const GAME_HEIGHT = 600;
-        const PLAYER_SIZE = 20;
-        const PLAYER_SPEED = 3;
+const game = new Phaser.Game(config);
 
-        // Game objects
-        const walls = [
-            { x: 200, y: 100, width: 20, height: 200 },
-            { x: 500, y: 300, width: 200, height: 20 },
-        ];
+let player;
+let npcs;
+let walls;
+let cursors;
+let spells;
+let playerMana = 100;
+let manaRegenRate = 10;
+let lastManaRegen = 0;
+let lastFireballTime = 0;
+let lastLightningTime = 0;
+let fireballCooldown = 1000;
+let lightningCooldown = 1500;
+let manaText;
+let debugText;
+let targetText;
+let isMouseDown = false;
+let currentTarget = null;
+let targetIndicator;
 
-        const houses = [
-            { x: 100, y: 100, width: 60, height: 60 },
-            { x: 600, y: 400, width: 80, height: 80 },
-        ];
+function preload() {
+    this.load.image('player', '/api/placeholder/48/48');
+    this.load.image('npc', '/api/placeholder/48/48');
+    this.load.image('wall', '/api/placeholder/32/32');
+    this.load.image('fireball', '/api/placeholder/16/16');
+    this.load.image('lightning', '/api/placeholder/16/16');
+    this.load.image('target', '/api/placeholder/52/52');
+}
 
-        const trees = [
-            { x: 300, y: 150, radius: 15 },
-            { x: 450, y: 250, radius: 15 },
-            { x: 150, y: 450, radius: 15 },
-        ];
+function create() {
+    // Create walls
+    walls = this.physics.add.staticGroup();
+    createWalls(this);
 
-        const roads = [
-            { x: 0, y: 200, width: GAME_WIDTH, height: 40 },
-            { x: 400, y: 0, width: 40, height: GAME_HEIGHT },
-        ];
+    // Create player
+    player = this.physics.add.sprite(100, 300, 'player');
+    player.setCollideWorldBounds(true);
+    player.setTint(0x00ff00);
 
-        // Game state
-        const game = {
-            player: { x: 50, y: 50, health: 100, mana: 100 },
-            npc: { x: 700, y: 500, health: 100, mana: 100 },
-            selectedTarget: null,
-            spells: [],
-            isMoving: false,
-            mousePos: { x: 0, y: 0 }
-        };
+    // Create target indicator system
+    targetIndicator = this.add.graphics();
+    targetIndicator.setVisible(false);
 
-        // Canvas setup
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+    // Create NPCs
+    npcs = this.physics.add.group();
+    createNPCs(this);
 
-        function isLineOfSightBlocked(start, end) {
-            for (const wall of walls) {
-                const x1 = start.x;
-                const y1 = start.y;
-                const x2 = end.x;
-                const y2 = end.y;
-                
-                const left = wall.x;
-                const right = wall.x + wall.width;
-                const top = wall.y;
-                const bottom = wall.y + wall.height;
-                
-                const m = (y2 - y1) / (x2 - x1);
-                const b = y1 - m * x1;
-                
-                const yAtLeft = m * left + b;
-                const yAtRight = m * right + b;
-                
-                if ((yAtLeft >= top && yAtLeft <= bottom) || 
-                    (yAtRight >= top && yAtRight <= bottom)) {
-                    return true;
-                }
-            }
+    // Create spells group
+    spells = this.physics.add.group();
+
+    // Set up collisions
+    this.physics.add.collider(player, walls);
+    this.physics.add.collider(npcs, walls);
+    this.physics.add.collider(spells, walls, spellHitWall, null, this);
+    this.physics.add.collider(spells, npcs, spellHitNPC, null, this);
+
+    // Set up keyboard input
+    cursors = this.input.keyboard.createCursorKeys();
+    this.input.keyboard.on('keydown-Z', castFireball, this);
+    this.input.keyboard.on('keydown-X', castLightning, this);
+
+    // Set up mouse input
+    this.input.on('pointerdown', (pointer) => {
+        isMouseDown = true;
+        handleTargeting.call(this, pointer);
+    });
+    this.input.on('pointerup', () => {
+        isMouseDown = false;
+    });
+
+    // Add UI
+    manaText = this.add.text(16, 16, 'Mana: 100', { fontSize: '18px', fill: '#fff' });
+    debugText = this.add.text(16, 40, '', { fontSize: '18px', fill: '#fff' });
+    targetText = this.add.text(16, 64, 'No Target', { fontSize: '18px', fill: '#fff' });
+}
+
+function handleTargeting(pointer) {
+    let closestNPC = null;
+    let closestDistance = 30; // Minimum distance to select target
+
+    npcs.getChildren().forEach(npc => {
+        const distance = Phaser.Math.Distance.Between(
+            pointer.x,
+            pointer.y,
+            npc.x,
+            npc.y
+        );
+
+        if (distance < closestDistance) {
+            closestNPC = npc;
+            closestDistance = distance;
+        }
+    });
+
+    if (closestNPC) {
+        setTarget(closestNPC);
+        debugText.setText('Target acquired!');
+    } else {
+        clearTarget();
+        debugText.setText('No target in range');
+    }
+}
+
+function setTarget(npc) {
+    // If clicking the same target, keep it
+    if (currentTarget === npc) return;
+    
+    currentTarget = npc;
+    targetText.setText(`Target: Enemy (${Math.floor(npc.health)} HP)`);
+    targetIndicator.setVisible(true);
+    
+    // Flash effect on target selection
+    npc.setTint(0xffff00);
+    setTimeout(() => {
+        if (npc.active) npc.setTint(0xff0000);
+    }, 100);
+}
+
+function clearTarget() {
+    currentTarget = null;
+    targetText.setText('No Target');
+    targetIndicator.setVisible(false);
+}
+
+function update(time) {
+    // Update target indicator position
+    // Update target visual indicator
+    if (currentTarget && currentTarget.active) {
+        targetIndicator.clear();
+        targetIndicator.lineStyle(2, 0xffff00);
+        targetIndicator.strokeCircle(currentTarget.x, currentTarget.y, 32);
+        
+        // Add pulsing effect
+        const pulseScale = 1 + Math.sin(time / 200) * 0.2;
+        targetIndicator.lineStyle(2, 0xffff00, 0.5);
+        targetIndicator.strokeCircle(currentTarget.x, currentTarget.y, 32 * pulseScale);
+        
+        targetText.setText(`Target: Enemy (${Math.floor(currentTarget.health)} HP)`);
+        targetIndicator.setVisible(true);
+    } else if (currentTarget) {
+        clearTarget();
+    }
+
+    // Player movement
+    const speed = 160;
+    player.setVelocity(0);
+
+    // Keyboard movement
+    if (cursors.left.isDown) {
+        player.setVelocityX(-speed);
+    } else if (cursors.right.isDown) {
+        player.setVelocityX(speed);
+    }
+
+    if (cursors.up.isDown) {
+        player.setVelocityY(-speed);
+    } else if (cursors.down.isDown) {
+        player.setVelocityY(speed);
+    }
+
+    // Mouse movement with minimum distance check
+    if (isMouseDown) {
+        const pointer = this.input.activePointer;
+        const targetX = pointer.x + this.cameras.main.scrollX;
+        const targetY = pointer.y + this.cameras.main.scrollY;
+        
+        // Calculate distance to cursor
+        const distance = Phaser.Math.Distance.Between(
+            player.x, player.y,
+            targetX, targetY
+        );
+        
+        // Only move if cursor is more than 30 pixels away from player
+        if (distance > 30) {
+            const angle = Phaser.Math.Angle.Between(
+                player.x, player.y,
+                targetX, targetY
+            );
             
-            for (const house of houses) {
-                const left = house.x;
-                const right = house.x + house.width;
-                const top = house.y;
-                const bottom = house.y + house.height;
-                
-                const m = (end.y - start.y) / (end.x - start.x);
-                const b = start.y - m * start.x;
-                
-                const yAtLeft = m * left + b;
-                const yAtRight = m * right + b;
-                
-                if ((yAtLeft >= top && yAtLeft <= bottom) || 
-                    (yAtRight >= top && yAtRight <= bottom)) {
-                    return true;
-                }
-            }
-            
-            return false;
+            player.setVelocity(
+                Math.cos(angle) * speed,
+                Math.sin(angle) * speed
+            );
+        } else {
+            // Stop moving if cursor is too close
+            player.setVelocity(0, 0);
+        }
+    }
+
+    // Mana regeneration
+    if (time > lastManaRegen + 1000) {
+        playerMana = Math.min(100, playerMana + manaRegenRate);
+        lastManaRegen = time;
+        updateManaText();
+    }
+
+    // Update NPCs
+    npcs.getChildren().forEach(npc => {
+        updateNPC(npc, time);
+    });
+}
+
+function createWalls(scene) {
+    // Create border walls
+    walls.create(400, 0, 'wall').setScale(50, 1).refreshBody();
+    walls.create(400, 600, 'wall').setScale(50, 1).refreshBody();
+    walls.create(0, 300, 'wall').setScale(1, 38).refreshBody();
+    walls.create(800, 300, 'wall').setScale(1, 38).refreshBody();
+
+    // Create some obstacles
+    walls.create(200, 200, 'wall').setScale(3, 1).refreshBody().setTint(0x808080);
+    walls.create(600, 400, 'wall').setScale(3, 1).refreshBody().setTint(0x808080);
+    walls.create(400, 300, 'wall').setScale(1, 3).refreshBody().setTint(0x808080);
+}
+
+function createNPCs(scene) {
+    const npcPositions = [
+        { x: 700, y: 100 },
+        { x: 700, y: 300 },
+        { x: 700, y: 500 },
+        { x: 500, y: 200 },
+        { x: 500, y: 400 }
+    ];
+
+    npcPositions.forEach(pos => {
+        const npc = npcs.create(pos.x, pos.y, 'npc');
+        npc.setTint(0xff0000);
+        npc.setCollideWorldBounds(true);
+        npc.lastMove = 0;
+        npc.moveDelay = 2000 + Math.random() * 1000;
+        npc.health = 100;
+        npc.healthBar = scene.add.rectangle(pos.x, pos.y - 30, 48, 6, 0xff0000);
+        
+        // Make NPCs interactive for clicking
+        npc.setInteractive();
+    });
+}
+
+function updateNPC(npc, time) {
+    if (npc.healthBar) {
+        npc.healthBar.x = npc.x;
+        npc.healthBar.y = npc.y - 30;
+        npc.healthBar.width = (npc.health / 100) * 48;
+    }
+
+    if (time > npc.lastMove + npc.moveDelay) {
+        const speed = 100;
+        const randomDirection = Phaser.Math.Between(0, 3);
+        
+        switch (randomDirection) {
+            case 0: npc.setVelocity(0, -speed); break;
+            case 1: npc.setVelocity(0, speed); break;
+            case 2: npc.setVelocity(-speed, 0); break;
+            case 3: npc.setVelocity(speed, 0); break;
         }
 
-        function movePlayer() {
-            if (game.isMoving) {
-                const dx = game.mousePos.x - game.player.x;
-                const dy = game.mousePos.y - game.player.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance > PLAYER_SPEED) {
-                    const angle = Math.atan2(dy, dx);
-                    const newX = game.player.x + Math.cos(angle) * PLAYER_SPEED;
-                    const newY = game.player.y + Math.sin(angle) * PLAYER_SPEED;
-                    
-                    let canMove = true;
-                    const newPlayerBounds = {
-                        left: newX - PLAYER_SIZE,
-                        right: newX + PLAYER_SIZE,
-                        top: newY - PLAYER_SIZE,
-                        bottom: newY + PLAYER_SIZE
-                    };
+        npc.lastMove = time;
+        npc.moveDelay = 2000 + Math.random() * 1000;
 
-                    // Check walls
-                    for (const wall of walls) {
-                        if (newPlayerBounds.right > wall.x && 
-                            newPlayerBounds.left < wall.x + wall.width &&
-                            newPlayerBounds.bottom > wall.y && 
-                            newPlayerBounds.top < wall.y + wall.height) {
-                            canMove = false;
-                            break;
-                        }
-                    }
+        setTimeout(() => {
+            npc.setVelocity(0);
+        }, 1000);
+    }
+}
 
-                    // Check houses
-                    for (const house of houses) {
-                        if (newPlayerBounds.right > house.x && 
-                            newPlayerBounds.left < house.x + house.width &&
-                            newPlayerBounds.bottom > house.y && 
-                            newPlayerBounds.top < house.y + house.height) {
-                            canMove = false;
-                            break;
-                        }
-                    }
+function castSpell(type, scene) {
+    if (!currentTarget) {
+        debugText.setText('No target selected!');
+        return false;
+    }
 
-                    // Check game bounds
-                    if (newX - PLAYER_SIZE < 0 || newX + PLAYER_SIZE > GAME_WIDTH ||
-                        newY - PLAYER_SIZE < 0 || newY + PLAYER_SIZE > GAME_HEIGHT) {
-                        canMove = false;
-                    }
+    // Check line of sight to target
+    const ray = new Phaser.Geom.Line(player.x, player.y, currentTarget.x, currentTarget.y);
+    let hasLineOfSight = true;
 
-                    if (canMove) {
-                        game.player.x = newX;
-                        game.player.y = newY;
-                    }
-                }
-            }
+    walls.getChildren().forEach(wall => {
+        if (Phaser.Geom.Intersects.LineToRectangle(ray, wall.getBounds())) {
+            hasLineOfSight = false;
         }
+    });
 
-        function drawGame() {
-            // Clear canvas
-            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            
-            // Draw roads
-            ctx.fillStyle = '#A9A9A9';
-            roads.forEach(road => {
-                ctx.fillRect(road.x, road.y, road.width, road.height);
-            });
-            
-            // Draw walls
-            ctx.fillStyle = '#666';
-            walls.forEach(wall => {
-                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
-            });
-            
-            // Draw houses
-            ctx.fillStyle = '#8B4513';
-            houses.forEach(house => {
-                ctx.fillRect(house.x, house.y, house.width, house.height);
-            });
-            
-            // Draw trees
-            ctx.fillStyle = '#228B22';
-            trees.forEach(tree => {
-                ctx.beginPath();
-                ctx.arc(tree.x, tree.y, tree.radius, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            
-            // Draw player (YOU)
-            ctx.fillStyle = '#4169E1';
-            ctx.beginPath();
-            ctx.arc(game.player.x, game.player.y, PLAYER_SIZE, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Add "YOU" indicator
-            ctx.fillStyle = '#FFF';
-            ctx.strokeStyle = '#000';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('YOU', game.player.x, game.player.y - 35);
-            ctx.strokeText('YOU', game.player.x, game.player.y - 35);
-            
-            // Add wizard robe design
-            ctx.strokeStyle = '#1E90FF';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(game.player.x, game.player.y, PLAYER_SIZE - 4, 0, Math.PI * 2);
-            ctx.stroke();
-            
-            // Draw Enemy NPC
-            ctx.fillStyle = game.selectedTarget ? '#FF4444' : '#8B0000';
-            ctx.beginPath();
-            ctx.arc(game.npc.x, game.npc.y, PLAYER_SIZE, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Add "ENEMY" indicator
-            ctx.fillText('ENEMY', game.npc.x, game.npc.y - 35);
-            ctx.strokeText('ENEMY', game.npc.x, game.npc.y - 35);
-            
-            // Add evil wizard design
-            ctx.strokeStyle = '#8B0000';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(game.npc.x - PLAYER_SIZE/2, game.npc.y + PLAYER_SIZE/2);
-            ctx.lineTo(game.npc.x + PLAYER_SIZE/2, game.npc.y - PLAYER_SIZE/2);
-            ctx.stroke();
-            
-            // Draw health and mana bars
-            function drawBars(x, y, health, mana) {
-                // Health bar
-                ctx.fillStyle = '#0F0';
-                ctx.fillRect(x - 25, y - 30, (health / 100) * 50, 5);
-                ctx.strokeStyle = '#000';
-                ctx.strokeRect(x - 25, y - 30, 50, 5);
-                
-                // Mana bar
-                ctx.fillStyle = '#00F';
-                ctx.fillRect(x - 25, y - 25, (mana / 100) * 50, 5);
-                ctx.strokeRect(x - 25, y - 25, 50, 5);
-            }
-            
-            drawBars(game.player.x, game.player.y, game.player.health, game.player.mana);
-            drawBars(game.npc.x, game.npc.y, game.npc.health, game.npc.mana);
-            
-            // Update and draw spells
-            const currentTime = Date.now();
-            game.spells = game.spells.filter(spell => {
-                const age = currentTime - spell.createdAt;
-                if (age > 1000) return false;
-                
-                const progress = age / 1000;
-                const spellX = spell.x + (spell.targetX - spell.x) * progress;
-                const spellY = spell.y + (spell.targetY - spell.y) * progress;
-                
-                ctx.fillStyle = '#F90';
-                ctx.beginPath();
-                ctx.arc(spellX, spellY, 5, 0, Math.PI * 2);
-                ctx.fill();
-                
-                const dx = spellX - game.npc.x;
-                const dy = spellY - game.npc.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < PLAYER_SIZE) {
-                    game.npc.health = Math.max(0, game.npc.health - 20);
-                    return false;
-                }
-                
-                return true;
-            });
+    if (!hasLineOfSight) {
+        debugText.setText('Target not in line of sight!');
+        return false;
+    }
+
+    return true;
+}
+
+function castFireball(event) {
+    const time = this.time.now;
+    if (time < lastFireballTime + fireballCooldown) {
+        debugText.setText('Fireball on cooldown!');
+        return;
+    }
+    
+    if (playerMana < 20) {
+        debugText.setText('Not enough mana!');
+        return;
+    }
+
+    if (!castSpell('fireball', this)) {
+        return;
+    }
+
+    const spell = spells.create(player.x, player.y, 'fireball');
+    spell.setTint(0xff6600);
+    spell.type = 'fireball';
+    spell.damage = 30;
+
+    const angle = Phaser.Math.Angle.Between(
+        player.x, player.y,
+        currentTarget.x, currentTarget.y
+    );
+    
+    const speed = 300;
+    spell.setVelocity(
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed
+    );
+
+    playerMana -= 20;
+    lastFireballTime = time;
+    updateManaText();
+    debugText.setText('Fireball cast!');
+}
+
+function castLightning(event) {
+    const time = this.time.now;
+    if (time < lastLightningTime + lightningCooldown) {
+        debugText.setText('Lightning on cooldown!');
+        return;
+    }
+    
+    if (playerMana < 30) {
+        debugText.setText('Not enough mana!');
+        return;
+    }
+
+    if (!castSpell('lightning', this)) {
+        return;
+    }
+
+    const spell = spells.create(player.x, player.y, 'lightning');
+    spell.setTint(0x00ffff);
+    spell.type = 'lightning';
+    spell.damage = 45;
+
+    const angle = Phaser.Math.Angle.Between(
+        player.x, player.y,
+        currentTarget.x, currentTarget.y
+    );
+    
+    const speed = 400;
+    spell.setVelocity(
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed
+    );
+
+    playerMana -= 30;
+    lastLightningTime = time;
+    updateManaText();
+    debugText.setText('Lightning cast!');
+}
+
+function spellHitWall(spell, wall) {
+    spell.destroy();
+    debugText.setText('Spell hit wall!');
+}
+
+function spellHitNPC(spell, npc) {
+    // Check line of sight before applying damage
+    const ray = new Phaser.Geom.Line(player.x, player.y, npc.x, npc.y);
+    let hasLineOfSight = true;
+
+    walls.getChildren().forEach(wall => {
+        if (Phaser.Geom.Intersects.LineToRectangle(ray, wall.getBounds())) {
+            hasLineOfSight = false;
         }
+    });
 
-        function gameLoop() {
-            movePlayer();
-            
-            // Regenerate health and mana
-            game.player.health = Math.min(100, game.player.health + 0.1);
-            game.player.mana = Math.min(100, game.player.mana + 0.2);
-            game.npc.health = Math.min(100, game.npc.health + 0.1);
-            game.npc.mana = Math.min(100, game.npc.mana + 0.2);
-            
-            drawGame();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // Event handlers
-        // Add targeting indicator
-        function drawTargetingIndicator() {
-            if (game.selectedTarget) {
-                ctx.strokeStyle = '#FF0000';
-                ctx.lineWidth = 2;
-                const time = Date.now() * 0.003; // For animation
-                const size = PLAYER_SIZE + 5 + Math.sin(time) * 3; // Pulsing effect
-                
-                // Draw targeting circle
-                ctx.beginPath();
-                ctx.arc(game.selectedTarget.x, game.selectedTarget.y, size, 0, Math.PI * 2);
-                ctx.stroke();
-                
-                // Draw crosshair
-                const crosshairSize = 10;
-                ctx.beginPath();
-                ctx.moveTo(game.selectedTarget.x - crosshairSize, game.selectedTarget.y);
-                ctx.lineTo(game.selectedTarget.x + crosshairSize, game.selectedTarget.y);
-                ctx.moveTo(game.selectedTarget.x, game.selectedTarget.y - crosshairSize);
-                ctx.lineTo(game.selectedTarget.x, game.selectedTarget.y + crosshairSize);
-                ctx.stroke();
+    if (hasLineOfSight) {
+        npc.health -= spell.damage;
+        if (npc.health <= 0) {
+            if (currentTarget === npc) {
+                clearTarget();
             }
+            npc.healthBar.destroy();
+            npc.destroy();
+            debugText.setText(`Enemy defeated by ${spell.type}!`);
+        } else {
+            debugText.setText(`${spell.type} hit enemy! Health: ${Math.floor(npc.health)}`);
         }
+    } else {
+        debugText.setText('No line of sight!');
+    }
+    
+    spell.destroy();
+}
 
-        // Update drawGame to include targeting indicator
-        const originalDrawGame = drawGame;
-        drawGame = function() {
-            originalDrawGame();
-            drawTargetingIndicator();
-        }
-
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const dx = x - game.npc.x;
-            const dy = y - game.npc.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < PLAYER_SIZE) {
-                // Toggle target selection
-                if (game.selectedTarget === game.npc) {
-                    game.selectedTarget = null;
-                } else {
-                    game.selectedTarget = game.npc;
-                }
-            }
-            // Always allow movement regardless of targeting
-            game.isMoving = true;
-        });
-
-        canvas.addEventListener('mouseup', () => {
-            game.isMoving = false;
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            game.mousePos.x = e.clientX - rect.left;
-            game.mousePos.y = e.clientY - rect.top;
-        });
-
-        canvas.addEventListener('mouseleave', () => {
-            game.isMoving = false;
-        });
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'r' && game.selectedTarget && game.player.mana >= 20) {
-                game.spells.push({
-                    x: game.player.x,
-                    y: game.player.y,
-                    targetX: game.selectedTarget.x,
-                    targetY: game.selectedTarget.y,
-                    type: 'magicArrow',
-                    createdAt: Date.now(),
-                });
-                game.player.mana -= 20;
-            }
-        });
-
-        // Start the game
-        gameLoop();
-    </script>
+function updateManaText() {
+    manaText.setText(`Mana: ${Math.floor(playerMana)}`);
+}
+</script>
 </body>
 </html>
