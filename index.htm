@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phaser Mage Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+        #gameCanvas {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .menu-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+        }
+        .menu-panel {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            display: none;
+            z-index: 1000;
+        }
+        .menu-title {
+            color: #4169E1;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .menu-content {
+            color: #fff;
+            line-height: 1.6;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+</head>
+<body>
+    <div id="gameCanvas"></div>
+    <button class="menu-button">☰ Menu</button>
+    <div class="menu-panel">
+        <div class="menu-title">Game Controls</div>
+        <div class="menu-content">
+            <strong style="color: #4169E1;">You are the BLUE wizard!</strong><br><br>
+            • Hold left mouse button to move your character<br>
+            • Click on the red enemy to target/untarget them (targeting persists while moving)<br>
+            • Press R to cast Magic Arrow while moving (costs 20 mana)<br>
+            • Press T to cast Lightning while moving (costs 30 mana)<br>
+            • Press F to cast Flame Strike while moving (costs 40 mana)<br>
+            • Use walls and houses for cover - spells can't pass through them!<br>
+            • You can move and cast spells at the same time!<br>
+            • Be careful not to cast too quickly or your spell will fizzle!
+        </div>
+    </div>
+
+    <script>
+        // Menu toggle functionality
+        document.querySelector('.menu-button').addEventListener('click', () => {
+            const menu = document.querySelector('.menu-panel');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        });
+    </script>
+
+    <script type="module" src="src/js/core/game.js"></script>
+</body>
+</html>
