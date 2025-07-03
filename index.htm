@@ -5,9 +5,12 @@
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <style>
         :root {
-            --world-width: 700px;
-            --world-height: 500px;
+            --viewport-width: 700px;
+            --viewport-height: 500px;
             --ui-height: 140px;
+            /* World is now much wider to hold both zones */
+            --world-width: 2200px; 
+            --world-height: 1500px;
         }
 
         body {
@@ -26,164 +29,129 @@
         #game-container { display: none; }
 
         #login-screen input, #login-screen button {
-            font-size: 16px;
-            padding: 8px;
-            margin: 5px;
-            background-color: #444;
-            color: #fff;
-            border: 1px solid #666;
-            cursor: pointer;
+            font-size: 16px; padding: 8px; margin: 5px;
+            background-color: #444; color: #fff; border: 1px solid #666; cursor: pointer;
         }
         #login-screen button:hover { background-color: #555; }
         #status-message { color: #ffaeae; min-height: 20px; }
 
         /* --- GAME LAYOUT --- */
-        #game-world {
-            width: var(--world-width);
-            height: var(--world-height);
+        #game-world { /* The Viewport */
+            width: var(--viewport-width);
+            height: var(--viewport-height);
             position: relative;
-            background-color: #1a472a; /* Dark green grass */
             overflow: hidden;
             border: 2px solid #666;
             cursor: crosshair;
         }
 
-        #ui-panel {
+        #world-container { /* The larger, scrolling map */
             width: var(--world-width);
+            height: var(--world-height);
+            position: absolute;
+            background-color: #1a472a; /* Default is grass */
+            transition: transform 0.1s linear;
+        }
+        
+        #ui-panel {
+            width: var(--viewport-width);
             height: var(--ui-height);
-            background-color: #2a2a2a;
-            border: 2px solid #666;
-            border-top: none;
-            display: flex;
-            flex-direction: column;
-            padding: 5px;
-            box-sizing: border-box;
+            background-color: #2a2a2a; border: 2px solid #666; border-top: none;
+            display: flex; flex-direction: column; padding: 5px; box-sizing: border-box;
         }
 
-        /* --- PLAYER & OBJECTS --- */
-        .game-object {
-            width: 30px;
-            height: 30px;
-            position: absolute;
-            transition: top 0.1s linear, left 0.1s linear;
-            box-sizing: border-box;
-        }
-        .player-object {
-            border: 2px solid #111;
-            border-radius: 50%;
-        }
-        .local-player { background-color: #4a90e2; z-index: 10; }
-        .remote-player { background-color: #d0021b; z-index: 9; }
-        
-        .npc-object {
-            background-color: #7ed321;
-            border: 2px solid #111;
-            border-radius: 10px;
-            z-index: 5;
-            transition: opacity 0.5s ease-in-out; /* For fade-out effect */
-        }
-        
-        .gold-pile {
-            background-color: #ffd700;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            border: 1px solid #b8860b;
-            z-index: 1;
-            box-shadow: 0 0 5px #ffd700;
-        }
+        /* --- MAP FEATURES --- */
+        .map-feature { position: absolute; box-sizing: border-box; }
 
-        #shrine {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: #c0c0c0;
-            border: 3px solid #f0e68c;
-            border-radius: 50%;
-            box-shadow: 0 0 15px #ffffff;
-            z-index: 2;
-        }
-
-        #safe-zone {
+        #bridge-zone {
             position: absolute;
             top: 0;
-            right: 0;
-            width: 150px;
+            left: 700px; /* Position it to the right of the start zone */
+            width: 1500px; /* The width of this new zone */
             height: 100%;
-            background-color: rgba(173, 216, 230, 0.3);
-            border-left: 3px solid #add8e6;
-            box-sizing: border-box;
-            z-index: 0;
+        }
+
+        #water-north {
+            top: 0; left: 0; width: 100%; height: 650px;
+            background-color: #1a3a5a;
+        }
+        #britain-bridge {
+            top: 650px; left: 0; width: 100%; height: 200px;
+            background-color: #654321;
+            border-top: 5px solid #4a3018;
+            border-bottom: 5px solid #4a3018;
+        }
+        #bridge-planks {
+            width: 100%; height: 100%;
+            background-image: repeating-linear-gradient(90deg, 
+                rgba(0,0,0,0.1), rgba(0,0,0,0.1) 20px, 
+                transparent 20px, transparent 40px);
+        }
+        #water-south {
+            top: 850px; left: 0; width: 100%; height: 650px;
+            background-color: #1a3a5a;
+        }
+        
+        /* --- PLAYER & OBJECTS (positions updated for new world) --- */
+        .game-object {
+            width: 30px; height: 30px; position: absolute;
+            transition: top 0.1s linear, left 0.1s linear; box-sizing: border-box;
+        }
+        .player-object { border: 2px solid #111; border-radius: 50%; }
+        .local-player { background-color: #4a90e2; z-index: 10; }
+        .remote-player { background-color: #d0021b; z-index: 9; }
+        .npc-object {
+            background-color: #7ed321; border: 2px solid #111; border-radius: 10px;
+            z-index: 5; transition: opacity 0.5s ease-in-out;
+        }
+        .gold-pile {
+            background-color: #ffd700; width: 15px; height: 15px; border-radius: 50%;
+            border: 1px solid #b8860b; z-index: 1; box-shadow: 0 0 5px #ffd700;
+        }
+        #shrine {
+            position: absolute; top: 720px; left: 45px; /* Centered in the Safe Zone */
+            width: 60px; height: 60px; background-color: #c0c0c0;
+            border: 3px solid #f0e68c; border-radius: 50%; box-shadow: 0 0 15px #ffffff; z-index: 2;
+        }
+        #safe-zone {
+            position: absolute; top: 0; left: 0; /* Changed to start of map */
+            width: 150px; height: 100%;
+            background-color: rgba(173, 216, 230, 0.3); border-right: 3px solid #add8e6;
+            box-sizing: border-box; z-index: 0;
         }
 
         .ghost { opacity: 0.5; filter: grayscale(80%); cursor: default !important; }
-
         .name-tag {
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 2px 5px;
-            font-size: 12px;
-            white-space: nowrap;
-            margin-bottom: 15px;
-            opacity: 1;
-            transition: opacity 0.5s ease-in-out;
+            position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7); color: white; padding: 2px 5px;
+            font-size: 12px; white-space: nowrap; margin-bottom: 15px;
+            opacity: 1; transition: opacity 0.5s ease-in-out;
         }
-        
-        .in-combat .name-tag {
-            opacity: 0;
-        }
-        
+        .in-combat .name-tag { opacity: 0; }
         .health-bar {
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 34px;
-            height: 5px;
-            background-color: #555;
-            border: 1px solid #111;
+            position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
+            width: 34px; height: 5px; background-color: #555; border: 1px solid #111;
         }
         .health-bar-inner {
-            width: 100%;
-            height: 100%;
-            background-color: #7ed321;
-            transition: width 0.2s linear;
+            width: 100%; height: 100%; background-color: #7ed321; transition: width 0.2s linear;
         }
 
         /* --- CHAT & UI --- */
         #player-stats {
-            color: #f0e68c;
-            padding: 4px;
-            text-align: center;
-            font-size: 16px;
+            color: #f0e68c; padding: 4px; text-align: center; font-size: 16px;
             border-bottom: 1px solid #444;
         }
         #chat-log {
-            flex-grow: 1;
-            overflow-y: scroll;
-            background-color: #1e1e1e;
-            padding: 5px;
-            font-size: 14px;
-            text-align: left;
+            flex-grow: 1; overflow-y: scroll; background-color: #1e1e1e; padding: 5px;
+            font-size: 14px; text-align: left;
         }
         #chat-log p { margin: 0 0 4px 0; }
         .system-msg { color: #88aaff; font-style: italic; }
         .my-msg { color: #aaeebb; }
         .their-msg { color: #ffb4b4; }
-
         #chat-input {
-            border: 1px solid #666;
-            background-color: #333;
-            color: #fff;
-            padding: 8px;
-            margin-top: 5px;
-            outline: none;
+            border: 1px solid #666; background-color: #333; color: #fff;
+            padding: 8px; margin-top: 5px; outline: none;
         }
     </style>
 </head>
@@ -199,9 +167,16 @@
 
     <div id="game-container" class="screen">
         <div id="game-world">
-            <div id="shrine"></div>
-            <div id="safe-zone"></div>
-            <!-- Game objects will be added here dynamically -->
+            <div id="world-container">
+                <div id="bridge-zone" class="map-feature">
+                    <div id="water-north" class="map-feature"></div>
+                    <div id="britain-bridge" class="map-feature"><div id="bridge-planks"></div></div>
+                    <div id="water-south" class="map-feature"></div>
+                </div>
+                
+                <div id="shrine"></div>
+                <div id="safe-zone"></div>
+            </div>
         </div>
         <div id="ui-panel">
             <div id="player-stats">Gold: 0</div>
@@ -218,6 +193,7 @@
         const joinGameBtn = document.getElementById('join-game-btn');
         const statusMessage = document.getElementById('status-message');
         const world = document.getElementById('game-world');
+        const worldContainer = document.getElementById('world-container');
         const chatLog = document.getElementById('chat-log');
         const chatInput = document.getElementById('chat-input');
         const playerStats = document.getElementById('player-stats');
@@ -237,6 +213,15 @@
             path: '/peerjs',
             secure: true,
         };
+
+        // --- World & Camera ---
+        const WORLD_WIDTH_ACTUAL = 2200;
+        const WORLD_HEIGHT_ACTUAL = 1500;
+        const BRIDGE_ZONE_START_X = 700;
+        const BRIDGE_TOP_Y = 650;
+        const BRIDGE_BOTTOM_Y = 850;
+        let cameraX = 0;
+        let cameraY = 0;
         
         const keysPressed = {};
         let attackCooldown = false;
@@ -255,14 +240,15 @@
         const NPC_SLIME_SPEED = 2;
         const NPC_AGGRO_RANGE = 200;
         const NPC_ATTACK_RANGE = 40;
-        const MAX_NPCS = 5;
+        const MAX_NPCS = 10;
 
-        const SHRINE_X = 20;
-        const SHRINE_Y = 20;
+        const SHRINE_X = 45;
+        const SHRINE_Y = 720;
         const SHRINE_SIZE = 60;
         const SHRINE_RADIUS = SHRINE_SIZE / 2;
         const RESURRECTION_TIME = 3000;
-        const SAFE_ZONE_START_X = 550;
+        const SAFE_ZONE_START_X = 0;
+        const SAFE_ZONE_END_X = 150;
         const COMBAT_TIMEOUT = 5000;
 
         // --- INITIALIZATION ---
@@ -273,6 +259,26 @@
             window.addEventListener('keyup', e => { keysPressed[e.key.toLowerCase()] = false; });
             world.addEventListener('click', onWorldClick);
             statusMessage.textContent = 'Ready. Enter a name and join.';
+        }
+
+        // --- Collision & Spawn Helpers ---
+        function isPositionInWater(x, y) {
+            if (x < BRIDGE_ZONE_START_X - PLAYER_SIZE) return false;
+            if (y < BRIDGE_TOP_Y || y + PLAYER_SIZE > BRIDGE_BOTTOM_Y) return true;
+            return false;
+        }
+
+        function isPositionInSafeZone(x) {
+            return x >= SAFE_ZONE_START_X && x < SAFE_ZONE_END_X;
+        }
+
+        function getSafeSpawnPoint() {
+            let x, y;
+            do {
+                x = Math.random() * (WORLD_WIDTH_ACTUAL - PLAYER_SIZE);
+                y = Math.random() * (WORLD_HEIGHT_ACTUAL - PLAYER_SIZE);
+            } while (isPositionInWater(x, y) || isPositionInSafeZone(x));
+            return { x, y };
         }
 
         function onJoinGameClick() {
@@ -340,13 +346,12 @@
         }
         
         function sendData(data) {
-            if (isHost) { handleData(data, localPlayerId); } 
+             if (isHost) { handleData(data, localPlayerId); } 
             else {
                 const hostConn = connections[HOST_ID];
                 if (hostConn && hostConn.open) { hostConn.send(data); }
             }
         }
-
         function broadcast(data) { Object.values(connections).forEach(conn => { if (conn && conn.open) { conn.send(data); } }); }
         
         // --- SERIALIZATION & HELPERS ---
@@ -356,14 +361,12 @@
                 health: player.health, isDead: player.isDead, gold: player.gold,
             };
         }
-        
         function getSerializableNpc(npc) {
             return {
                 id: npc.id, x: npc.x, y: npc.y,
                 health: npc.health, maxHealth: npc.maxHealth, isDead: npc.isDead
             };
         }
-
         function isPlayerOnShrine(player) {
             const shrineCenterX = SHRINE_X + SHRINE_RADIUS;
             const shrineCenterY = SHRINE_Y + SHRINE_RADIUS;
@@ -374,7 +377,7 @@
         }
 
         function isEntityInSafeZone(entity) {
-            return entity.x >= SAFE_ZONE_START_X;
+            return entity.x >= SAFE_ZONE_START_X && entity.x < SAFE_ZONE_END_X;
         }
 
         // --- HOST-SIDE LOGIC ---
@@ -387,7 +390,6 @@
                 player.el.classList.add('in-combat');
             }
         }
-
         function updateCombatTimers() {
             if (!isHost) return;
             for (const id in players) {
@@ -400,7 +402,6 @@
                 }
             }
         }
-
         function updateResurrections() {
             if (!isHost) return;
             for (const id in players) {
@@ -423,10 +424,8 @@
                 }
             }
         }
-
         function checkAndHandleItemPickup(player) {
-            if (player.isDead) return; // Prevent ghosts from picking up loot
-
+            if (player.isDead) return;
             const PLAYER_PICKUP_RADIUS = PLAYER_RADIUS + 5;
             for (const itemId in worldItems) {
                 const item = worldItems[itemId];
@@ -464,16 +463,13 @@
                         broadcast({ type: 'move', id: senderId, x: data.x, y: data.y }); 
                         break;
                     case 'attack':
-                        if (senderPlayer.isDead) return; // Prevent ghosts from attacking
-
+                        if (senderPlayer.isDead) return;
                         let target, targetName, damageSource;
                         if (data.targetType === 'player') { target = players[data.targetId]; targetName = target?.name || 'someone'; damageSource = senderPlayer.name; } 
                         else if (data.targetType === 'npc') { target = npcs[data.targetId]; targetName = 'a slime'; damageSource = senderPlayer.name; }
                         
                         setPlayerInCombat(senderPlayer);
-
                         if (target && isEntityInSafeZone(target)) { return; }
-
                         if (target && !target.isDead) {
                              if (data.targetType === 'player') { setPlayerInCombat(target); }
                              target.health -= ATTACK_DAMAGE;
@@ -494,18 +490,14 @@
                                     createWorldItem(item); 
                                     broadcast({ type: 'spawn-item', item: item });
                                     
-                                    // After 5 seconds, tell clients to start fading the body.
                                     setTimeout(() => {
                                         if (npcs[data.targetId]) {
-                                            removeNpc(data.targetId); // Host removes from its state
+                                            removeNpc(data.targetId);
                                             broadcast({ type: 'despawn-npc', id: data.targetId });
                                         }
-                                    }, 5000); // Body stays for 5 seconds
+                                    }, 5000);
 
-                                    // After 20 seconds total, spawn a new NPC.
-                                    setTimeout(() => {
-                                        spawnNpc();
-                                    }, 20000); // Respawn after 20 seconds
+                                    setTimeout(() => { spawnNpc(); }, 20000);
                                  }
                              }
                              const updateType = data.targetType === 'player' ? 'update-health' : 'npc-update-health';
@@ -521,6 +513,13 @@
                         if (data.npcs) { Object.values(data.npcs).forEach(n => createNpc(n)); }
                         if (data.items) { Object.values(data.items).forEach(i => createWorldItem(i)); }
                         break;
+                    case 'despawn-npc':
+                        const npcToFade = npcs[data.id];
+                        if (npcToFade && npcToFade.el) {
+                            npcToFade.el.style.opacity = '0';
+                            setTimeout(() => { removeNpc(data.id); }, 500);
+                        }
+                        break;
                     case 'new-player': if (data.id !== localPlayerId) createPlayer(data.id, data.player.name, false, data.player); break;
                     case 'move': if (players[data.id] && data.id !== localPlayerId) { players[data.id].x = data.x; players[data.id].y = data.y; } break;
                     case 'update-health': if (players[data.id]) { players[data.id].health = data.health; players[data.id].isDead = data.isDead; } break;
@@ -530,15 +529,6 @@
                     case 'spawn-npc': createNpc(data.npc); break;
                     case 'npc-move': if (npcs[data.id]) { npcs[data.id].x = data.x; npcs[data.id].y = data.y; } break;
                     case 'npc-update-health': if (npcs[data.id]) { npcs[data.id].health = data.health; npcs[data.id].isDead = data.isDead; } break;
-                    case 'despawn-npc':
-                        const npcToFade = npcs[data.id];
-                        if (npcToFade && npcToFade.el) {
-                            npcToFade.el.style.opacity = '0'; // Start the fade
-                            setTimeout(() => {
-                                removeNpc(data.id);
-                            }, 500); // Must match the CSS transition duration
-                        }
-                        break;
                     case 'spawn-item': createWorldItem(data.item); break;
                     case 'remove-item': removeWorldItem(data.id); break;
                     case 'resurrection-start': addChatMessage("You feel the shrine's power begin to restore your life force...", "system"); break;
@@ -557,16 +547,18 @@
         // --- ENTITY MANAGEMENT ---
         function createPlayer(id, name, isLocal = false, initialState = {}) {
             if (players[id]) return players[id];
+            const spawnPoint = initialState.x != null ? {x: initialState.x, y: initialState.y} : getSafeSpawnPoint();
             const playerState = {
                 id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'),
-                name: name, x: initialState.x ?? Math.random() * (world.clientWidth - 100) + 50, y: initialState.y ?? Math.random() * (world.clientHeight - 100) + 50,
+                name: name, x: spawnPoint.x, y: spawnPoint.y,
                 health: initialState.health ?? MAX_HEALTH, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0,
                 resurrectionStartTime: null, isInCombat: false, lastCombatTime: null
             };
             playerState.el.className = 'game-object player-object'; playerState.el.dataset.id = id; playerState.nameTag.className = 'name-tag'; playerState.healthBar.className = 'health-bar'; playerState.healthBarInner.className = 'health-bar-inner';
             if (isLocal) { playerState.el.classList.add('local-player'); } else { playerState.el.classList.add('remote-player'); }
             playerState.healthBar.appendChild(playerState.healthBarInner); playerState.el.appendChild(playerState.nameTag); playerState.el.appendChild(playerState.healthBar);
-            world.appendChild(playerState.el); players[id] = playerState; addChatMessage(`${name} has entered the realm.`, 'system'); return playerState;
+            worldContainer.appendChild(playerState.el);
+            players[id] = playerState; addChatMessage(`${name} has entered the realm.`, 'system'); return playerState;
         }
         function removePlayer(id) { if (players[id]) { players[id].el.remove(); delete players[id]; } }
         
@@ -578,7 +570,8 @@
             };
             npcState.el.className = 'game-object npc-object'; npcState.el.dataset.id = npcData.id; npcState.healthBar.className = 'health-bar'; npcState.healthBarInner.className = 'health-bar-inner';
             npcState.healthBar.appendChild(npcState.healthBarInner); npcState.el.appendChild(npcState.healthBar);
-            world.appendChild(npcState.el); npcs[npcData.id] = npcState;
+            worldContainer.appendChild(npcState.el);
+            npcs[npcData.id] = npcState;
         }
         function removeNpc(id) { if (npcs[id]) { npcs[id].el.remove(); delete npcs[id]; } }
 
@@ -586,32 +579,87 @@
             if (worldItems[item.id]) return;
             const itemEl = document.createElement('div');
             itemEl.className = 'game-object gold-pile';
-            itemEl.style.left = item.x + 'px';
-            itemEl.style.top = item.y + 'px';
-            itemEl.dataset.id = item.id;
-            worldItems[item.id] = { ...item, el: itemEl }; world.appendChild(itemEl);
+            itemEl.style.left = item.x + 'px'; itemEl.style.top = item.y + 'px'; itemEl.dataset.id = item.id;
+            worldItems[item.id] = { ...item, el: itemEl }; 
+            worldContainer.appendChild(itemEl);
         }
         function removeWorldItem(id) { if (worldItems[id]) { worldItems[id].el.remove(); delete worldItems[id]; } }
 
         // --- GAME LOOP & INPUT ---
         function startGame() { requestAnimationFrame(gameLoop); }
-        function gameLoop() { handleInput(); if (isHost) { updateNpcAI(); updateResurrections(); updateCombatTimers(); } updateUI(); requestAnimationFrame(gameLoop); }
+        function gameLoop() { 
+            handleInput(); 
+            if (isHost) { updateNpcAI(); updateResurrections(); updateCombatTimers(); } 
+            updateCamera(); 
+            updateUI(); 
+            requestAnimationFrame(gameLoop); 
+        }
+
+        function updateCamera() {
+            const me = players[localPlayerId];
+            if (!me) return;
+            const viewportWidth = parseInt(getComputedStyle(world).width);
+            const viewportHeight = parseInt(getComputedStyle(world).height);
+            cameraX = me.x - (viewportWidth / 2) + (PLAYER_SIZE / 2);
+            cameraY = me.y - (viewportHeight / 2) + (PLAYER_SIZE / 2);
+            cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH_ACTUAL - viewportWidth));
+            cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT_ACTUAL - viewportHeight));
+        }
 
         function handleInput() {
             const me = players[localPlayerId]; if (!me || document.activeElement === chatInput) return;
+            
+            const originalX = me.x;
+            const originalY = me.y;
+
             let dx = 0; let dy = 0; if (keysPressed['w']) dy--; if (keysPressed['s']) dy++; if (keysPressed['a']) dx--; if (keysPressed['d']) dx++;
             if (keysPressed['enter']) { chatInput.focus(); keysPressed['enter'] = false; return; } if (dx === 0 && dy === 0) return;
-            const magnitude = Math.hypot(dx, dy); dx = (dx / magnitude) * PLAYER_SPEED; dy = (dy / magnitude) * PLAYER_SPEED;
-            const originalX = me.x; const originalY = me.y; let newX = me.x + dx; let newY = me.y + dy;
-            Object.values(players).forEach(other => { if (other.id === localPlayerId || other.isDead) return; if (checkPlayerCollision(newX, me.y, other)) { newX = me.x; } if (checkPlayerCollision(me.x, newY, other)) { newY = me.y; } if (checkPlayerCollision(newX, newY, other)) { newX = me.x; newY = me.y; } });
-            me.x = Math.max(0, Math.min(world.clientWidth - PLAYER_SIZE, newX)); me.y = Math.max(0, Math.min(world.clientHeight - PLAYER_SIZE, newY));
-            if (me.x !== originalX || me.y !== originalY) { sendData({ type: 'move', x: me.x, y: me.y }); }
+            
+            const magnitude = Math.hypot(dx, dy); 
+            const moveX = (dx / magnitude) * PLAYER_SPEED; 
+            const moveY = (dy / magnitude) * PLAYER_SPEED;
+            let newX = me.x + moveX; 
+            let newY = me.y + moveY;
+            
+            if (isPositionInWater(newX, me.y)) newX = me.x;
+            if (isPositionInWater(me.x, newY)) newY = me.y;
+            if (isPositionInWater(newX, newY)) { newX = me.x; newY = me.y; }
+
+            Object.values(players).forEach(other => {
+                if (other.id === localPlayerId || other.isDead) return;
+                if (checkPlayerCollision(newX, me.y, other)) { newX = me.x; }
+                if (checkPlayerCollision(me.x, newY, other)) { newY = me.y; }
+            });
+             
+            me.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, newX));
+            me.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, newY));
+
+            if (me.x !== originalX || me.y !== originalY) { 
+                sendData({ type: 'move', x: me.x, y: me.y }); 
+            }
         }
 
         function onWorldClick(e) {
-            const targetEl = e.target.closest('.game-object'); if (!targetEl) return;
-            if (targetEl.classList.contains('remote-player')) { doAttack(targetEl.dataset.id, 'player'); } 
-            else if (targetEl.classList.contains('npc-object')) { doAttack(targetEl.dataset.id, 'npc'); }
+            const worldRect = world.getBoundingClientRect();
+            const clickX_inWorld = e.clientX - worldRect.left + cameraX;
+            const clickY_inWorld = e.clientY - worldRect.top + cameraY;
+            
+            let targetId = null, targetType = null;
+
+            for (const p of Object.values(players)) {
+                if (p.id !== localPlayerId && clickX_inWorld >= p.x && clickX_inWorld <= p.x + PLAYER_SIZE && clickY_inWorld >= p.y && clickY_inWorld <= p.y + PLAYER_SIZE) {
+                    targetId = p.id; targetType = 'player'; break;
+                }
+            }
+            if (!targetId) {
+                for (const n of Object.values(npcs)) {
+                    if (clickX_inWorld >= n.x && clickX_inWorld <= n.x + PLAYER_SIZE && clickY_inWorld >= n.y && clickY_inWorld <= n.y + PLAYER_SIZE) {
+                        targetId = n.id; targetType = 'npc'; break;
+                    }
+                }
+            }
+
+            if (targetId) { doAttack(targetId, targetType); }
         }
 
         function doAttack(targetId, targetType) {
@@ -647,9 +695,12 @@
                 if (targetPlayer) {
                     if (minDistance > NPC_ATTACK_RANGE) {
                         const dx = targetPlayer.x - npc.x; const dy = targetPlayer.y - npc.y; const magnitude = Math.hypot(dx, dy);
-                        npc.x += (dx / magnitude) * NPC_SLIME_SPEED; 
-                        npc.y += (dy / magnitude) * NPC_SLIME_SPEED;
-                        hasMoved = true;
+                        let nextX = npc.x + (dx / magnitude) * NPC_SLIME_SPEED;
+                        let nextY = npc.y + (dy / magnitude) * NPC_SLIME_SPEED;
+
+                        if (!isPositionInWater(nextX, nextY)) {
+                           npc.x = nextX; npc.y = nextY; hasMoved = true;
+                        }
                     }
                     if (minDistance <= NPC_ATTACK_RANGE && !npc.ai_attackCooldown) {
                          setPlayerInCombat(targetPlayer);
@@ -659,19 +710,11 @@
                          broadcast({ type: 'update-health', id: targetPlayer.id, health: targetPlayer.health, isDead: targetPlayer.isDead });
                          npc.ai_attackCooldown = true; setTimeout(() => { npc.ai_attackCooldown = false; }, 1000);
                     }
-                } else {
-                    if (Date.now() - npc.ai_lastMove > 3000) {
-                        const angle = Math.random() * 2 * Math.PI;
-                        npc.x += Math.cos(angle) * NPC_SLIME_SPEED * 10; 
-                        npc.y += Math.sin(angle) * NPC_SLIME_SPEED * 10;
-                        npc.ai_lastMove = Date.now();
-                        hasMoved = true;
-                    }
                 }
-
+                
                 if (hasMoved) {
-                    npc.x = Math.max(0, Math.min(SAFE_ZONE_START_X - PLAYER_SIZE, npc.x));
-                    npc.y = Math.max(0, Math.min(world.clientHeight - PLAYER_SIZE, npc.y));
+                    npc.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, npc.x));
+                    npc.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, npc.y));
                     broadcast({ type: 'npc-move', id: npc.id, x: npc.x, y: npc.y });
                 }
             }
@@ -679,15 +722,11 @@
 
         function spawnNpc() {
             if (!isHost) return;
+            const spawnPoint = getSafeSpawnPoint();
             const id = `npc_${Date.now()}_${Math.random()}`;
-            const spawnableWidth = SAFE_ZONE_START_X - PLAYER_SIZE;
             const npcData = { 
-                id: id, 
-                x: Math.random() * spawnableWidth,
-                y: Math.random() * (world.clientHeight - PLAYER_SIZE), 
-                health: NPC_SLIME_HEALTH, 
-                maxHealth: NPC_SLIME_HEALTH, 
-                isDead: false 
+                id: id, x: spawnPoint.x, y: spawnPoint.y, health: NPC_SLIME_HEALTH, 
+                maxHealth: NPC_SLIME_HEALTH, isDead: false 
             };
             createNpc(npcData);
             const npcState = npcs[id];
@@ -700,9 +739,23 @@
 
         // --- UI & CHAT ---
         function updateUI() {
-            Object.values(players).forEach(p => { p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px'; p.nameTag.textContent = p.name; p.healthBarInner.style.width = (p.health / MAX_HEALTH) * 100 + '%'; p.el.classList.toggle('ghost', p.isDead); });
-            Object.values(npcs).forEach(n => { if (n.el) { n.el.style.left = n.x + 'px'; n.el.style.top = n.y + 'px'; n.healthBarInner.style.width = (n.health / n.maxHealth) * 100 + '%'; n.el.classList.toggle('ghost', n.isDead); }});
-            Object.values(worldItems).forEach(i => { if (i.el) { i.el.style.left = i.x + 'px'; i.el.style.top = i.y + 'px'; }});
+            worldContainer.style.transform = `translate(${-cameraX}px, ${-cameraY}px)`;
+            Object.values(players).forEach(p => { 
+                p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px'; 
+                p.nameTag.textContent = p.name; 
+                p.healthBarInner.style.width = (p.health / MAX_HEALTH) * 100 + '%'; 
+                p.el.classList.toggle('ghost', p.isDead); 
+            });
+            Object.values(npcs).forEach(n => { 
+                if (n.el) { 
+                    n.el.style.left = n.x + 'px'; n.el.style.top = n.y + 'px'; 
+                    n.healthBarInner.style.width = (n.health / n.maxHealth) * 100 + '%'; 
+                    n.el.classList.toggle('ghost', n.isDead); 
+                }
+            });
+            Object.values(worldItems).forEach(i => { 
+                if (i.el) { i.el.style.left = i.x + 'px'; i.el.style.top = i.y + 'px'; }
+            });
             if (players[localPlayerId]) { playerStats.textContent = `Gold: ${players[localPlayerId].gold}`; }
         }
         function addChatMessage(message, sender) {
