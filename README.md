@@ -1,8 +1,6 @@
-# Ultima Brawler
+# Ultima Brawler - [Play Here!](https://threelabs.github.io) 
 
 A minimalist, real-time multiplayer arena game inspired by the classic MMO, Ultima Online, built entirely in the browser.
-
-![Ultima Brawler Gameplay](https://via.placeholder.com/700x400.png?text=Game+Screenshot+Here)
 
 This project brings the thrill of classic open-world PvP and PvE to the web. Developed with plain HTML, CSS, and JavaScript, it uses a peer-to-peer (P2P) networking model via WebRTC (PeerJS), where the first player to join a game acts as the host. No complex backend or downloads are required—just open the file and start brawling.
 
