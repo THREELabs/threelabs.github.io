@@ -7,152 +7,77 @@
         :root {
             --viewport-width: 700px;
             --viewport-height: 500px;
-            --ui-height: 140px;
-            /* World is now much wider to hold both zones */
+            --ui-height: 160px;
             --world-width: 2200px; 
             --world-height: 1500px;
         }
-
-        body {
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #1a1a1a;
-            color: #fff;
-        }
-
-        /* --- SCREENS --- */
+        body { font-family: 'Courier New', Courier, monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #1a1a1a; color: #fff; }
         .screen { text-align: center; }
         #game-container { display: none; }
-
-        #login-screen input, #login-screen button {
-            font-size: 16px; padding: 8px; margin: 5px;
-            background-color: #444; color: #fff; border: 1px solid #666; cursor: pointer;
-        }
+        #login-screen input, #login-screen button { font-size: 16px; padding: 8px; margin: 5px; background-color: #444; color: #fff; border: 1px solid #666; cursor: pointer; }
         #login-screen button:hover { background-color: #555; }
         #status-message { color: #ffaeae; min-height: 20px; }
-
-        /* --- GAME LAYOUT --- */
-        #game-world { /* The Viewport */
-            width: var(--viewport-width);
-            height: var(--viewport-height);
-            position: relative;
-            overflow: hidden;
-            border: 2px solid #666;
-            cursor: crosshair;
-        }
-
-        #world-container { /* The larger, scrolling map */
-            width: var(--world-width);
-            height: var(--world-height);
-            position: absolute;
-            background-color: #1a472a; /* Default is grass */
-            transition: transform 0.1s linear;
-        }
-        
-        #ui-panel {
-            width: var(--viewport-width);
-            height: var(--ui-height);
-            background-color: #2a2a2a; border: 2px solid #666; border-top: none;
-            display: flex; flex-direction: column; padding: 5px; box-sizing: border-box;
-        }
-
-        /* --- MAP FEATURES --- */
+        #game-world { width: var(--viewport-width); height: var(--viewport-height); position: relative; overflow: hidden; border: 2px solid #666; cursor: crosshair; }
+        #world-container { width: var(--world-width); height: var(--world-height); position: absolute; background-color: #1a472a; transition: transform 0.1s linear; }
+        #ui-panel { width: var(--viewport-width); height: var(--ui-height); background-color: #2a2a2a; border: 2px solid #666; border-top: none; display: flex; flex-direction: column; padding: 5px; box-sizing: border-box; }
         .map-feature { position: absolute; box-sizing: border-box; }
-
-        #bridge-zone {
-            position: absolute;
-            top: 0;
-            left: 700px; /* Position it to the right of the start zone */
-            width: 1500px; /* The width of this new zone */
-            height: 100%;
-        }
-
-        #water-north {
-            top: 0; left: 0; width: 100%; height: 650px;
-            background-color: #1a3a5a;
-        }
-        #britain-bridge {
-            top: 650px; left: 0; width: 100%; height: 200px;
-            background-color: #654321;
-            border-top: 5px solid #4a3018;
-            border-bottom: 5px solid #4a3018;
-        }
-        #bridge-planks {
-            width: 100%; height: 100%;
-            background-image: repeating-linear-gradient(90deg, 
-                rgba(0,0,0,0.1), rgba(0,0,0,0.1) 20px, 
-                transparent 20px, transparent 40px);
-        }
-        #water-south {
-            top: 850px; left: 0; width: 100%; height: 650px;
-            background-color: #1a3a5a;
-        }
-        
-        /* --- PLAYER & OBJECTS (positions updated for new world) --- */
-        .game-object {
-            width: 30px; height: 30px; position: absolute;
-            transition: top 0.1s linear, left 0.1s linear; box-sizing: border-box;
-        }
+        #bridge-zone { position: absolute; top: 0; left: 700px; width: 1500px; height: 100%; }
+        #water-north { top: 0; left: 0; width: 100%; height: 650px; background-color: #1a3a5a; }
+        #britain-bridge { top: 650px; left: 0; width: 100%; height: 200px; background-color: #654321; border-top: 5px solid #4a3018; border-bottom: 5px solid #4a3018; }
+        #bridge-planks { width: 100%; height: 100%; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.1) 20px, transparent 20px, transparent 40px); }
+        #water-south { top: 850px; left: 0; width: 100%; height: 650px; background-color: #1a3a5a; }
+        .game-object { width: 30px; height: 30px; position: absolute; transition: top 0.1s linear, left 0.1s linear, box-shadow 0.3s ease-in-out; box-sizing: border-box; }
         .player-object { border: 2px solid #111; border-radius: 50%; }
         .local-player { background-color: #4a90e2; z-index: 10; }
         .remote-player { background-color: #d0021b; z-index: 9; }
-        .npc-object {
-            background-color: #7ed321; border: 2px solid #111; border-radius: 10px;
-            z-index: 5; transition: opacity 0.5s ease-in-out;
-        }
-        .gold-pile {
-            background-color: #ffd700; width: 15px; height: 15px; border-radius: 50%;
-            border: 1px solid #b8860b; z-index: 1; box-shadow: 0 0 5px #ffd700;
-        }
-        #shrine {
-            position: absolute; top: 720px; left: 45px; /* Centered in the Safe Zone */
-            width: 60px; height: 60px; background-color: #c0c0c0;
-            border: 3px solid #f0e68c; border-radius: 50%; box-shadow: 0 0 15px #ffffff; z-index: 2;
-        }
-        #safe-zone {
-            position: absolute; top: 0; left: 0; /* Changed to start of map */
-            width: 150px; height: 100%;
-            background-color: rgba(173, 216, 230, 0.3); border-right: 3px solid #add8e6;
-            box-sizing: border-box; z-index: 0;
-        }
-
+        .npc-object { background-color: #7ed321; border: 2px solid #111; border-radius: 10px; z-index: 5; transition: opacity 0.5s ease-in-out; }
+        .gold-pile { background-color: #ffd700; width: 15px; height: 15px; border-radius: 50%; border: 1px solid #b8860b; z-index: 1; box-shadow: 0 0 5px #ffd700; }
+        #shrine { position: absolute; top: 720px; left: 45px; width: 60px; height: 60px; background-color: #c0c0c0; border: 3px solid #f0e68c; border-radius: 50%; box-shadow: 0 0 15px #ffffff; z-index: 2; }
+        #safe-zone { position: absolute; top: 0; left: 0; width: 150px; height: 100%; background-color: rgba(173, 216, 230, 0.3); border-right: 3px solid #add8e6; box-sizing: border-box; z-index: 0; }
+        #idle-player-area { position: absolute; top: 10px; left: 10px; width: 130px; height: 200px; background-color: rgba(128, 0, 128, 0.2); border: 2px dashed rgba(128, 0, 128, 0.5); box-sizing: border-box; z-index: 0; }
+        #vendor-npc { position: absolute; top: 400px; left: 55px; width: 40px; height: 40px; background-color: #8a2be2; border: 2px solid #4b0082; border-radius: 3px; z-index: 5; cursor: pointer; }
         .ghost { opacity: 0.5; filter: grayscale(80%); cursor: default !important; }
-        .name-tag {
-            position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7); color: white; padding: 2px 5px;
-            font-size: 12px; white-space: nowrap; margin-bottom: 15px;
-            opacity: 1; transition: opacity 0.5s ease-in-out;
+        .name-tag { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background-color: rgba(0, 0, 0, 0.7); color: white; padding: 2px 5px; font-size: 12px; white-space: nowrap; margin-bottom: 15px; opacity: 1; transition: opacity 0.5s ease-in-out; }
+        
+        .speech-bubble {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 35px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #111;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            width: 100px;
+            text-align: left;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+            white-space: normal;
+            overflow-wrap: break-word;
         }
+        
         .in-combat .name-tag { opacity: 0; }
-        .health-bar {
-            position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
-            width: 34px; height: 5px; background-color: #555; border: 1px solid #111;
-        }
-        .health-bar-inner {
-            width: 100%; height: 100%; background-color: #7ed321; transition: width 0.2s linear;
-        }
-
-        /* --- CHAT & UI --- */
-        #player-stats {
-            color: #f0e68c; padding: 4px; text-align: center; font-size: 16px;
-            border-bottom: 1px solid #444;
-        }
-        #chat-log {
-            flex-grow: 1; overflow-y: scroll; background-color: #1e1e1e; padding: 5px;
-            font-size: 14px; text-align: left;
-        }
+        .health-bar { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 34px; height: 5px; background-color: #555; border: 1px solid #111; }
+        .health-bar-inner { width: 100%; height: 100%; background-color: #7ed321; transition: width 0.2s linear; }
+        .player-object.speed-buff { box-shadow: 0 0 15px 5px #4a90e2; }
+        .player-object.damage-buff { box-shadow: 0 0 15px 5px #e24a4a; }
+        #player-stats { color: #f0e68c; padding: 4px; display: flex; justify-content: space-around; font-size: 16px; border-bottom: 1px solid #444; }
+        #chat-log { flex-grow: 1; overflow-y: scroll; background-color: #1e1e1e; padding: 5px; font-size: 14px; text-align: left; }
         #chat-log p { margin: 0 0 4px 0; }
         .system-msg { color: #88aaff; font-style: italic; }
         .my-msg { color: #aaeebb; }
         .their-msg { color: #ffb4b4; }
-        #chat-input {
-            border: 1px solid #666; background-color: #333; color: #fff;
-            padding: 8px; margin-top: 5px; outline: none;
-        }
+        #chat-input { border: 1px solid #666; background-color: #333; color: #fff; padding: 8px; margin-top: 5px; outline: none; }
+        #vendor-menu { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #2a2a2a; border: 2px solid #666; padding: 20px; z-index: 100; box-shadow: 0 0 20px black; }
+        #vendor-menu h3 { margin-top: 0; }
+        #vendor-menu table { border-collapse: collapse; width: 100%; }
+        #vendor-menu td, #vendor-menu th { border: 1px solid #444; padding: 8px; text-align: left; }
+        #vendor-menu button { background-color: #4a90e2; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+        #vendor-menu button:hover { background-color: #6aa0e5; }
+        #close-vendor-btn { background-color: #d0021b; float: right; }
     </style>
 </head>
 <body>
@@ -168,607 +93,274 @@
     <div id="game-container" class="screen">
         <div id="game-world">
             <div id="world-container">
-                <div id="bridge-zone" class="map-feature">
-                    <div id="water-north" class="map-feature"></div>
-                    <div id="britain-bridge" class="map-feature"><div id="bridge-planks"></div></div>
-                    <div id="water-south" class="map-feature"></div>
-                </div>
-                
+                <div id="bridge-zone" class="map-feature"><div id="water-north" class="map-feature"></div><div id="britain-bridge" class="map-feature"><div id="bridge-planks"></div></div><div id="water-south" class="map-feature"></div></div>
+                <div id="idle-player-area" class="map-feature"></div>
                 <div id="shrine"></div>
                 <div id="safe-zone"></div>
+                <div id="vendor-npc" title="Potion Vendor"></div>
+            </div>
+            <div id="vendor-menu">
+                <h3>Potion Vendor</h3><button id="close-vendor-btn">X</button>
+                <table>
+                    <thead><tr><th>Item</th><th>Description</th><th>Cost</th><th>Buy</th></tr></thead>
+                    <tbody>
+                        <tr><td>Healing Potion</td><td>Restores 40 health. (Press 1)</td><td>50 G</td><td><button class="buy-btn" data-item="health_potion">Buy</button></td></tr>
+                        <tr><td>Speed Potion</td><td>+50% speed for 20s. (Press 2)</td><td>75 G</td><td><button class="buy-btn" data-item="speed_potion">Buy</button></td></tr>
+                        <tr><td>Damage Potion</td><td>+5 damage for 20s. (Press 3)</td><td>100 G</td><td><button class="buy-btn" data-item="damage_potion">Buy</button></td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         <div id="ui-panel">
-            <div id="player-stats">Gold: 0</div>
+            <div id="player-stats"><span id="player-gold">Gold: 0</span><span id="player-inventory"></span></div>
             <div id="chat-log"></div>
-            <input type="text" id="chat-input" placeholder="Press Enter to chat..." autocomplete="off">
+            <input type="text" id="chat-input" placeholder="Press Enter to chat... (try /top)" autocomplete="off">
         </div>
     </div>
 
     <script>
         // --- DOM Elements ---
-        const loginScreen = document.getElementById('login-screen');
-        const gameContainer = document.getElementById('game-container');
-        const playerNameInput = document.getElementById('player-name-input');
-        const joinGameBtn = document.getElementById('join-game-btn');
-        const statusMessage = document.getElementById('status-message');
-        const world = document.getElementById('game-world');
-        const worldContainer = document.getElementById('world-container');
-        const chatLog = document.getElementById('chat-log');
-        const chatInput = document.getElementById('chat-input');
-        const playerStats = document.getElementById('player-stats');
+        const loginScreen = document.getElementById('login-screen'), gameContainer = document.getElementById('game-container'), playerNameInput = document.getElementById('player-name-input'), joinGameBtn = document.getElementById('join-game-btn'), statusMessage = document.getElementById('status-message'), world = document.getElementById('game-world'), worldContainer = document.getElementById('world-container'), chatLog = document.getElementById('chat-log'), chatInput = document.getElementById('chat-input'), playerGoldDisplay = document.getElementById('player-gold'), playerInventoryDisplay = document.getElementById('player-inventory'), vendorNpc = document.getElementById('vendor-npc'), vendorMenu = document.getElementById('vendor-menu'), closeVendorBtn = document.getElementById('close-vendor-btn');
         
         // --- PeerJS & Game State ---
         const HOST_ID = 'ultima-brawler-game-v1-any-string';
-        let peer;
-        let localPlayerId;
-        let isHost = false;
-        const players = {};
-        const connections = {}; 
-        const npcs = {}; 
-        const worldItems = {};
-
-        const PEER_SERVER_CONFIG = {
-            host: 'familiar-olive-bike.glitch.me',
-            path: '/peerjs',
-            secure: true,
-        };
+        let peer, localPlayerId, isHost = false;
+        const players = {}, connections = {}, npcs = {}, worldItems = {};
+        const PEER_SERVER_CONFIG = { host: 'familiar-olive-bike.glitch.me', path: '/peerjs', secure: true, };
 
         // --- World & Camera ---
-        const WORLD_WIDTH_ACTUAL = 2200;
-        const WORLD_HEIGHT_ACTUAL = 1500;
-        const BRIDGE_ZONE_START_X = 700;
-        const BRIDGE_TOP_Y = 650;
-        const BRIDGE_BOTTOM_Y = 850;
-        let cameraX = 0;
-        let cameraY = 0;
+        const WORLD_WIDTH_ACTUAL = 2200, WORLD_HEIGHT_ACTUAL = 1500, BRIDGE_ZONE_START_X = 700, BRIDGE_TOP_Y = 650, BRIDGE_BOTTOM_Y = 850;
+        let cameraX = 0, cameraY = 0;
         
-        const keysPressed = {};
-        let attackCooldown = false;
-        const PLAYER_SPEED = 5;
-        const PLAYER_SIZE = 30;
-        const PLAYER_RADIUS = PLAYER_SIZE / 2;
-        const ATTACK_RANGE = 60;
-        const ATTACK_DAMAGE = 10;
-        const MAX_HEALTH = 100;
-        const SLIME_GOLD_DROP = 10;
-        const GOLD_PILE_SIZE = 15;
-        const GOLD_DROP_RADIUS = 40;
-
-        const NPC_SLIME_HEALTH = 30;
-        const NPC_SLIME_DAMAGE = 5;
-        const NPC_SLIME_SPEED = 2;
-        const NPC_AGGRO_RANGE = 200;
-        const NPC_ATTACK_RANGE = 40;
-        const MAX_NPCS = 10;
-
-        const SHRINE_X = 45;
-        const SHRINE_Y = 720;
-        const SHRINE_SIZE = 60;
-        const SHRINE_RADIUS = SHRINE_SIZE / 2;
-        const RESURRECTION_TIME = 3000;
-        const SAFE_ZONE_START_X = 0;
-        const SAFE_ZONE_END_X = 150;
-        const COMBAT_TIMEOUT = 5000;
+        // --- Game Constants ---
+        const keysPressed = {}; let attackCooldown = false;
+        const PLAYER_SIZE = 30, PLAYER_RADIUS = PLAYER_SIZE / 2, MAX_HEALTH = 100, PLAYER_BASE_SPEED = 5, PLAYER_BASE_ATTACK_DAMAGE = 10;
+        const ATTACK_RANGE = 60, SLIME_GOLD_DROP = 10, GOLD_PILE_SIZE = 15, GOLD_DROP_RADIUS = 40;
+        const NPC_SLIME_HEALTH = 30, NPC_SLIME_DAMAGE = 5, NPC_SLIME_SPEED = 2, NPC_AGGRO_RANGE = 200, NPC_ATTACK_RANGE = 40, MAX_NPCS = 10;
+        const SHRINE_X = 45, SHRINE_Y = 720, SHRINE_SIZE = 60, SHRINE_RADIUS = SHRINE_SIZE / 2;
+        const RESURRECTION_TIME = 3000, SAFE_ZONE_START_X = 0, SAFE_ZONE_END_X = 150;
+        const COMBAT_TIMEOUT = 5000, IDLE_TIMEOUT = 30000;
+        const IDLE_ZONE = { x: 10, y: 10, width: 130, height: 200 };
+        const VENDOR_X = 55, VENDOR_Y = 400, VENDOR_SIZE = 40, VENDOR_INTERACT_RANGE = 80;
+        const HEALING_POTION_AMOUNT = 40, BUFF_DURATION = 20000;
+        const VENDOR_ITEMS = { health_potion: { cost: 50 }, speed_potion: { cost: 75 }, damage_potion: { cost: 100 } };
+        const TITLE_DEFINITIONS = { "the Victim": { requirement: 'deaths', value: 5 }, "the Unlucky": { requirement: 'deaths', value: 15 }, "the Hunter": { requirement: 'pveKills', value: 10 }, "the Exterminator": { requirement: 'pveKills', value: 50 }, "the Brawler": { requirement: 'pvpKills', value: 3 }, "the Duelist": { requirement: 'pvpKills', value: 10 }, "the Murderer": { requirement: 'pvpKills', value: 25 }, };
 
         // --- INITIALIZATION ---
         function initialize() {
             joinGameBtn.addEventListener('click', onJoinGameClick);
             chatInput.addEventListener('keydown', onChatSubmit);
-            window.addEventListener('keydown', e => { keysPressed[e.key.toLowerCase()] = true; });
+            window.addEventListener('keydown', e => { keysPressed[e.key.toLowerCase()] = true; handleKeyPress(e.key); });
             window.addEventListener('keyup', e => { keysPressed[e.key.toLowerCase()] = false; });
             world.addEventListener('click', onWorldClick);
+            closeVendorBtn.addEventListener('click', () => vendorMenu.style.display = 'none');
+            document.querySelectorAll('.buy-btn').forEach(btn => btn.addEventListener('click', () => sendData({ type: 'buy-item', itemId: btn.dataset.item })));
             statusMessage.textContent = 'Ready. Enter a name and join.';
         }
 
         // --- Collision & Spawn Helpers ---
-        function isPositionInWater(x, y) {
-            if (x < BRIDGE_ZONE_START_X - PLAYER_SIZE) return false;
-            if (y < BRIDGE_TOP_Y || y + PLAYER_SIZE > BRIDGE_BOTTOM_Y) return true;
-            return false;
-        }
-
-        function isPositionInSafeZone(x) {
-            return x >= SAFE_ZONE_START_X && x < SAFE_ZONE_END_X;
-        }
-
-        function getSafeSpawnPoint() {
-            let x, y;
-            do {
-                x = Math.random() * (WORLD_WIDTH_ACTUAL - PLAYER_SIZE);
-                y = Math.random() * (WORLD_HEIGHT_ACTUAL - PLAYER_SIZE);
-            } while (isPositionInWater(x, y) || isPositionInSafeZone(x));
-            return { x, y };
-        }
-
-        function onJoinGameClick() {
-            const name = playerNameInput.value || `Player_${Math.floor(Math.random() * 1000)}`;
-            joinGameBtn.disabled = true;
-            statusMessage.textContent = 'Attempting to create game...';
-            peer = new Peer(HOST_ID, PEER_SERVER_CONFIG);
-            peer.on('open', (id) => {
-                console.log(`[SUCCESS] I am the HOST with ID: ${id}`);
-                statusMessage.textContent = 'Game created! Waiting for players...';
-                isHost = true;
-                localPlayerId = id;
-                peer.on('connection', setupConnection);
-                finalizeGameEntry(name);
-            });
-            peer.on('error', (err) => {
-                if (err.type === 'unavailable-id') {
-                    console.log(`[INFO] Host already exists. Connecting as a client...`);
-                    statusMessage.textContent = 'Game found! Connecting as client...';
-                    peer.destroy();
-                    peer = new Peer(undefined, PEER_SERVER_CONFIG);
-                    peer.on('open', (id) => {
-                        localPlayerId = id;
-                        console.log(`[SUCCESS] I am a CLIENT with ID: ${id}`);
-                        statusMessage.textContent = 'Connecting to host...';
-                        const connToHost = peer.connect(HOST_ID, { reliable: true });
-                        setupConnection(connToHost);
-                        finalizeGameEntry(name);
-                    });
-                     peer.on('error', (clientErr) => { console.error('[FATAL CLIENT ERROR]', clientErr); statusMessage.textContent = `Error: ${clientErr.type}. Please refresh.`; });
-                } else { console.error('[FATAL HOST ERROR]', err); statusMessage.textContent = `Error: ${err.type}. Check server or refresh.`; }
-            });
-        }
+        function isPositionInWater(x, y) { if (x < BRIDGE_ZONE_START_X - PLAYER_SIZE) return false; if (y < BRIDGE_TOP_Y || y + PLAYER_SIZE > BRIDGE_BOTTOM_Y) return true; return false; }
+        function isPositionInSafeZone(x) { return x >= SAFE_ZONE_START_X && x < SAFE_ZONE_END_X; }
+        function getSafeSpawnPoint() { let x, y; do { x = Math.random() * (WORLD_WIDTH_ACTUAL - PLAYER_SIZE); y = Math.random() * (WORLD_HEIGHT_ACTUAL - PLAYER_SIZE); } while (isPositionInWater(x, y) || isPositionInSafeZone(x)); return { x, y }; }
         
+        // --- PeerJS Connections ---
+        function onJoinGameClick() { const name = playerNameInput.value || `Player_${Math.floor(Math.random() * 1000)}`; joinGameBtn.disabled = true; statusMessage.textContent = 'Attempting to create game...'; peer = new Peer(HOST_ID, PEER_SERVER_CONFIG); peer.on('open', (id) => { console.log(`[SUCCESS] I am the HOST with ID: ${id}`); statusMessage.textContent = 'Game created! Waiting for players...'; isHost = true; localPlayerId = id; peer.on('connection', setupConnection); finalizeGameEntry(name); }); peer.on('error', (err) => { if (err.type === 'unavailable-id') { console.log(`[INFO] Host already exists. Connecting as a client...`); statusMessage.textContent = 'Game found! Connecting as client...'; peer.destroy(); peer = new Peer(undefined, PEER_SERVER_CONFIG); peer.on('open', (id) => { localPlayerId = id; console.log(`[SUCCESS] I am a CLIENT with ID: ${id}`); statusMessage.textContent = 'Connecting to host...'; const connToHost = peer.connect(HOST_ID, { reliable: true }); setupConnection(connToHost); finalizeGameEntry(name); }); peer.on('error', (clientErr) => { console.error('[FATAL CLIENT ERROR]', clientErr); statusMessage.textContent = `Error: ${clientErr.type}. Please refresh.`; }); } else { console.error('[FATAL HOST ERROR]', err); statusMessage.textContent = `Error: ${err.type}. Check server or refresh.`; } }); }
+        
+        // *** MODIFIED *** Host sets its own isHost flag
         function finalizeGameEntry(name) {
             loginScreen.style.display = 'none';
             gameContainer.style.display = 'block';
             createPlayer(localPlayerId, name, true);
             players[localPlayerId].el.classList.add('local-player');
-            if (!isHost) {
+
+            if (isHost) {
+                players[localPlayerId].isHost = true; // Mark this player as the host
+                for (let i = 0; i < MAX_NPCS; i++) {
+                    spawnNpc();
+                }
+            } else {
                 const hostConn = connections[HOST_ID];
                 if (hostConn && hostConn.open) {
                     sendData({ type: 'sync-request', name: players[localPlayerId].name });
                 } else {
                     hostConn.on('open', () => { sendData({ type: 'sync-request', name: players[localPlayerId].name }); });
                 }
-            } else { // This is the host
-                for (let i = 0; i < MAX_NPCS; i++) {
-                    spawnNpc();
-                }
             }
             startGame();
         }
 
-        function setupConnection(conn) {
-            connections[conn.peer] = conn;
-            conn.on('data', (data) => handleData(data, conn.peer));
-            conn.on('close', () => {
-                const disconnectedPlayerName = players[conn.peer]?.name || `${conn.peer.slice(0,6)}...`;
-                addChatMessage(`${disconnectedPlayerName} has disconnected.`, 'system');
-                removePlayer(conn.peer); delete connections[conn.peer];
-                if (isHost) { broadcast({ type: 'disconnect', id: conn.peer }); }
-            });
-            conn.on('error', (err) => { console.error(`Connection error with ${conn.peer}:`, err); });
-        }
-        
-        function sendData(data) {
-             if (isHost) { handleData(data, localPlayerId); } 
-            else {
-                const hostConn = connections[HOST_ID];
-                if (hostConn && hostConn.open) { hostConn.send(data); }
-            }
-        }
+        function setupConnection(conn) { connections[conn.peer] = conn; conn.on('data', (data) => handleData(data, conn.peer)); conn.on('close', () => { const disconnectedPlayerName = players[conn.peer]?.name || `${conn.peer.slice(0,6)}...`; addChatMessage(`${disconnectedPlayerName} has disconnected.`, 'system'); removePlayer(conn.peer); delete connections[conn.peer]; if (isHost) { broadcast({ type: 'disconnect', id: conn.peer }); } }); conn.on('error', (err) => { console.error(`Connection error with ${conn.peer}:`, err); }); }
+        function sendData(data) { if (isHost) { handleData(data, localPlayerId); } else { const hostConn = connections[HOST_ID]; if (hostConn && hostConn.open) { hostConn.send(data); } } }
         function broadcast(data) { Object.values(connections).forEach(conn => { if (conn && conn.open) { conn.send(data); } }); }
-        
-        // --- SERIALIZATION & HELPERS ---
-        function getSerializablePlayer(player) {
-            return {
-                id: player.id, name: player.name, x: player.x, y: player.y,
-                health: player.health, isDead: player.isDead, gold: player.gold,
-            };
-        }
-        function getSerializableNpc(npc) {
-            return {
-                id: npc.id, x: npc.x, y: npc.y,
-                health: npc.health, maxHealth: npc.maxHealth, isDead: npc.isDead
-            };
-        }
-        function isPlayerOnShrine(player) {
-            const shrineCenterX = SHRINE_X + SHRINE_RADIUS;
-            const shrineCenterY = SHRINE_Y + SHRINE_RADIUS;
-            const playerCenterX = player.x + PLAYER_RADIUS;
-            const playerCenterY = player.y + PLAYER_RADIUS;
-            const distance = Math.hypot(shrineCenterX - playerCenterX, shrineCenterY - playerCenterY);
-            return distance < SHRINE_RADIUS;
-        }
 
-        function isEntityInSafeZone(entity) {
-            return entity.x >= SAFE_ZONE_START_X && entity.x < SAFE_ZONE_END_X;
-        }
+        // --- SERIALIZATION & HELPERS ---
+        // *** MODIFIED *** Serializer includes isHost flag
+        function getSerializablePlayer(player) { return { id: player.id, name: player.name, x: player.x, y: player.y, health: player.health, isDead: player.isDead, gold: player.gold, inventory: player.inventory, buffs: player.buffs, title: player.title, pvpKills: player.pvpKills, pveKills: player.pveKills, deaths: player.deaths, isHost: player.isHost }; }
+        function getSerializableNpc(npc) { return { id: npc.id, x: npc.x, y: npc.y, health: npc.health, maxHealth: npc.maxHealth, isDead: npc.isDead }; }
+        function isPlayerOnShrine(player) { const d = Math.hypot((SHRINE_X + SHRINE_RADIUS) - (player.x + PLAYER_RADIUS), (SHRINE_Y + SHRINE_RADIUS) - (player.y + PLAYER_RADIUS)); return d < SHRINE_RADIUS; }
+        function isEntityInSafeZone(entity) { return entity.x >= SAFE_ZONE_START_X && entity.x < SAFE_ZONE_END_X; }
+        function hostAnnounce(message) { if (!isHost) return; addChatMessage(message, 'system'); broadcast({ type: 'chat', name: 'system', message: message }); }
+        function messagePlayer(playerId, message) { if (!isHost) return; if (playerId === localPlayerId) { addChatMessage(message, "system"); } else if (connections[playerId]) { connections[playerId].send({ type: 'chat', name: 'system', message: message }); } }
 
         // --- HOST-SIDE LOGIC ---
-        function setPlayerInCombat(player) {
-            if (!player) return;
-            player.lastCombatTime = Date.now();
-            if (!player.isInCombat) {
-                player.isInCombat = true;
-                broadcast({ type: 'combat-status-update', playerId: player.id, inCombat: true });
-                player.el.classList.add('in-combat');
-            }
-        }
-        function updateCombatTimers() {
-            if (!isHost) return;
-            for (const id in players) {
-                const player = players[id];
-                if (player.isInCombat && (Date.now() - player.lastCombatTime > COMBAT_TIMEOUT)) {
-                    player.isInCombat = false;
-                    player.lastCombatTime = null;
-                    broadcast({ type: 'combat-status-update', playerId: player.id, inCombat: false });
-                    player.el.classList.remove('in-combat');
-                }
-            }
-        }
-        function updateResurrections() {
-            if (!isHost) return;
-            for (const id in players) {
-                const player = players[id];
-                if (player.isDead) {
-                    const isOnShrine = isPlayerOnShrine(player);
-                    if (isOnShrine && !player.resurrectionStartTime) {
-                        player.resurrectionStartTime = Date.now();
-                        if (connections[id]) { connections[id].send({ type: 'resurrection-start' }); }
-                    } else if (!isOnShrine && player.resurrectionStartTime) {
-                        player.resurrectionStartTime = null;
-                        if (connections[id]) { connections[id].send({ type: 'resurrection-cancel' }); }
-                    } else if (isOnShrine && player.resurrectionStartTime && (Date.now() - player.resurrectionStartTime >= RESURRECTION_TIME)) {
-                        player.health = MAX_HEALTH;
-                        player.isDead = false;
-                        player.resurrectionStartTime = null;
-                        addChatMessage(`${player.name} has been resurrected!`, 'system');
-                        broadcast({ type: 'update-health', id: id, health: player.health, isDead: player.isDead });
-                    }
-                }
-            }
-        }
-        function checkAndHandleItemPickup(player) {
-            if (player.isDead) return;
-            const PLAYER_PICKUP_RADIUS = PLAYER_RADIUS + 5;
-            for (const itemId in worldItems) {
-                const item = worldItems[itemId];
-                const distance = Math.hypot(player.x + PLAYER_RADIUS - (item.x + GOLD_PILE_SIZE / 2), player.y + PLAYER_RADIUS - (item.y + GOLD_PILE_SIZE / 2));
-                if (distance < PLAYER_PICKUP_RADIUS) {
-                    if (item.type === 'gold') {
-                        player.gold += item.amount;
-                    }
-                    removeWorldItem(itemId);
-                    broadcast({ type: 'remove-item', id: itemId });
-                    broadcast({ type: 'update-gold', playerId: player.id, gold: player.gold });
-                    addChatMessage(`${player.name} picked up ${item.amount} gold.`, 'system');
-                    break;
-                }
-            }
-        }
+        function handlePlayerDeath(killedPlayer, killer) { if (!isHost || killedPlayer.gold <= 0) return; let amountToDrop = 0; const isKillerNpc = killer.id.startsWith('npc_'); if (isKillerNpc) { amountToDrop = Math.floor(killedPlayer.gold / 2); } else { amountToDrop = killedPlayer.gold; } if (amountToDrop > 0) { killedPlayer.gold -= amountToDrop; broadcast({ type: 'update-gold', playerId: killedPlayer.id, gold: killedPlayer.gold }); const angle = Math.random() * 2 * Math.PI, radius = Math.random() * GOLD_DROP_RADIUS; const dropX = (killedPlayer.x + PLAYER_RADIUS + Math.cos(angle) * radius) - (GOLD_PILE_SIZE / 2); const dropY = (killedPlayer.y + PLAYER_RADIUS + Math.sin(angle) * radius) - (GOLD_PILE_SIZE / 2); const itemId = `gold_${Date.now()}_${Math.random()}`; const item = { id: itemId, type: 'gold', amount: amountToDrop, x: dropX, y: dropY }; createWorldItem(item); broadcast({ type: 'spawn-item', item: item }); hostAnnounce(`${killedPlayer.name} dropped ${amountToDrop} gold!`); } }
+        function setPlayerInCombat(player) { if (!player) return; player.lastCombatTime = Date.now(); if (!player.isInCombat) { player.isInCombat = true; broadcast({ type: 'combat-status-update', playerId: player.id, inCombat: true }); player.el.classList.add('in-combat'); } }
+        function updateCombatTimers() { if (!isHost) return; for (const id in players) { const player = players[id]; if (player.isInCombat && (Date.now() - player.lastCombatTime > COMBAT_TIMEOUT)) { player.isInCombat = false; player.lastCombatTime = null; broadcast({ type: 'combat-status-update', playerId: player.id, inCombat: false }); player.el.classList.remove('in-combat'); } } }
+        function updateResurrections() { if (!isHost) return; for (const id in players) { const player = players[id]; if (player.isDead) { const isOnShrine = isPlayerOnShrine(player); if (isOnShrine && !player.resurrectionStartTime) { player.resurrectionStartTime = Date.now(); messagePlayer(id, "You feel the shrine's power begin to restore your life force..."); } else if (!isOnShrine && player.resurrectionStartTime) { player.resurrectionStartTime = null; messagePlayer(id, "You moved away and broke the connection to the shrine."); } else if (isOnShrine && player.resurrectionStartTime && (Date.now() - player.resurrectionStartTime >= RESURRECTION_TIME)) { player.health = MAX_HEALTH; player.isDead = false; player.resurrectionStartTime = null; hostAnnounce(`${player.name} has been resurrected!`); broadcast({ type: 'update-health', id: id, health: player.health, isDead: player.isDead }); } } } }
+        function updateIdlePlayers() { if (!isHost) return; const now = Date.now(); for (const id in players) { const player = players[id]; if (player.isDead && !player.isIdleKicked && (now - player.lastInputTime > IDLE_TIMEOUT)) { player.isIdleKicked = true; const idleX = IDLE_ZONE.x + Math.random() * (IDLE_ZONE.width - PLAYER_SIZE); const idleY = IDLE_ZONE.y + Math.random() * (IDLE_ZONE.height - PLAYER_SIZE); player.x = idleX; player.y = idleY; hostAnnounce(`${player.name} was moved to the idle area for being inactive.`); broadcast({ type: 'move', id: player.id, x: player.x, y: player.y }); } } }
+        function checkAndHandleItemPickup(player) { if (player.isDead) return; const PLAYER_PICKUP_RADIUS = PLAYER_RADIUS + 5; for (const itemId in worldItems) { const item = worldItems[itemId]; const distance = Math.hypot(player.x + PLAYER_RADIUS - (item.x + GOLD_PILE_SIZE / 2), player.y + PLAYER_RADIUS - (item.y + GOLD_PILE_SIZE / 2)); if (distance < PLAYER_PICKUP_RADIUS) { if (item.type === 'gold') { player.gold += item.amount; } removeWorldItem(itemId); broadcast({ type: 'remove-item', id: itemId }); broadcast({ type: 'update-gold', playerId: player.id, gold: player.gold }); hostAnnounce(`${player.name} picked up ${item.amount} gold.`); break; } } }
+        function updateBuffs() { if (!isHost) return; const now = Date.now(); for (const pId in players) { const player = players[pId]; for (const buffType in player.buffs) { const buff = player.buffs[buffType]; if (buff.active && now > buff.endTime) { buff.active = false; messagePlayer(pId, `Your ${buffType} potion has worn off.`); broadcast({ type: 'buff-update', playerId: pId, buffs: player.buffs }); } } } }
+        function checkAndAwardTitle(player) { if (!isHost) return; let bestTitle = ""; for (const titleName in TITLE_DEFINITIONS) { const def = TITLE_DEFINITIONS[titleName]; if (player[def.requirement] >= def.value) { bestTitle = titleName; } } if (bestTitle && player.title !== bestTitle) { player.title = bestTitle; hostAnnounce(`${player.name} has earned the title: ${bestTitle}!`); broadcast({ type: 'title-update', playerId: player.id, title: player.title }); } }
+        function generateAndBroadcastLeaderboard() { if (!isHost) return; const sortedPlayers = Object.values(players).sort((a, b) => b.gold - a.gold); const topPlayers = sortedPlayers.slice(0, 5); let leaderboardMessage = "--- Top Brawlers (by Gold) ---"; if (topPlayers.length === 0) { leaderboardMessage += "\nNo brawlers yet!"; } else { topPlayers.forEach((p, index) => { const titleText = p.title ? ` ${p.title}` : ''; leaderboardMessage += `\n#${index + 1}: ${p.name}${titleText} - ${p.gold}g`; }); } hostAnnounce(leaderboardMessage); }
 
         // --- DATA HANDLING ---
         function handleData(data, senderId) {
-            if (isHost) {
-                const senderPlayer = players[senderId];
-                if (!senderPlayer && data.type !== 'sync-request') return;
-
-                switch (data.type) {
-                    case 'sync-request':
-                        const serializablePlayers = {}; for (const pId in players) { serializablePlayers[pId] = getSerializablePlayer(players[pId]); }
-                        const serializableNpcs = {}; for (const nId in npcs) { serializableNpcs[nId] = getSerializableNpc(npcs[nId]); }
-                        connections[senderId].send({ type: 'sync-response', players: serializablePlayers, npcs: serializableNpcs, items: worldItems });
-                        const newPlayer = createPlayer(senderId, data.name);
-                        broadcast({ type: 'new-player', id: senderId, player: getSerializablePlayer(newPlayer) });
-                        break;
-                    case 'move': 
-                        senderPlayer.x = data.x; senderPlayer.y = data.y;
-                        checkAndHandleItemPickup(senderPlayer);
-                        broadcast({ type: 'move', id: senderId, x: data.x, y: data.y }); 
-                        break;
-                    case 'attack':
-                        if (senderPlayer.isDead) return;
-                        let target, targetName, damageSource;
-                        if (data.targetType === 'player') { target = players[data.targetId]; targetName = target?.name || 'someone'; damageSource = senderPlayer.name; } 
-                        else if (data.targetType === 'npc') { target = npcs[data.targetId]; targetName = 'a slime'; damageSource = senderPlayer.name; }
-                        
-                        setPlayerInCombat(senderPlayer);
-                        if (target && isEntityInSafeZone(target)) { return; }
-                        if (target && !target.isDead) {
-                             if (data.targetType === 'player') { setPlayerInCombat(target); }
-                             target.health -= ATTACK_DAMAGE;
-                             addChatMessage(`${damageSource} attacks ${targetName}!`, 'system');
-                             if(target.health <= 0) {
-                                 target.health = 0; target.isDead = true;
-                                 addChatMessage(`${targetName} has been slain!`, 'system');
-                                 if (data.targetType === 'npc') {
-                                    const angle = Math.random() * 2 * Math.PI;
-                                    const radius = Math.random() * GOLD_DROP_RADIUS;
-                                    const offsetX = Math.cos(angle) * radius;
-                                    const offsetY = Math.sin(angle) * radius;
-                                    const dropX = (target.x + PLAYER_RADIUS + offsetX) - (GOLD_PILE_SIZE / 2);
-                                    const dropY = (target.y + PLAYER_RADIUS + offsetY) - (GOLD_PILE_SIZE / 2);
-                                    const itemId = `gold_${Date.now()}_${Math.random()}`;
-                                    const item = { id: itemId, type: 'gold', amount: SLIME_GOLD_DROP, x: dropX, y: dropY };
-                                    
-                                    createWorldItem(item); 
-                                    broadcast({ type: 'spawn-item', item: item });
-                                    
-                                    setTimeout(() => {
-                                        if (npcs[data.targetId]) {
-                                            removeNpc(data.targetId);
-                                            broadcast({ type: 'despawn-npc', id: data.targetId });
-                                        }
-                                    }, 5000);
-
-                                    setTimeout(() => { spawnNpc(); }, 20000);
-                                 }
-                             }
-                             const updateType = data.targetType === 'player' ? 'update-health' : 'npc-update-health';
-                             broadcast({ type: updateType, id: data.targetId, health: target.health, isDead: target.isDead });
-                        }
-                        break;
-                    case 'chat': broadcast({ type: 'chat', name: senderPlayer.name, message: data.message }); break;
-                }
-            } else { // Client Logic
+            if (!isHost) {
                  switch (data.type) {
-                    case 'sync-response': 
-                        Object.values(data.players).forEach(p => { if(p.id !== localPlayerId) createPlayer(p.id, p.name, false, p) }); 
-                        if (data.npcs) { Object.values(data.npcs).forEach(n => createNpc(n)); }
-                        if (data.items) { Object.values(data.items).forEach(i => createWorldItem(i)); }
-                        break;
-                    case 'despawn-npc':
-                        const npcToFade = npcs[data.id];
-                        if (npcToFade && npcToFade.el) {
-                            npcToFade.el.style.opacity = '0';
-                            setTimeout(() => { removeNpc(data.id); }, 500);
-                        }
-                        break;
+                    case 'sync-response': Object.values(data.players).forEach(p => { if(p.id !== localPlayerId) createPlayer(p.id, p.name, false, p) }); if (data.npcs) { Object.values(data.npcs).forEach(n => createNpc(n)); } if (data.items) { Object.values(data.items).forEach(i => createWorldItem(i)); } break;
+                    case 'despawn-npc': const npcToFade = npcs[data.id]; if (npcToFade && npcToFade.el) { npcToFade.el.style.opacity = '0'; setTimeout(() => { removeNpc(data.id); }, 500); } break;
                     case 'new-player': if (data.id !== localPlayerId) createPlayer(data.id, data.player.name, false, data.player); break;
                     case 'move': if (players[data.id] && data.id !== localPlayerId) { players[data.id].x = data.x; players[data.id].y = data.y; } break;
                     case 'update-health': if (players[data.id]) { players[data.id].health = data.health; players[data.id].isDead = data.isDead; } break;
                     case 'update-gold': if (players[data.playerId]) { players[data.playerId].gold = data.gold; } break;
-                    case 'chat': addChatMessage(data.message, data.name); break;
+                    case 'chat': 
+                        addChatMessage(data.message, data.name); 
+                        if (data.playerId && data.name !== 'system') {
+                            showSpeechBubble(data.playerId, data.message);
+                        }
+                        break;
                     case 'disconnect': removePlayer(data.id); break;
                     case 'spawn-npc': createNpc(data.npc); break;
                     case 'npc-move': if (npcs[data.id]) { npcs[data.id].x = data.x; npcs[data.id].y = data.y; } break;
                     case 'npc-update-health': if (npcs[data.id]) { npcs[data.id].health = data.health; npcs[data.id].isDead = data.isDead; } break;
                     case 'spawn-item': createWorldItem(data.item); break;
                     case 'remove-item': removeWorldItem(data.id); break;
-                    case 'resurrection-start': addChatMessage("You feel the shrine's power begin to restore your life force...", "system"); break;
-                    case 'resurrection-cancel': addChatMessage("You moved away and broke the connection to the shrine.", "system"); break;
-                    case 'combat-status-update':
-                        const player = players[data.playerId];
-                        if (player) {
-                            player.isInCombat = data.inCombat;
-                            player.el.classList.toggle('in-combat', data.inCombat);
-                        }
-                        break;
+                    case 'combat-status-update': const p = players[data.playerId]; if (p) { p.isInCombat = data.inCombat; p.el.classList.toggle('in-combat', data.inCombat); } break;
+                    case 'update-inventory': if (players[data.playerId]) { players[data.playerId].inventory = data.inventory; } break;
+                    case 'buff-update': if (players[data.playerId]) { players[data.playerId].buffs = data.buffs; } break;
+                    case 'title-update': if (players[data.playerId]) { players[data.playerId].title = data.title; } break;
                 }
+                return;
+            }
+
+            const senderPlayer = players[senderId];
+            if (!senderPlayer && data.type !== 'sync-request') return;
+
+            switch (data.type) {
+                case 'sync-request': const serializablePlayers = {}; for (const pId in players) { serializablePlayers[pId] = getSerializablePlayer(players[pId]); } const serializableNpcs = {}; for (const nId in npcs) { serializableNpcs[nId] = getSerializableNpc(npcs[nId]); } connections[senderId].send({ type: 'sync-response', players: serializablePlayers, npcs: serializableNpcs, items: worldItems }); const newPlayer = createPlayer(senderId, data.name); broadcast({ type: 'new-player', id: senderId, player: getSerializablePlayer(newPlayer) }); break;
+                case 'move': senderPlayer.x = data.x; senderPlayer.y = data.y; senderPlayer.lastInputTime = Date.now(); senderPlayer.isIdleKicked = false; checkAndHandleItemPickup(senderPlayer); broadcast({ type: 'move', id: senderId, x: data.x, y: data.y }); break;
+                case 'attack':
+                    if (senderPlayer.isDead) return;
+                    let target, targetName, damageSource;
+                    if (data.targetType === 'player') { target = players[data.targetId]; targetName = target?.name || 'someone'; damageSource = senderPlayer.name; } 
+                    else if (data.targetType === 'npc') { target = npcs[data.targetId]; targetName = 'a slime'; damageSource = senderPlayer.name; }
+                    const currentAttackDamage = (senderPlayer.buffs.damage.active ? PLAYER_BASE_ATTACK_DAMAGE + 5 : PLAYER_BASE_ATTACK_DAMAGE);
+                    setPlayerInCombat(senderPlayer);
+                    if (target && isEntityInSafeZone(target)) { return; }
+                    if (target && !target.isDead) {
+                            if (data.targetType === 'player') { setPlayerInCombat(target); }
+                            target.health -= currentAttackDamage;
+                            hostAnnounce(`${damageSource} attacks ${targetName}!`);
+                            if(target.health <= 0) {
+                                target.health = 0; target.isDead = true;
+                                hostAnnounce(`${targetName} has been slain!`);
+                                target.deaths++; checkAndAwardTitle(target);
+                                if (data.targetType === 'player') { senderPlayer.pvpKills++; checkAndAwardTitle(senderPlayer); handlePlayerDeath(target, senderPlayer); } 
+                                else if (data.targetType === 'npc') {
+                                senderPlayer.pveKills++; checkAndAwardTitle(senderPlayer);
+                                const dropX = target.x + (PLAYER_RADIUS - GOLD_PILE_SIZE/2), dropY = target.y + (PLAYER_RADIUS - GOLD_PILE_SIZE/2);
+                                const item = { id: `gold_${Date.now()}_${Math.random()}`, type: 'gold', amount: SLIME_GOLD_DROP, x: dropX, y: dropY };
+                                createWorldItem(item); broadcast({ type: 'spawn-item', item: item });
+                                setTimeout(() => { if (npcs[data.targetId]) { removeNpc(data.targetId); broadcast({ type: 'despawn-npc', id: data.targetId }); } }, 5000);
+                                setTimeout(() => { spawnNpc(); }, 20000);
+                                }
+                            }
+                            const updateType = data.targetType === 'player' ? 'update-health' : 'npc-update-health';
+                            broadcast({ type: updateType, id: data.targetId, health: target.health, isDead: target.isDead });
+                    }
+                    break;
+                case 'buy-item': const itemToBuy = VENDOR_ITEMS[data.itemId]; if (!itemToBuy) return; if (senderPlayer.gold >= itemToBuy.cost) { senderPlayer.gold -= itemToBuy.cost; senderPlayer.inventory[data.itemId]++; messagePlayer(senderId, `You purchased a ${data.itemId.replace('_', ' ')}.`); broadcast({ type: 'update-gold', playerId: senderId, gold: senderPlayer.gold }); broadcast({ type: 'update-inventory', playerId: senderId, inventory: senderPlayer.inventory }); } else { messagePlayer(senderId, "You don't have enough gold for that."); } break;
+                case 'use-item': if (senderPlayer.isDead) return; if (senderPlayer.inventory[data.itemId] > 0) { senderPlayer.inventory[data.itemId]--; switch (data.itemId) { case 'health_potion': senderPlayer.health = Math.min(MAX_HEALTH, senderPlayer.health + HEALING_POTION_AMOUNT); messagePlayer(senderId, "You feel healthier."); broadcast({ type: 'update-health', id: senderId, health: senderPlayer.health, isDead: senderPlayer.isDead }); break; case 'speed_potion': senderPlayer.buffs.speed.active = true; senderPlayer.buffs.speed.endTime = Date.now() + BUFF_DURATION; messagePlayer(senderId, "You feel faster!"); broadcast({ type: 'buff-update', playerId: senderId, buffs: senderPlayer.buffs }); break; case 'damage_potion': senderPlayer.buffs.damage.active = true; senderPlayer.buffs.damage.endTime = Date.now() + BUFF_DURATION; messagePlayer(senderId, "You feel stronger!"); broadcast({ type: 'buff-update', playerId: senderId, buffs: senderPlayer.buffs }); break; } broadcast({ type: 'update-inventory', playerId: senderId, inventory: senderPlayer.inventory }); } break;
+                case 'chat':
+                    if (senderPlayer) { senderPlayer.lastInputTime = Date.now(); senderPlayer.isIdleKicked = false; }
+                    if (data.message.trim().toLowerCase() === '/top') {
+                        generateAndBroadcastLeaderboard();
+                    } else {
+                        const chatData = { type: 'chat', playerId: senderId, name: senderPlayer.name, message: data.message };
+                        addChatMessage(chatData.message, chatData.name);
+                        showSpeechBubble(chatData.playerId, chatData.message);
+                        broadcast(chatData);
+                    }
+                    break;
             }
         }
         
         // --- ENTITY MANAGEMENT ---
+        // *** MODIFIED *** Player state includes isHost flag
         function createPlayer(id, name, isLocal = false, initialState = {}) {
             if (players[id]) return players[id];
             const spawnPoint = initialState.x != null ? {x: initialState.x, y: initialState.y} : getSafeSpawnPoint();
-            const playerState = {
-                id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'),
-                name: name, x: spawnPoint.x, y: spawnPoint.y,
-                health: initialState.health ?? MAX_HEALTH, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0,
-                resurrectionStartTime: null, isInCombat: false, lastCombatTime: null
-            };
-            playerState.el.className = 'game-object player-object'; playerState.el.dataset.id = id; playerState.nameTag.className = 'name-tag'; playerState.healthBar.className = 'health-bar'; playerState.healthBarInner.className = 'health-bar-inner';
+            const playerState = { id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), speechBubble: document.createElement('div'), name: name, x: spawnPoint.x, y: spawnPoint.y, health: initialState.health ?? MAX_HEALTH, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0, inventory: initialState.inventory ?? { health_potion: 0, speed_potion: 0, damage_potion: 0 }, buffs: initialState.buffs ?? { speed: { active: false, endTime: 0 }, damage: { active: false, endTime: 0 } }, title: initialState.title ?? '', pvpKills: initialState.pvpKills ?? 0, pveKills: initialState.pveKills ?? 0, deaths: initialState.deaths ?? 0, resurrectionStartTime: null, isInCombat: false, lastCombatTime: null, lastInputTime: Date.now(), isIdleKicked: false, speechTimeoutId: null, isHost: initialState.isHost ?? false };
+            playerState.el.className = 'game-object player-object'; playerState.el.dataset.id = id; playerState.nameTag.className = 'name-tag'; playerState.healthBar.className = 'health-bar'; playerState.healthBarInner.className = 'health-bar-inner'; playerState.speechBubble.className = 'speech-bubble';
             if (isLocal) { playerState.el.classList.add('local-player'); } else { playerState.el.classList.add('remote-player'); }
-            playerState.healthBar.appendChild(playerState.healthBarInner); playerState.el.appendChild(playerState.nameTag); playerState.el.appendChild(playerState.healthBar);
+            playerState.healthBar.appendChild(playerState.healthBarInner); playerState.el.appendChild(playerState.nameTag); playerState.el.appendChild(playerState.healthBar); playerState.el.appendChild(playerState.speechBubble);
             worldContainer.appendChild(playerState.el);
             players[id] = playerState; addChatMessage(`${name} has entered the realm.`, 'system'); return playerState;
         }
         function removePlayer(id) { if (players[id]) { players[id].el.remove(); delete players[id]; } }
-        
-        function createNpc(npcData) {
-            if (npcs[npcData.id]) return;
-            const npcState = {
-                id: npcData.id, el: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'),
-                x: npcData.x, y: npcData.y, health: npcData.health, maxHealth: npcData.maxHealth, isDead: npcData.isDead
-            };
-            npcState.el.className = 'game-object npc-object'; npcState.el.dataset.id = npcData.id; npcState.healthBar.className = 'health-bar'; npcState.healthBarInner.className = 'health-bar-inner';
-            npcState.healthBar.appendChild(npcState.healthBarInner); npcState.el.appendChild(npcState.healthBar);
-            worldContainer.appendChild(npcState.el);
-            npcs[npcData.id] = npcState;
-        }
+        function createNpc(npcData) { if (npcs[npcData.id]) return; const npcState = { id: npcData.id, el: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), x: npcData.x, y: npcData.y, health: npcData.health, maxHealth: npcData.maxHealth, isDead: npcData.isDead }; npcState.el.className = 'game-object npc-object'; npcState.el.dataset.id = npcData.id; npcState.healthBar.className = 'health-bar'; npcState.healthBarInner.className = 'health-bar-inner'; npcState.healthBar.appendChild(npcState.healthBarInner); npcState.el.appendChild(npcState.healthBar); worldContainer.appendChild(npcState.el); npcs[npcData.id] = npcState; }
         function removeNpc(id) { if (npcs[id]) { npcs[id].el.remove(); delete npcs[id]; } }
-
-        function createWorldItem(item) {
-            if (worldItems[item.id]) return;
-            const itemEl = document.createElement('div');
-            itemEl.className = 'game-object gold-pile';
-            itemEl.style.left = item.x + 'px'; itemEl.style.top = item.y + 'px'; itemEl.dataset.id = item.id;
-            worldItems[item.id] = { ...item, el: itemEl }; 
-            worldContainer.appendChild(itemEl);
-        }
+        function createWorldItem(item) { if (worldItems[item.id]) return; const itemEl = document.createElement('div'); itemEl.className = 'game-object gold-pile'; itemEl.style.left = item.x + 'px'; itemEl.style.top = item.y + 'px'; itemEl.dataset.id = item.id; worldItems[item.id] = { ...item, el: itemEl }; worldContainer.appendChild(itemEl); }
         function removeWorldItem(id) { if (worldItems[id]) { worldItems[id].el.remove(); delete worldItems[id]; } }
 
         // --- GAME LOOP & INPUT ---
         function startGame() { requestAnimationFrame(gameLoop); }
-        function gameLoop() { 
-            handleInput(); 
-            if (isHost) { updateNpcAI(); updateResurrections(); updateCombatTimers(); } 
-            updateCamera(); 
-            updateUI(); 
-            requestAnimationFrame(gameLoop); 
-        }
-
-        function updateCamera() {
-            const me = players[localPlayerId];
-            if (!me) return;
-            const viewportWidth = parseInt(getComputedStyle(world).width);
-            const viewportHeight = parseInt(getComputedStyle(world).height);
-            cameraX = me.x - (viewportWidth / 2) + (PLAYER_SIZE / 2);
-            cameraY = me.y - (viewportHeight / 2) + (PLAYER_SIZE / 2);
-            cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH_ACTUAL - viewportWidth));
-            cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT_ACTUAL - viewportHeight));
-        }
-
-        function handleInput() {
-            const me = players[localPlayerId]; if (!me || document.activeElement === chatInput) return;
-            
-            const originalX = me.x;
-            const originalY = me.y;
-
-            let dx = 0; let dy = 0; if (keysPressed['w']) dy--; if (keysPressed['s']) dy++; if (keysPressed['a']) dx--; if (keysPressed['d']) dx++;
-            if (keysPressed['enter']) { chatInput.focus(); keysPressed['enter'] = false; return; } if (dx === 0 && dy === 0) return;
-            
-            const magnitude = Math.hypot(dx, dy); 
-            const moveX = (dx / magnitude) * PLAYER_SPEED; 
-            const moveY = (dy / magnitude) * PLAYER_SPEED;
-            let newX = me.x + moveX; 
-            let newY = me.y + moveY;
-            
-            if (isPositionInWater(newX, me.y)) newX = me.x;
-            if (isPositionInWater(me.x, newY)) newY = me.y;
-            if (isPositionInWater(newX, newY)) { newX = me.x; newY = me.y; }
-
-            Object.values(players).forEach(other => {
-                if (other.id === localPlayerId || other.isDead) return;
-                if (checkPlayerCollision(newX, me.y, other)) { newX = me.x; }
-                if (checkPlayerCollision(me.x, newY, other)) { newY = me.y; }
-            });
-             
-            me.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, newX));
-            me.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, newY));
-
-            if (me.x !== originalX || me.y !== originalY) { 
-                sendData({ type: 'move', x: me.x, y: me.y }); 
-            }
-        }
-
-        function onWorldClick(e) {
-            const worldRect = world.getBoundingClientRect();
-            const clickX_inWorld = e.clientX - worldRect.left + cameraX;
-            const clickY_inWorld = e.clientY - worldRect.top + cameraY;
-            
-            let targetId = null, targetType = null;
-
-            for (const p of Object.values(players)) {
-                if (p.id !== localPlayerId && clickX_inWorld >= p.x && clickX_inWorld <= p.x + PLAYER_SIZE && clickY_inWorld >= p.y && clickY_inWorld <= p.y + PLAYER_SIZE) {
-                    targetId = p.id; targetType = 'player'; break;
-                }
-            }
-            if (!targetId) {
-                for (const n of Object.values(npcs)) {
-                    if (clickX_inWorld >= n.x && clickX_inWorld <= n.x + PLAYER_SIZE && clickY_inWorld >= n.y && clickY_inWorld <= n.y + PLAYER_SIZE) {
-                        targetId = n.id; targetType = 'npc'; break;
-                    }
-                }
-            }
-
-            if (targetId) { doAttack(targetId, targetType); }
-        }
-
-        function doAttack(targetId, targetType) {
-            const me = players[localPlayerId]; if (!me || me.isDead || attackCooldown) return;
-            if (isPlayerOnShrine(me)) { addChatMessage("You feel a sense of peace and cannot attack while on the shrine.", "system"); return; }
-            let target;
-            if (targetType === 'player') { target = players[targetId]; } else if (targetType === 'npc') { target = npcs[targetId]; }
-            if (!target || target.isDead) return;
-            if (isEntityInSafeZone(target)) { addChatMessage("That target is in a safe zone.", "system"); return; }
-            const distance = Math.hypot((me.x + PLAYER_RADIUS) - (target.x + PLAYER_RADIUS), (me.y + PLAYER_RADIUS) - (target.y + PLAYER_RADIUS));
-            if (distance <= ATTACK_RANGE) { sendData({ type: 'attack', targetId: targetId, targetType: targetType }); } 
-            else { addChatMessage('You are too far away to attack.', 'system'); }
-            attackCooldown = true; setTimeout(() => { attackCooldown = false; }, 500);
-        }
-
+        function gameLoop() { handleInput(); if (isHost) { updateNpcAI(); updateResurrections(); updateCombatTimers(); updateIdlePlayers(); updateBuffs(); } updateCamera(); updateUI(); requestAnimationFrame(gameLoop); }
+        function updateCamera() { const me = players[localPlayerId]; if (!me) return; const viewportWidth = parseInt(getComputedStyle(world).width); const viewportHeight = parseInt(getComputedStyle(world).height); cameraX = me.x - (viewportWidth / 2) + (PLAYER_SIZE / 2); cameraY = me.y - (viewportHeight / 2) + (PLAYER_SIZE / 2); cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH_ACTUAL - viewportWidth)); cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT_ACTUAL - viewportHeight)); }
+        function handleInput() { const me = players[localPlayerId]; if (!me || document.activeElement === chatInput || vendorMenu.style.display === 'block') return; let dx = 0; let dy = 0; if (keysPressed['w']) dy--; if (keysPressed['s']) dy++; if (keysPressed['a']) dx--; if (keysPressed['d']) dx++; if (keysPressed['enter']) { chatInput.focus(); keysPressed['enter'] = false; return; } if (dx === 0 && dy === 0) return; const currentSpeed = me.buffs.speed.active ? PLAYER_BASE_SPEED * 1.5 : PLAYER_BASE_SPEED; const magnitude = Math.hypot(dx, dy); let newX = me.x + (dx / magnitude) * currentSpeed; let newY = me.y + (dy / magnitude) * currentSpeed; if (isPositionInWater(newX, me.y)) newX = me.x; if (isPositionInWater(me.x, newY)) newY = me.y; if (isPositionInWater(newX, newY)) { newX = me.x; newY = me.y; } Object.values(players).forEach(other => { if (other.id === localPlayerId || other.isDead) return; if (checkPlayerCollision(newX, me.y, other)) { newX = me.x; } if (checkPlayerCollision(me.x, newY, other)) { newY = me.y; } }); const originalX = me.x, originalY = me.y; me.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, newX)); me.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, newY)); if (me.x !== originalX || me.y !== originalY) { sendData({ type: 'move', x: me.x, y: me.y }); } }
+        function handleKeyPress(key) { const me = players[localPlayerId]; if (!me || document.activeElement === chatInput || vendorMenu.style.display === 'block') return; switch(key) { case '1': sendData({ type: 'use-item', itemId: 'health_potion' }); break; case '2': sendData({ type: 'use-item', itemId: 'speed_potion' }); break; case '3': sendData({ type: 'use-item', itemId: 'damage_potion' }); break; } }
+        function onWorldClick(e) { const me = players[localPlayerId]; if (!me || me.isDead) return; const worldRect = world.getBoundingClientRect(); const clickX = e.clientX - worldRect.left + cameraX; const clickY = e.clientY - worldRect.top + cameraY; const distToVendor = Math.hypot(clickX - (VENDOR_X + VENDOR_SIZE/2), clickY - (VENDOR_Y + VENDOR_SIZE/2)); if (distToVendor < VENDOR_SIZE / 2) { const distPlayerToVendor = Math.hypot((me.x + PLAYER_RADIUS) - (VENDOR_X + VENDOR_SIZE/2), (me.y + PLAYER_RADIUS) - (VENDOR_Y + VENDOR_SIZE/2)); if (distPlayerToVendor < VENDOR_INTERACT_RANGE) { vendorMenu.style.display = 'block'; return; } else { addChatMessage("You are too far away from the vendor.", "system"); return; } } let targetId = null, targetType = null; for (const p of Object.values(players)) { if (p.id !== localPlayerId && clickX >= p.x && clickX <= p.x + PLAYER_SIZE && clickY >= p.y && clickY <= p.y + PLAYER_SIZE) { targetId = p.id; targetType = 'player'; break; } } if (!targetId) { for (const n of Object.values(npcs)) { if (clickX >= n.x && clickX <= n.x + PLAYER_SIZE && clickY >= n.y && clickY <= n.y + PLAYER_SIZE) { targetId = n.id; targetType = 'npc'; break; } } } if (targetId) { doAttack(targetId, targetType); } }
+        function doAttack(targetId, targetType) { const me = players[localPlayerId]; if (!me || me.isDead || attackCooldown) return; if (isPlayerOnShrine(me)) { addChatMessage("You feel a sense of peace and cannot attack while on the shrine.", "system"); return; } let target; if (targetType === 'player') { target = players[targetId]; } else if (targetType === 'npc') { target = npcs[targetId]; } if (!target || target.isDead) return; if (isEntityInSafeZone(target)) { addChatMessage("That target is in a safe zone.", "system"); return; } const distance = Math.hypot((me.x + PLAYER_RADIUS) - (target.x + PLAYER_RADIUS), (me.y + PLAYER_RADIUS) - (target.y + PLAYER_RADIUS)); if (distance <= ATTACK_RANGE) { sendData({ type: 'attack', targetId: targetId, targetType: targetType }); } else { addChatMessage('You are too far away to attack.', 'system'); } attackCooldown = true; setTimeout(() => { attackCooldown = false; }, 500); }
         function checkPlayerCollision(p1x, p1y, otherPlayer) { const distance = Math.hypot((p1x + PLAYER_RADIUS) - (otherPlayer.x + PLAYER_RADIUS), (p1y + PLAYER_RADIUS) - (otherPlayer.y + PLAYER_RADIUS)); return distance < PLAYER_SIZE; }
         
         // --- HOST-SIDE NPC AI ---
-        function updateNpcAI() {
-            if (!isHost) return;
-            for (const id in npcs) {
-                const npc = npcs[id]; if (npc.isDead) continue;
-                let targetPlayer = null; let minDistance = NPC_AGGRO_RANGE;
-                for (const pId in players) {
-                    const player = players[pId];
-                    if (player.isDead || isEntityInSafeZone(player)) { continue; }
-                    const distance = Math.hypot(npc.x - player.x, npc.y - player.y);
-                    if (distance < minDistance) { minDistance = distance; targetPlayer = player; }
-                }
-                
-                let hasMoved = false;
-
-                if (targetPlayer) {
-                    if (minDistance > NPC_ATTACK_RANGE) {
-                        const dx = targetPlayer.x - npc.x; const dy = targetPlayer.y - npc.y; const magnitude = Math.hypot(dx, dy);
-                        let nextX = npc.x + (dx / magnitude) * NPC_SLIME_SPEED;
-                        let nextY = npc.y + (dy / magnitude) * NPC_SLIME_SPEED;
-
-                        if (!isPositionInWater(nextX, nextY)) {
-                           npc.x = nextX; npc.y = nextY; hasMoved = true;
-                        }
-                    }
-                    if (minDistance <= NPC_ATTACK_RANGE && !npc.ai_attackCooldown) {
-                         setPlayerInCombat(targetPlayer);
-                         targetPlayer.health -= NPC_SLIME_DAMAGE;
-                         if (targetPlayer.health <= 0) { targetPlayer.health = 0; targetPlayer.isDead = true; }
-                         addChatMessage(`A slime attacks ${targetPlayer.name}!`, 'system');
-                         broadcast({ type: 'update-health', id: targetPlayer.id, health: targetPlayer.health, isDead: targetPlayer.isDead });
-                         npc.ai_attackCooldown = true; setTimeout(() => { npc.ai_attackCooldown = false; }, 1000);
-                    }
-                }
-                
-                if (hasMoved) {
-                    npc.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, npc.x));
-                    npc.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, npc.y));
-                    broadcast({ type: 'npc-move', id: npc.id, x: npc.x, y: npc.y });
-                }
-            }
-        }
-
-        function spawnNpc() {
-            if (!isHost) return;
-            const spawnPoint = getSafeSpawnPoint();
-            const id = `npc_${Date.now()}_${Math.random()}`;
-            const npcData = { 
-                id: id, x: spawnPoint.x, y: spawnPoint.y, health: NPC_SLIME_HEALTH, 
-                maxHealth: NPC_SLIME_HEALTH, isDead: false 
-            };
-            createNpc(npcData);
-            const npcState = npcs[id];
-            if (npcState) { 
-                npcState.ai_lastMove = Date.now(); 
-                npcState.ai_attackCooldown = false; 
-            }
-            broadcast({ type: 'spawn-npc', npc: getSerializableNpc(npcState) });
-        }
+        function updateNpcAI() { if (!isHost) return; for (const id in npcs) { const npc = npcs[id]; if (npc.isDead) continue; let targetPlayer = null; let minDistance = NPC_AGGRO_RANGE; for (const pId in players) { const player = players[pId]; if (player.isDead || isEntityInSafeZone(player)) continue; const distance = Math.hypot(npc.x - player.x, npc.y - player.y); if (distance < minDistance) { minDistance = distance; targetPlayer = player; } } let hasMoved = false; if (targetPlayer) { if (minDistance > NPC_ATTACK_RANGE) { const dx = targetPlayer.x - npc.x, dy = targetPlayer.y - npc.y; const magnitude = Math.hypot(dx, dy); let nextX = npc.x + (dx / magnitude) * NPC_SLIME_SPEED; let nextY = npc.y + (dy / magnitude) * NPC_SLIME_SPEED; if (!isPositionInWater(nextX, nextY)) { npc.x = nextX; npc.y = nextY; hasMoved = true; } } if (minDistance <= NPC_ATTACK_RANGE && !npc.ai_attackCooldown) { setPlayerInCombat(targetPlayer); targetPlayer.health -= NPC_SLIME_DAMAGE; hostAnnounce(`A slime attacks ${targetPlayer.name}!`); if (targetPlayer.health <= 0) { targetPlayer.health = 0; targetPlayer.isDead = true; hostAnnounce(`${targetPlayer.name} has been slain by a slime!`); targetPlayer.deaths++; checkAndAwardTitle(targetPlayer); handlePlayerDeath(targetPlayer, npc); } broadcast({ type: 'update-health', id: targetPlayer.id, health: targetPlayer.health, isDead: targetPlayer.isDead }); npc.ai_attackCooldown = true; setTimeout(() => { npc.ai_attackCooldown = false; }, 1000); } } if (hasMoved) { npc.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, npc.x)); npc.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, npc.y)); broadcast({ type: 'npc-move', id: npc.id, x: npc.x, y: npc.y }); } } }
+        function spawnNpc() { if (!isHost) return; const spawnPoint = getSafeSpawnPoint(); const id = `npc_${Date.now()}_${Math.random()}`; const npcData = { id: id, x: spawnPoint.x, y: spawnPoint.y, health: NPC_SLIME_HEALTH, maxHealth: NPC_SLIME_HEALTH, isDead: false }; createNpc(npcData); const npcState = npcs[id]; if (npcState) { npcState.ai_lastMove = Date.now(); npcState.ai_attackCooldown = false; } broadcast({ type: 'spawn-npc', npc: getSerializableNpc(npcState) }); }
 
         // --- UI & CHAT ---
+        function showSpeechBubble(playerId, message) {
+            const player = players[playerId];
+            if (!player || !player.speechBubble) return;
+            if (player.speechTimeoutId) { clearTimeout(player.speechTimeoutId); }
+            player.speechBubble.textContent = message;
+            player.speechBubble.style.opacity = '1';
+            player.speechTimeoutId = setTimeout(() => { player.speechBubble.style.opacity = '0'; }, 4000);
+        }
+
+        // *** MODIFIED *** UI update checks for host flag
         function updateUI() {
             worldContainer.style.transform = `translate(${-cameraX}px, ${-cameraY}px)`;
             Object.values(players).forEach(p => { 
                 p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px'; 
-                p.nameTag.textContent = p.name; 
+
+                const hostIcon = p.isHost ? '👑 ' : '';
+                p.nameTag.textContent = `${hostIcon}${p.name} ${p.title || ''}`.trim();
+                
                 p.healthBarInner.style.width = (p.health / MAX_HEALTH) * 100 + '%'; 
-                p.el.classList.toggle('ghost', p.isDead); 
+                p.el.classList.toggle('ghost', p.isDead);
+                p.el.classList.toggle('speed-buff', p.buffs.speed.active);
+                p.el.classList.toggle('damage-buff', p.buffs.damage.active);
             });
-            Object.values(npcs).forEach(n => { 
-                if (n.el) { 
-                    n.el.style.left = n.x + 'px'; n.el.style.top = n.y + 'px'; 
-                    n.healthBarInner.style.width = (n.health / n.maxHealth) * 100 + '%'; 
-                    n.el.classList.toggle('ghost', n.isDead); 
-                }
-            });
-            Object.values(worldItems).forEach(i => { 
-                if (i.el) { i.el.style.left = i.x + 'px'; i.el.style.top = i.y + 'px'; }
-            });
-            if (players[localPlayerId]) { playerStats.textContent = `Gold: ${players[localPlayerId].gold}`; }
-        }
-        function addChatMessage(message, sender) {
-            const p = document.createElement('p'); if (sender === 'system') { p.className = 'system-msg'; p.textContent = message; } else {
-                const isLocal = players[localPlayerId] && sender === players[localPlayerId].name; p.className = isLocal ? 'my-msg' : 'their-msg'; p.textContent = `[${sender}]: ${message}`;
-            }
-            chatLog.appendChild(p); chatLog.scrollTop = chatLog.scrollHeight;
-        }
-        function onChatSubmit(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault(); const message = chatInput.value; if (message) { addChatMessage(message, players[localPlayerId].name); sendData({ type: 'chat', message: message }); chatInput.value = ''; chatInput.blur(); }
+            Object.values(npcs).forEach(n => { if (n.el) { n.el.style.left = n.x + 'px'; n.el.style.top = n.y + 'px'; n.healthBarInner.style.width = (n.health / n.maxHealth) * 100 + '%'; n.el.classList.toggle('ghost', n.isDead); } });
+            Object.values(worldItems).forEach(i => { if (i.el) { i.el.style.left = i.x + 'px'; i.el.style.top = i.y + 'px'; } });
+            const me = players[localPlayerId];
+            if (me) { 
+                playerGoldDisplay.textContent = `Gold: ${me.gold}`; 
+                playerInventoryDisplay.textContent = `Pots: H[${me.inventory.health_potion}] S[${me.inventory.speed_potion}] D[${me.inventory.damage_potion}]`;
             }
         }
+        function addChatMessage(message, sender) { const p = document.createElement('p'); if (sender === 'system') { p.className = 'system-msg'; p.innerHTML = message.replace(/\n/g, '<br>'); } else { const isLocal = players[localPlayerId] && sender === players[localPlayerId].name; p.className = isLocal ? 'my-msg' : 'their-msg'; p.textContent = `[${sender}]: ${message}`; } chatLog.appendChild(p); chatLog.scrollTop = chatLog.scrollHeight; }
+        function onChatSubmit(e) { if (e.key === 'Enter') { e.preventDefault(); const message = chatInput.value; if (message) { sendData({ type: 'chat', message: message }); chatInput.value = ''; chatInput.blur(); } } }
         
         initialize();
     </script>
