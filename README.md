@@ -1,4 +1,4 @@
-# Ultima Brawls - A PeerJS Multiplayer Game
+# Ultima Online Brawler - A PeerJS Multiplayer Game
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
@@ -8,13 +8,13 @@
 
 A simple, browser-based 2D multiplayer game built to demonstrate real-time P2P communication using PeerJS. The project uses a client-server model for signaling and a host-client model for game state management, where the first player to join becomes the authoritative host.
 
-# Ultima Brawler
+# Ultima Online Brawler
 
 A host-client based multiplayer arena brawler built with HTML, CSS, and JavaScript using PeerJS for WebRTC communication. Drop into a persistent world, fight other players and AI-controlled monsters, collect gold, and climb the leaderboards!
 
 ## ✨ Features
 
-### 的核心 Gameplay
+###  Gameplay
 *   **Automated Matchmaking**: Players automatically find and join the same game world using a shared game ID, creating a seamless multiplayer experience.
 *   **Authoritative Host-Client Architecture**: The first player to join becomes the **Host**, acting as the server. The host manages all critical game logic, including combat resolution, NPC behavior, and loot drops, ensuring a cheat-resistant environment.
 
