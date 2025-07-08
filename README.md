@@ -6,6 +6,8 @@
 ![PeerJS](https://img.shields.io/badge/PeerJS-D32F2F?style=for-the-badge)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 
+PLAY NOW here: https://threelabs.github.io/
+
 A simple, browser-based 2D multiplayer game built to demonstrate real-time P2P communication using PeerJS. The project uses a client-server model for signaling and a host-client model for game state management, where the first player to join becomes the authoritative host.
 
 # Ultima Online Brawler
