@@ -38,27 +38,7 @@
         #vendor-npc { position: absolute; top: 400px; left: 55px; width: 40px; height: 40px; background-color: #8a2be2; border: 2px solid #4b0082; border-radius: 3px; z-index: 5; cursor: pointer; }
         .ghost { opacity: 0.5; filter: grayscale(80%); cursor: default !important; }
         .name-tag { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background-color: rgba(0, 0, 0, 0.7); color: white; padding: 2px 5px; font-size: 12px; white-space: nowrap; margin-bottom: 15px; opacity: 1; transition: opacity 0.5s ease-in-out; }
-        
-        .speech-bubble {
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-bottom: 35px;
-            background-color: rgba(255, 255, 255, 0.9);
-            color: #111;
-            padding: 5px 10px;
-            border-radius: 10px;
-            font-size: 14px;
-            width: 100px;
-            text-align: left;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            pointer-events: none;
-            white-space: normal;
-            overflow-wrap: break-word;
-        }
-        
+        .speech-bubble { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 35px; background-color: rgba(255, 255, 255, 0.9); color: #111; padding: 5px 10px; border-radius: 10px; font-size: 14px; width: 100px; text-align: left; opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: none; white-space: normal; overflow-wrap: break-word; }
         .in-combat .name-tag { opacity: 0; }
         .health-bar { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 34px; height: 5px; background-color: #555; border: 1px solid #111; }
         .health-bar-inner { width: 100%; height: 100%; background-color: #7ed321; transition: width 0.2s linear; }
@@ -78,10 +58,21 @@
         #vendor-menu button { background-color: #4a90e2; color: white; border: none; padding: 5px 10px; cursor: pointer; }
         #vendor-menu button:hover { background-color: #6aa0e5; }
         #close-vendor-btn { background-color: #d0021b; float: right; }
+        .attack-lunge { animation: lunge 0.3s ease-in-out; }
+        .damage-flash { animation: damage-shake 0.4s cubic-bezier(.36,.07,.19,.97); }
+        @keyframes lunge { 0% { transform: scale(1); } 50% { transform: scale(1.15); z-index: 20; } 100% { transform: scale(1); z-index: auto; } }
+        @keyframes damage-shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-3px); } 40%, 60% { transform: translateX(3px); } 0%, 100% { filter: none; } 50% { filter: brightness(1.8) drop-shadow(0 0 3px #ff4d4d); } }
+        #target-display { display: none; padding: 5px; background-color: #111; border-bottom: 1px solid #444; text-align: center; color: #ffdddd; font-size: 16px; }
+        #target-health-bar { width: 150px; height: 10px; background-color: #555; border: 1px solid #111; margin: 4px auto 0 auto; }
+        #target-health-bar-inner { width: 100%; height: 100%; background-color: #d0021b; transition: width 0.2s linear; }
+        .targeted-entity { box-shadow: 0 0 15px 5px #f0e68c !important; border-radius: 50%; }
+        .npc-object.targeted-entity { border-radius: 10px; }
+        #player-mana { color: #88aaff; }
+        .spell-text { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 40px; padding: 3px 8px; background-color: rgba(60, 0, 100, 0.8); color: #f0e68c; font-size: 14px; font-weight: bold; white-space: nowrap; border-radius: 5px; border: 1px solid #4b0082; opacity: 0; transition: opacity 0.3s ease-in-out, margin-bottom 0.3s ease-in-out; pointer-events: none; z-index: 25; }
+        .spell-projectile { position: absolute; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 20px; pointer-events: none; z-index: 50; transition: transform 0.2s; }
     </style>
 </head>
 <body>
-
     <div id="login-screen" class="screen">
         <h2>Ultima Brawler</h2>
         <input type="text" id="player-name-input" placeholder="Enter Your Name">
@@ -112,28 +103,40 @@
             </div>
         </div>
         <div id="ui-panel">
-            <div id="player-stats"><span id="player-gold">Gold: 0</span><span id="player-inventory"></span></div>
+            <div id="player-stats">
+                <span id="player-gold">Gold: 0</span>
+                <span id="player-mana">Mana: 100</span>
+                <span id="player-inventory"></span>
+            </div>
+            <div id="target-display">
+                <span id="target-name"></span>
+                <div id="target-health-bar">
+                    <div id="target-health-bar-inner"></div>
+                </div>
+            </div>
             <div id="chat-log"></div>
             <input type="text" id="chat-input" placeholder="Press Enter to chat... (try /top)" autocomplete="off">
         </div>
     </div>
 
     <script>
-        // --- DOM Elements ---
-        const loginScreen = document.getElementById('login-screen'), gameContainer = document.getElementById('game-container'), playerNameInput = document.getElementById('player-name-input'), joinGameBtn = document.getElementById('join-game-btn'), statusMessage = document.getElementById('status-message'), world = document.getElementById('game-world'), worldContainer = document.getElementById('world-container'), chatLog = document.getElementById('chat-log'), chatInput = document.getElementById('chat-input'), playerGoldDisplay = document.getElementById('player-gold'), playerInventoryDisplay = document.getElementById('player-inventory'), vendorNpc = document.getElementById('vendor-npc'), vendorMenu = document.getElementById('vendor-menu'), closeVendorBtn = document.getElementById('close-vendor-btn');
+        const loginScreen = document.getElementById('login-screen'), gameContainer = document.getElementById('game-container'), playerNameInput = document.getElementById('player-name-input'), joinGameBtn = document.getElementById('join-game-btn'), statusMessage = document.getElementById('status-message'), world = document.getElementById('game-world'), worldContainer = document.getElementById('world-container'), chatLog = document.getElementById('chat-log'), chatInput = document.getElementById('chat-input'), playerGoldDisplay = document.getElementById('player-gold'), playerInventoryDisplay = document.getElementById('player-inventory'), vendorNpc = document.getElementById('vendor-npc'), vendorMenu = document.getElementById('vendor-menu'), closeVendorBtn = document.getElementById('close-vendor-btn'),
+              targetDisplay = document.getElementById('target-display'), targetNameDisplay = document.getElementById('target-name'), targetHealthBarInner = document.getElementById('target-health-bar-inner');
         
-        // --- PeerJS & Game State ---
         const HOST_ID = 'ultima-brawler-game-v1-any-string';
-        let peer, localPlayerId, isHost = false;
-        const players = {}, connections = {}, npcs = {}, worldItems = {};
+        let peer, localPlayerId, isHost = false, currentTargetId = null;
+        const players = {}, connections = {}, npcs = {}, worldItems = {}, projectiles = {};
         const PEER_SERVER_CONFIG = { host: '415b144e-ecf4-4eef-96a1-12ec335a8f7a-00-2qp9bm6eqg9bm.spock.replit.dev', path: '/peerjs', secure: true, };
 
-        // --- World & Camera ---
         const WORLD_WIDTH_ACTUAL = 2200, WORLD_HEIGHT_ACTUAL = 1500, BRIDGE_ZONE_START_X = 700, BRIDGE_TOP_Y = 650, BRIDGE_BOTTOM_Y = 850;
         let cameraX = 0, cameraY = 0;
         
-        // --- Game Constants ---
         const keysPressed = {}; let attackCooldown = false;
+        
+        let isMouseDown = false;
+        let isMovingWithMouse = false;
+        let mouseTargetWorldPos = { x: null, y: null };
+
         const PLAYER_SIZE = 30, PLAYER_RADIUS = PLAYER_SIZE / 2, MAX_HEALTH = 100, PLAYER_BASE_SPEED = 5, PLAYER_BASE_ATTACK_DAMAGE = 10;
         const ATTACK_RANGE = 60, SLIME_GOLD_DROP = 10, GOLD_PILE_SIZE = 15, GOLD_DROP_RADIUS = 40;
         const NPC_SLIME_HEALTH = 30, NPC_SLIME_DAMAGE = 5, NPC_SLIME_SPEED = 2, NPC_AGGRO_RANGE = 200, NPC_ATTACK_RANGE = 40, MAX_NPCS = 10;
@@ -145,64 +148,75 @@
         const HEALING_POTION_AMOUNT = 40, BUFF_DURATION = 20000;
         const VENDOR_ITEMS = { health_potion: { cost: 50 }, speed_potion: { cost: 75 }, damage_potion: { cost: 100 } };
         const TITLE_DEFINITIONS = { "the Victim": { requirement: 'deaths', value: 5 }, "the Unlucky": { requirement: 'deaths', value: 15 }, "the Hunter": { requirement: 'pveKills', value: 10 }, "the Exterminator": { requirement: 'pveKills', value: 50 }, "the Brawler": { requirement: 'pvpKills', value: 3 }, "the Duelist": { requirement: 'pvpKills', value: 10 }, "the Murderer": { requirement: 'pvpKills', value: 25 }, };
+        
+        const MAX_MANA = 100, MANA_REGEN_RATE = 1, MANA_REGEN_INTERVAL = 1000;
+        const SPELL_RANGE = 350, PROJECTILE_SPEED = 600;
+        const SPELLS = {
+            'magic_arrow': { name: 'Magic Arrow', words: 'In Por Ylem', manaCost: 10, castTime: 1000, damage: 15, key: '4' },
+            'lightning':   { name: 'Lightning',   words: 'Por Ort Grav', manaCost: 25, castTime: 1500, damage: 35, key: '5' },
+            'flamestrike': { name: 'Flamestrike', words: 'Kal Vas Flam', manaCost: 40, castTime: 2000, damage: 60, key: '6' }
+        };
+
+        function setMouseTarget(e) {
+            const worldRect = world.getBoundingClientRect();
+            mouseTargetWorldPos.x = e.clientX - worldRect.left + cameraX;
+            mouseTargetWorldPos.y = e.clientY - worldRect.top + cameraY;
+        }
 
         // --- INITIALIZATION ---
         function initialize() {
             joinGameBtn.addEventListener('click', onJoinGameClick);
             chatInput.addEventListener('keydown', onChatSubmit);
-            window.addEventListener('keydown', e => { keysPressed[e.key.toLowerCase()] = true; handleKeyPress(e.key); });
+            window.addEventListener('keydown', e => { const key = e.key.toLowerCase(); keysPressed[key] = true; handleKeyPress(e); });
             window.addEventListener('keyup', e => { keysPressed[e.key.toLowerCase()] = false; });
             world.addEventListener('click', onWorldClick);
+            world.addEventListener('contextmenu', e => e.preventDefault());
+
+            world.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                const me = players[localPlayerId];
+                if (!me || me.isDead || document.activeElement === chatInput || vendorMenu.style.display === 'block') return;
+                
+                isMouseDown = true;
+                isMovingWithMouse = true;
+                setMouseTarget(e);
+            });
+
+            window.addEventListener('mouseup', (e) => {
+                if (e.button !== 0) return;
+                isMouseDown = false;
+                isMovingWithMouse = false;
+            });
+
+            world.addEventListener('mousemove', (e) => {
+                if (isMouseDown) {
+                    setMouseTarget(e);
+                }
+            });
+
             closeVendorBtn.addEventListener('click', () => vendorMenu.style.display = 'none');
             document.querySelectorAll('.buy-btn').forEach(btn => btn.addEventListener('click', () => sendData({ type: 'buy-item', itemId: btn.dataset.item })));
             statusMessage.textContent = 'Ready. Enter a name and join.';
         }
-
-        // --- Collision & Spawn Helpers ---
+        
         function isPositionInWater(x, y) { if (x < BRIDGE_ZONE_START_X - PLAYER_SIZE) return false; if (y < BRIDGE_TOP_Y || y + PLAYER_SIZE > BRIDGE_BOTTOM_Y) return true; return false; }
         function isPositionInSafeZone(x) { return x >= SAFE_ZONE_START_X && x < SAFE_ZONE_END_X; }
         function getSafeSpawnPoint() { let x, y; do { x = Math.random() * (WORLD_WIDTH_ACTUAL - PLAYER_SIZE); y = Math.random() * (WORLD_HEIGHT_ACTUAL - PLAYER_SIZE); } while (isPositionInWater(x, y) || isPositionInSafeZone(x)); return { x, y }; }
         
-        // --- PeerJS Connections ---
-        function onJoinGameClick() { const name = playerNameInput.value || `Player_${Math.floor(Math.random() * 1000)}`; joinGameBtn.disabled = true; statusMessage.textContent = 'Attempting to create game...'; peer = new Peer(HOST_ID, PEER_SERVER_CONFIG); peer.on('open', (id) => { console.log(`[SUCCESS] I am the HOST with ID: ${id}`); statusMessage.textContent = 'Game created! Waiting for players...'; isHost = true; localPlayerId = id; peer.on('connection', setupConnection); finalizeGameEntry(name); }); peer.on('error', (err) => { if (err.type === 'unavailable-id') { console.log(`[INFO] Host already exists. Connecting as a client...`); statusMessage.textContent = 'Game found! Connecting as client...'; peer.destroy(); peer = new Peer(undefined, PEER_SERVER_CONFIG); peer.on('open', (id) => { localPlayerId = id; console.log(`[SUCCESS] I am a CLIENT with ID: ${id}`); statusMessage.textContent = 'Connecting to host...'; const connToHost = peer.connect(HOST_ID, { reliable: true }); setupConnection(connToHost); finalizeGameEntry(name); }); peer.on('error', (clientErr) => { console.error('[FATAL CLIENT ERROR]', clientErr); statusMessage.textContent = `Error: ${clientErr.type}. Please refresh.`; }); } else { console.error('[FATAL HOST ERROR]', err); statusMessage.textContent = `Error: ${err.type}. Check server or refresh.`; } }); }
-        
-        // *** MODIFIED *** Host sets its own isHost flag
-        function finalizeGameEntry(name) {
-            loginScreen.style.display = 'none';
-            gameContainer.style.display = 'block';
-            createPlayer(localPlayerId, name, true);
-            players[localPlayerId].el.classList.add('local-player');
-
-            if (isHost) {
-                players[localPlayerId].isHost = true; // Mark this player as the host
-                for (let i = 0; i < MAX_NPCS; i++) {
-                    spawnNpc();
-                }
-            } else {
-                const hostConn = connections[HOST_ID];
-                if (hostConn && hostConn.open) {
-                    sendData({ type: 'sync-request', name: players[localPlayerId].name });
-                } else {
-                    hostConn.on('open', () => { sendData({ type: 'sync-request', name: players[localPlayerId].name }); });
-                }
-            }
-            startGame();
-        }
-
+        function onJoinGameClick() { const name = playerNameInput.value || `Player_${Math.floor(Math.random() * 1000)}`; joinGameBtn.disabled = true; statusMessage.textContent = 'Attempting to create game...'; peer = new Peer(HOST_ID, PEER_SERVER_CONFIG); peer.on('open', (id) => { console.log(`[SUCCESS] I am the HOST with ID: ${id}`); statusMessage.textContent = 'Game created! Waiting for players...'; isHost = true; setInterval(updateManaRegen, MANA_REGEN_INTERVAL); localPlayerId = id; peer.on('connection', setupConnection); finalizeGameEntry(name); }); peer.on('error', (err) => { if (err.type === 'unavailable-id') { console.log(`[INFO] Host already exists. Connecting as a client...`); statusMessage.textContent = 'Game found! Connecting as client...'; peer.destroy(); peer = new Peer(undefined, PEER_SERVER_CONFIG); peer.on('open', (id) => { localPlayerId = id; console.log(`[SUCCESS] I am a CLIENT with ID: ${id}`); statusMessage.textContent = 'Connecting to host...'; const connToHost = peer.connect(HOST_ID, { reliable: true }); setupConnection(connToHost); finalizeGameEntry(name); }); peer.on('error', (clientErr) => { console.error('[FATAL CLIENT ERROR]', clientErr); statusMessage.textContent = `Error: ${clientErr.type}. Please refresh.`; }); } else { console.error('[FATAL HOST ERROR]', err); statusMessage.textContent = `Error: ${err.type}. Check server or refresh.`; } }); }
+        function finalizeGameEntry(name) { loginScreen.style.display = 'none'; gameContainer.style.display = 'block'; createPlayer(localPlayerId, name, true); players[localPlayerId].el.classList.add('local-player'); if (isHost) { players[localPlayerId].isHost = true; for (let i = 0; i < MAX_NPCS; i++) { spawnNpc(); } } else { const hostConn = connections[HOST_ID]; if (hostConn && hostConn.open) { sendData({ type: 'sync-request', name: players[localPlayerId].name }); } else { hostConn.on('open', () => { sendData({ type: 'sync-request', name: players[localPlayerId].name }); }); } } startGame(); }
         function setupConnection(conn) { connections[conn.peer] = conn; conn.on('data', (data) => handleData(data, conn.peer)); conn.on('close', () => { const disconnectedPlayerName = players[conn.peer]?.name || `${conn.peer.slice(0,6)}...`; addChatMessage(`${disconnectedPlayerName} has disconnected.`, 'system'); removePlayer(conn.peer); delete connections[conn.peer]; if (isHost) { broadcast({ type: 'disconnect', id: conn.peer }); } }); conn.on('error', (err) => { console.error(`Connection error with ${conn.peer}:`, err); }); }
         function sendData(data) { if (isHost) { handleData(data, localPlayerId); } else { const hostConn = connections[HOST_ID]; if (hostConn && hostConn.open) { hostConn.send(data); } } }
         function broadcast(data) { Object.values(connections).forEach(conn => { if (conn && conn.open) { conn.send(data); } }); }
 
-        // --- SERIALIZATION & HELPERS ---
-        // *** MODIFIED *** Serializer includes isHost flag
-        function getSerializablePlayer(player) { return { id: player.id, name: player.name, x: player.x, y: player.y, health: player.health, isDead: player.isDead, gold: player.gold, inventory: player.inventory, buffs: player.buffs, title: player.title, pvpKills: player.pvpKills, pveKills: player.pveKills, deaths: player.deaths, isHost: player.isHost }; }
+        function getSerializablePlayer(player) { return { id: player.id, name: player.name, x: player.x, y: player.y, health: player.health, mana: player.mana, maxMana: player.maxMana, isDead: player.isDead, gold: player.gold, inventory: player.inventory, buffs: player.buffs, title: player.title, pvpKills: player.pvpKills, pveKills: player.pveKills, deaths: player.deaths, isHost: player.isHost }; }
         function getSerializableNpc(npc) { return { id: npc.id, x: npc.x, y: npc.y, health: npc.health, maxHealth: npc.maxHealth, isDead: npc.isDead }; }
         function isPlayerOnShrine(player) { const d = Math.hypot((SHRINE_X + SHRINE_RADIUS) - (player.x + PLAYER_RADIUS), (SHRINE_Y + SHRINE_RADIUS) - (player.y + PLAYER_RADIUS)); return d < SHRINE_RADIUS; }
         function isEntityInSafeZone(entity) { return entity.x >= SAFE_ZONE_START_X && entity.x < SAFE_ZONE_END_X; }
         function hostAnnounce(message) { if (!isHost) return; addChatMessage(message, 'system'); broadcast({ type: 'chat', name: 'system', message: message }); }
+        function triggerAnimation(element, animationClass) { if (!element) return; element.classList.add(animationClass); setTimeout(() => { element.classList.remove(animationClass); }, 500); }
         function messagePlayer(playerId, message) { if (!isHost) return; if (playerId === localPlayerId) { addChatMessage(message, "system"); } else if (connections[playerId]) { connections[playerId].send({ type: 'chat', name: 'system', message: message }); } }
 
-        // --- HOST-SIDE LOGIC ---
         function handlePlayerDeath(killedPlayer, killer) { if (!isHost || killedPlayer.gold <= 0) return; let amountToDrop = 0; const isKillerNpc = killer.id.startsWith('npc_'); if (isKillerNpc) { amountToDrop = Math.floor(killedPlayer.gold / 2); } else { amountToDrop = killedPlayer.gold; } if (amountToDrop > 0) { killedPlayer.gold -= amountToDrop; broadcast({ type: 'update-gold', playerId: killedPlayer.id, gold: killedPlayer.gold }); const angle = Math.random() * 2 * Math.PI, radius = Math.random() * GOLD_DROP_RADIUS; const dropX = (killedPlayer.x + PLAYER_RADIUS + Math.cos(angle) * radius) - (GOLD_PILE_SIZE / 2); const dropY = (killedPlayer.y + PLAYER_RADIUS + Math.sin(angle) * radius) - (GOLD_PILE_SIZE / 2); const itemId = `gold_${Date.now()}_${Math.random()}`; const item = { id: itemId, type: 'gold', amount: amountToDrop, x: dropX, y: dropY }; createWorldItem(item); broadcast({ type: 'spawn-item', item: item }); hostAnnounce(`${killedPlayer.name} dropped ${amountToDrop} gold!`); } }
         function setPlayerInCombat(player) { if (!player) return; player.lastCombatTime = Date.now(); if (!player.isInCombat) { player.isInCombat = true; broadcast({ type: 'combat-status-update', playerId: player.id, inCombat: true }); player.el.classList.add('in-combat'); } }
         function updateCombatTimers() { if (!isHost) return; for (const id in players) { const player = players[id]; if (player.isInCombat && (Date.now() - player.lastCombatTime > COMBAT_TIMEOUT)) { player.isInCombat = false; player.lastCombatTime = null; broadcast({ type: 'combat-status-update', playerId: player.id, inCombat: false }); player.el.classList.remove('in-combat'); } } }
@@ -212,6 +226,8 @@
         function updateBuffs() { if (!isHost) return; const now = Date.now(); for (const pId in players) { const player = players[pId]; for (const buffType in player.buffs) { const buff = player.buffs[buffType]; if (buff.active && now > buff.endTime) { buff.active = false; messagePlayer(pId, `Your ${buffType} potion has worn off.`); broadcast({ type: 'buff-update', playerId: pId, buffs: player.buffs }); } } } }
         function checkAndAwardTitle(player) { if (!isHost) return; let bestTitle = ""; for (const titleName in TITLE_DEFINITIONS) { const def = TITLE_DEFINITIONS[titleName]; if (player[def.requirement] >= def.value) { bestTitle = titleName; } } if (bestTitle && player.title !== bestTitle) { player.title = bestTitle; hostAnnounce(`${player.name} has earned the title: ${bestTitle}!`); broadcast({ type: 'title-update', playerId: player.id, title: player.title }); } }
         function generateAndBroadcastLeaderboard() { if (!isHost) return; const sortedPlayers = Object.values(players).sort((a, b) => b.gold - a.gold); const topPlayers = sortedPlayers.slice(0, 5); let leaderboardMessage = "--- Top Brawlers (by Gold) ---"; if (topPlayers.length === 0) { leaderboardMessage += "\nNo brawlers yet!"; } else { topPlayers.forEach((p, index) => { const titleText = p.title ? ` ${p.title}` : ''; leaderboardMessage += `\n#${index + 1}: ${p.name}${titleText} - ${p.gold}g`; }); } hostAnnounce(leaderboardMessage); }
+        function updateManaRegen() { if (!isHost) return; for (const pId in players) { const player = players[pId]; if (!player.isDead && player.mana < player.maxMana) { player.mana = Math.min(player.maxMana, player.mana + MANA_REGEN_RATE); broadcast({ type: 'update-mana', playerId: pId, mana: player.mana }); if (pId === localPlayerId) { players[localPlayerId].mana = player.mana; } } } }
+        function interruptSpell(player, reason = "interrupted") { if (!player || !player.isCasting) return; clearTimeout(player.castingTimeoutId); player.isCasting = false; const fizzleMessage = `Your ${SPELLS[player.castingSpellId].name} spell was ${reason}!`; messagePlayer(player.id, fizzleMessage); broadcast({ type: 'cast-finished', casterId: player.id }); }
 
         // --- DATA HANDLING ---
         function handleData(data, senderId) {
@@ -221,24 +237,24 @@
                     case 'despawn-npc': const npcToFade = npcs[data.id]; if (npcToFade && npcToFade.el) { npcToFade.el.style.opacity = '0'; setTimeout(() => { removeNpc(data.id); }, 500); } break;
                     case 'new-player': if (data.id !== localPlayerId) createPlayer(data.id, data.player.name, false, data.player); break;
                     case 'move': if (players[data.id] && data.id !== localPlayerId) { players[data.id].x = data.x; players[data.id].y = data.y; } break;
-                    case 'update-health': if (players[data.id]) { players[data.id].health = data.health; players[data.id].isDead = data.isDead; } break;
+                    case 'update-health': const damagedPlayer = players[data.id]; if (damagedPlayer) { const attackerEl = players[data.attackerId]?.el || npcs[data.attackerId]?.el; triggerAnimation(attackerEl, 'attack-lunge'); triggerAnimation(damagedPlayer.el, 'damage-flash'); damagedPlayer.health = data.health; damagedPlayer.isDead = data.isDead; } break;
                     case 'update-gold': if (players[data.playerId]) { players[data.playerId].gold = data.gold; } break;
-                    case 'chat': 
-                        addChatMessage(data.message, data.name); 
-                        if (data.playerId && data.name !== 'system') {
-                            showSpeechBubble(data.playerId, data.message);
-                        }
-                        break;
+                    case 'chat': addChatMessage(data.message, data.name); if (data.playerId && data.name !== 'system') { showSpeechBubble(data.playerId, data.message); } break;
                     case 'disconnect': removePlayer(data.id); break;
                     case 'spawn-npc': createNpc(data.npc); break;
                     case 'npc-move': if (npcs[data.id]) { npcs[data.id].x = data.x; npcs[data.id].y = data.y; } break;
-                    case 'npc-update-health': if (npcs[data.id]) { npcs[data.id].health = data.health; npcs[data.id].isDead = data.isDead; } break;
+                    case 'npc-update-health': const damagedNpc = npcs[data.id]; if (damagedNpc) { const attackerEl = players[data.attackerId]?.el; triggerAnimation(attackerEl, 'attack-lunge'); triggerAnimation(damagedNpc.el, 'damage-flash'); damagedNpc.health = data.health; damagedNpc.isDead = data.isDead; } break;
                     case 'spawn-item': createWorldItem(data.item); break;
                     case 'remove-item': removeWorldItem(data.id); break;
                     case 'combat-status-update': const p = players[data.playerId]; if (p) { p.isInCombat = data.inCombat; p.el.classList.toggle('in-combat', data.inCombat); } break;
                     case 'update-inventory': if (players[data.playerId]) { players[data.playerId].inventory = data.inventory; } break;
                     case 'buff-update': if (players[data.playerId]) { players[data.playerId].buffs = data.buffs; } break;
                     case 'title-update': if (players[data.playerId]) { players[data.playerId].title = data.title; } break;
+                    case 'update-mana': if (players[data.playerId]) { players[data.playerId].mana = data.mana; } break;
+                    case 'cast-started': const caster = players[data.casterId]; if (caster) { caster.spellText.textContent = data.spell.words; caster.spellText.style.opacity = '1'; caster.spellText.style.marginBottom = '45px'; } break;
+                    case 'cast-finished': const finishedCaster = players[data.casterId]; if (finishedCaster) { finishedCaster.spellText.style.opacity = '0'; finishedCaster.spellText.style.marginBottom = '40px'; } break;
+                    case 'spell-effect': const targetEl = players[data.targetId]?.el || npcs[data.targetId]?.el; if (targetEl) { showSpellEffect(targetEl, data.spellId); } break;
+                    case 'spawn-projectile': createProjectile(data.projectileId, data.casterId, data.targetId, data.spellId, data.travelTime); break;
                 }
                 return;
             }
@@ -248,62 +264,85 @@
 
             switch (data.type) {
                 case 'sync-request': const serializablePlayers = {}; for (const pId in players) { serializablePlayers[pId] = getSerializablePlayer(players[pId]); } const serializableNpcs = {}; for (const nId in npcs) { serializableNpcs[nId] = getSerializableNpc(npcs[nId]); } connections[senderId].send({ type: 'sync-response', players: serializablePlayers, npcs: serializableNpcs, items: worldItems }); const newPlayer = createPlayer(senderId, data.name); broadcast({ type: 'new-player', id: senderId, player: getSerializablePlayer(newPlayer) }); break;
-                case 'move': senderPlayer.x = data.x; senderPlayer.y = data.y; senderPlayer.lastInputTime = Date.now(); senderPlayer.isIdleKicked = false; checkAndHandleItemPickup(senderPlayer); broadcast({ type: 'move', id: senderId, x: data.x, y: data.y }); break;
+                case 'move':
+                    senderPlayer.x = data.x;
+                    senderPlayer.y = data.y;
+                    senderPlayer.lastInputTime = Date.now();
+                    senderPlayer.isIdleKicked = false;
+                    checkAndHandleItemPickup(senderPlayer);
+                    broadcast({ type: 'move', id: senderId, x: data.x, y: data.y });
+                    break;
                 case 'attack':
                     if (senderPlayer.isDead) return;
                     let target, targetName, damageSource;
-                    if (data.targetType === 'player') { target = players[data.targetId]; targetName = target?.name || 'someone'; damageSource = senderPlayer.name; } 
-                    else if (data.targetType === 'npc') { target = npcs[data.targetId]; targetName = 'a slime'; damageSource = senderPlayer.name; }
+                    if (data.targetType === 'player') { target = players[data.targetId]; targetName = target?.name || 'someone'; } else if (data.targetType === 'npc') { target = npcs[data.targetId]; targetName = 'a slime'; }
+                    damageSource = senderPlayer.name;
                     const currentAttackDamage = (senderPlayer.buffs.damage.active ? PLAYER_BASE_ATTACK_DAMAGE + 5 : PLAYER_BASE_ATTACK_DAMAGE);
                     setPlayerInCombat(senderPlayer);
                     if (target && isEntityInSafeZone(target)) { return; }
                     if (target && !target.isDead) {
-                            if (data.targetType === 'player') { setPlayerInCombat(target); }
+                            if (data.targetType === 'player') { setPlayerInCombat(target); if (target.isCasting) { interruptSpell(target, "interrupted by damage"); } }
                             target.health -= currentAttackDamage;
                             hostAnnounce(`${damageSource} attacks ${targetName}!`);
-                            if(target.health <= 0) {
-                                target.health = 0; target.isDead = true;
-                                hostAnnounce(`${targetName} has been slain!`);
-                                target.deaths++; checkAndAwardTitle(target);
-                                if (data.targetType === 'player') { senderPlayer.pvpKills++; checkAndAwardTitle(senderPlayer); handlePlayerDeath(target, senderPlayer); } 
-                                else if (data.targetType === 'npc') {
-                                senderPlayer.pveKills++; checkAndAwardTitle(senderPlayer);
-                                const dropX = target.x + (PLAYER_RADIUS - GOLD_PILE_SIZE/2), dropY = target.y + (PLAYER_RADIUS - GOLD_PILE_SIZE/2);
-                                const item = { id: `gold_${Date.now()}_${Math.random()}`, type: 'gold', amount: SLIME_GOLD_DROP, x: dropX, y: dropY };
-                                createWorldItem(item); broadcast({ type: 'spawn-item', item: item });
-                                setTimeout(() => { if (npcs[data.targetId]) { removeNpc(data.targetId); broadcast({ type: 'despawn-npc', id: data.targetId }); } }, 5000);
-                                setTimeout(() => { spawnNpc(); }, 20000);
-                                }
-                            }
+                            if(target.health <= 0) { target.health = 0; target.isDead = true; hostAnnounce(`${targetName} has been slain!`); target.deaths++; checkAndAwardTitle(target); if (data.targetType === 'player') { senderPlayer.pvpKills++; checkAndAwardTitle(senderPlayer); handlePlayerDeath(target, senderPlayer); } else if (data.targetType === 'npc') { senderPlayer.pveKills++; checkAndAwardTitle(senderPlayer); const dropX = target.x + (PLAYER_RADIUS - GOLD_PILE_SIZE/2), dropY = target.y + (PLAYER_RADIUS - GOLD_PILE_SIZE/2); const item = { id: `gold_${Date.now()}_${Math.random()}`, type: 'gold', amount: SLIME_GOLD_DROP, x: dropX, y: dropY }; createWorldItem(item); broadcast({ type: 'spawn-item', item: item }); setTimeout(() => { if (npcs[data.targetId]) { removeNpc(data.targetId); broadcast({ type: 'despawn-npc', id: data.targetId }); } }, 5000); setTimeout(() => { spawnNpc(); }, 20000); } }
                             const updateType = data.targetType === 'player' ? 'update-health' : 'npc-update-health';
-                            broadcast({ type: updateType, id: data.targetId, health: target.health, isDead: target.isDead });
+                            broadcast({ type: updateType, id: data.targetId, health: target.health, isDead: target.isDead, attackerId: senderId });
+                            const attackerEl = players[senderId]?.el; const targetEl = target.el;
+                            triggerAnimation(attackerEl, 'attack-lunge'); triggerAnimation(targetEl, 'damage-flash');
                     }
                     break;
                 case 'buy-item': const itemToBuy = VENDOR_ITEMS[data.itemId]; if (!itemToBuy) return; if (senderPlayer.gold >= itemToBuy.cost) { senderPlayer.gold -= itemToBuy.cost; senderPlayer.inventory[data.itemId]++; messagePlayer(senderId, `You purchased a ${data.itemId.replace('_', ' ')}.`); broadcast({ type: 'update-gold', playerId: senderId, gold: senderPlayer.gold }); broadcast({ type: 'update-inventory', playerId: senderId, inventory: senderPlayer.inventory }); } else { messagePlayer(senderId, "You don't have enough gold for that."); } break;
                 case 'use-item': if (senderPlayer.isDead) return; if (senderPlayer.inventory[data.itemId] > 0) { senderPlayer.inventory[data.itemId]--; switch (data.itemId) { case 'health_potion': senderPlayer.health = Math.min(MAX_HEALTH, senderPlayer.health + HEALING_POTION_AMOUNT); messagePlayer(senderId, "You feel healthier."); broadcast({ type: 'update-health', id: senderId, health: senderPlayer.health, isDead: senderPlayer.isDead }); break; case 'speed_potion': senderPlayer.buffs.speed.active = true; senderPlayer.buffs.speed.endTime = Date.now() + BUFF_DURATION; messagePlayer(senderId, "You feel faster!"); broadcast({ type: 'buff-update', playerId: senderId, buffs: senderPlayer.buffs }); break; case 'damage_potion': senderPlayer.buffs.damage.active = true; senderPlayer.buffs.damage.endTime = Date.now() + BUFF_DURATION; messagePlayer(senderId, "You feel stronger!"); broadcast({ type: 'buff-update', playerId: senderId, buffs: senderPlayer.buffs }); break; } broadcast({ type: 'update-inventory', playerId: senderId, inventory: senderPlayer.inventory }); } break;
-                case 'chat':
-                    if (senderPlayer) { senderPlayer.lastInputTime = Date.now(); senderPlayer.isIdleKicked = false; }
-                    if (data.message.trim().toLowerCase() === '/top') {
-                        generateAndBroadcastLeaderboard();
-                    } else {
-                        const chatData = { type: 'chat', playerId: senderId, name: senderPlayer.name, message: data.message };
-                        addChatMessage(chatData.message, chatData.name);
-                        showSpeechBubble(chatData.playerId, chatData.message);
-                        broadcast(chatData);
-                    }
+                case 'chat': if (senderPlayer) { senderPlayer.lastInputTime = Date.now(); senderPlayer.isIdleKicked = false; } if (data.message.trim().toLowerCase() === '/top') { generateAndBroadcastLeaderboard(); } else { const chatData = { type: 'chat', playerId: senderId, name: senderPlayer.name, message: data.message }; addChatMessage(chatData.message, chatData.name); showSpeechBubble(chatData.playerId, chatData.message); broadcast(chatData); } break;
+                case 'start-cast':
+                    if (!senderPlayer || !data.targetId || !data.spellId) return;
+                    const spell = SPELLS[data.spellId]; const castTarget = players[data.targetId] || npcs[data.targetId];
+                    if (senderPlayer.isCasting) return;
+                    if (!spell || !castTarget || castTarget.isDead) return;
+                    if (senderPlayer.mana < spell.manaCost) { messagePlayer(senderId, "You don't have enough mana."); return; }
+                    if (Math.hypot(senderPlayer.x - castTarget.x, senderPlayer.y - castTarget.y) > SPELL_RANGE) { messagePlayer(senderId, "Your target is too far away."); return; }
+                    senderPlayer.isCasting = true; senderPlayer.castingSpellId = data.spellId; senderPlayer.castingTargetId = data.targetId; senderPlayer.mana -= spell.manaCost;
+                    broadcast({ type: 'update-mana', playerId: senderId, mana: senderPlayer.mana });
+                    if (senderId === localPlayerId) players[localPlayerId].mana = senderPlayer.mana;
+                    broadcast({ type: 'cast-started', casterId: senderId, spell: spell });
+                    senderPlayer.castingTimeoutId = setTimeout(() => {
+                        if (!senderPlayer.isCasting) return;
+                        senderPlayer.isCasting = false;
+                        broadcast({ type: 'cast-finished', casterId: senderId });
+                        const finalTarget = players[senderPlayer.castingTargetId] || npcs[senderPlayer.castingTargetId];
+                        if (!finalTarget || finalTarget.isDead) { messagePlayer(senderId, `Your ${spell.name} spell fizzles as the target is gone.`); return; }
+                        const distance = Math.hypot(senderPlayer.x - finalTarget.x, senderPlayer.y - finalTarget.y);
+                        const travelTime = (distance / PROJECTILE_SPEED) * 1000;
+                        const projectileId = `proj_${Date.now()}`;
+                        const spawnData = { type: 'spawn-projectile', projectileId, casterId: senderId, targetId: finalTarget.id, spellId: data.spellId, travelTime };
+                        broadcast(spawnData);
+                        createProjectile(spawnData.projectileId, spawnData.casterId, spawnData.targetId, spawnData.spellId, spawnData.travelTime);
+                        setTimeout(() => {
+                            const hitTarget = players[finalTarget.id] || npcs[finalTarget.id];
+                            if (!hitTarget || hitTarget.isDead) return;
+                            hitTarget.health -= spell.damage;
+                            hostAnnounce(`${senderPlayer.name}'s ${spell.name} hits ${hitTarget.name || 'a slime'} for ${spell.damage} damage!`);
+                            if (hitTarget.health <= 0) { /* Handle death... */ }
+                            const updateType = hitTarget.name ? 'update-health' : 'npc-update-health';
+                            broadcast({ type: updateType, id: hitTarget.id, health: hitTarget.health, isDead: hitTarget.isDead, attackerId: senderId });
+                            broadcast({ type: 'spell-effect', targetId: hitTarget.id, spellId: data.spellId });
+                            if (isHost) { showSpellEffect(hitTarget.el, data.spellId); triggerAnimation(senderPlayer.el, 'attack-lunge'); triggerAnimation(hitTarget.el, 'damage-flash');}
+                        }, travelTime);
+                    }, spell.castTime);
                     break;
             }
         }
         
-        // --- ENTITY MANAGEMENT ---
-        // *** MODIFIED *** Player state includes isHost flag
         function createPlayer(id, name, isLocal = false, initialState = {}) {
             if (players[id]) return players[id];
             const spawnPoint = initialState.x != null ? {x: initialState.x, y: initialState.y} : getSafeSpawnPoint();
-            const playerState = { id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), speechBubble: document.createElement('div'), name: name, x: spawnPoint.x, y: spawnPoint.y, health: initialState.health ?? MAX_HEALTH, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0, inventory: initialState.inventory ?? { health_potion: 0, speed_potion: 0, damage_potion: 0 }, buffs: initialState.buffs ?? { speed: { active: false, endTime: 0 }, damage: { active: false, endTime: 0 } }, title: initialState.title ?? '', pvpKills: initialState.pvpKills ?? 0, pveKills: initialState.pveKills ?? 0, deaths: initialState.deaths ?? 0, resurrectionStartTime: null, isInCombat: false, lastCombatTime: null, lastInputTime: Date.now(), isIdleKicked: false, speechTimeoutId: null, isHost: initialState.isHost ?? false };
-            playerState.el.className = 'game-object player-object'; playerState.el.dataset.id = id; playerState.nameTag.className = 'name-tag'; playerState.healthBar.className = 'health-bar'; playerState.healthBarInner.className = 'health-bar-inner'; playerState.speechBubble.className = 'speech-bubble';
+            const playerState = { id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), speechBubble: document.createElement('div'), spellText: document.createElement('div'), name: name, x: spawnPoint.x, y: spawnPoint.y, health: initialState.health ?? MAX_HEALTH, mana: initialState.mana ?? MAX_MANA, maxMana: MAX_MANA, isCasting: false, castingSpellId: null, castingTargetId: null, castingTimeoutId: null, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0, inventory: initialState.inventory ?? { health_potion: 0, speed_potion: 0, damage_potion: 0 }, buffs: initialState.buffs ?? { speed: { active: false, endTime: 0 }, damage: { active: false, endTime: 0 } }, title: initialState.title ?? '', pvpKills: initialState.pvpKills ?? 0, pveKills: initialState.pveKills ?? 0, deaths: initialState.deaths ?? 0, resurrectionStartTime: null, isInCombat: false, lastCombatTime: null, lastInputTime: Date.now(), isIdleKicked: false, speechTimeoutId: null, isHost: initialState.isHost ?? false };
+            playerState.el.className = 'game-object player-object'; playerState.el.dataset.id = id; playerState.nameTag.className = 'name-tag'; playerState.healthBar.className = 'health-bar'; playerState.healthBarInner.className = 'health-bar-inner'; playerState.speechBubble.className = 'speech-bubble'; playerState.spellText.className = 'spell-text';
             if (isLocal) { playerState.el.classList.add('local-player'); } else { playerState.el.classList.add('remote-player'); }
-            playerState.healthBar.appendChild(playerState.healthBarInner); playerState.el.appendChild(playerState.nameTag); playerState.el.appendChild(playerState.healthBar); playerState.el.appendChild(playerState.speechBubble);
+            playerState.healthBar.appendChild(playerState.healthBarInner); playerState.el.appendChild(playerState.nameTag); playerState.el.appendChild(playerState.healthBar); 
+            // --- FIX: Corrected typo from `playerSate` to `playerState` ---
+            playerState.el.appendChild(playerState.speechBubble); 
+            playerState.el.appendChild(playerState.spellText);
             worldContainer.appendChild(playerState.el);
             players[id] = playerState; addChatMessage(`${name} has entered the realm.`, 'system'); return playerState;
         }
@@ -315,49 +354,147 @@
 
         // --- GAME LOOP & INPUT ---
         function startGame() { requestAnimationFrame(gameLoop); }
-        function gameLoop() { handleInput(); if (isHost) { updateNpcAI(); updateResurrections(); updateCombatTimers(); updateIdlePlayers(); updateBuffs(); } updateCamera(); updateUI(); requestAnimationFrame(gameLoop); }
+        function gameLoop() { handleInput(); if (isHost) { updateNpcAI(); updateResurrections(); updateCombatTimers(); updateIdlePlayers(); updateBuffs(); } updateProjectiles(); updateCamera(); updateUI(); requestAnimationFrame(gameLoop); }
         function updateCamera() { const me = players[localPlayerId]; if (!me) return; const viewportWidth = parseInt(getComputedStyle(world).width); const viewportHeight = parseInt(getComputedStyle(world).height); cameraX = me.x - (viewportWidth / 2) + (PLAYER_SIZE / 2); cameraY = me.y - (viewportHeight / 2) + (PLAYER_SIZE / 2); cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH_ACTUAL - viewportWidth)); cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT_ACTUAL - viewportHeight)); }
-        function handleInput() { const me = players[localPlayerId]; if (!me || document.activeElement === chatInput || vendorMenu.style.display === 'block') return; let dx = 0; let dy = 0; if (keysPressed['w']) dy--; if (keysPressed['s']) dy++; if (keysPressed['a']) dx--; if (keysPressed['d']) dx++; if (keysPressed['enter']) { chatInput.focus(); keysPressed['enter'] = false; return; } if (dx === 0 && dy === 0) return; const currentSpeed = me.buffs.speed.active ? PLAYER_BASE_SPEED * 1.5 : PLAYER_BASE_SPEED; const magnitude = Math.hypot(dx, dy); let newX = me.x + (dx / magnitude) * currentSpeed; let newY = me.y + (dy / magnitude) * currentSpeed; if (isPositionInWater(newX, me.y)) newX = me.x; if (isPositionInWater(me.x, newY)) newY = me.y; if (isPositionInWater(newX, newY)) { newX = me.x; newY = me.y; } Object.values(players).forEach(other => { if (other.id === localPlayerId || other.isDead) return; if (checkPlayerCollision(newX, me.y, other)) { newX = me.x; } if (checkPlayerCollision(me.x, newY, other)) { newY = me.y; } }); const originalX = me.x, originalY = me.y; me.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, newX)); me.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, newY)); if (me.x !== originalX || me.y !== originalY) { sendData({ type: 'move', x: me.x, y: me.y }); } }
-        function handleKeyPress(key) { const me = players[localPlayerId]; if (!me || document.activeElement === chatInput || vendorMenu.style.display === 'block') return; switch(key) { case '1': sendData({ type: 'use-item', itemId: 'health_potion' }); break; case '2': sendData({ type: 'use-item', itemId: 'speed_potion' }); break; case '3': sendData({ type: 'use-item', itemId: 'damage_potion' }); break; } }
-        function onWorldClick(e) { const me = players[localPlayerId]; if (!me || me.isDead) return; const worldRect = world.getBoundingClientRect(); const clickX = e.clientX - worldRect.left + cameraX; const clickY = e.clientY - worldRect.top + cameraY; const distToVendor = Math.hypot(clickX - (VENDOR_X + VENDOR_SIZE/2), clickY - (VENDOR_Y + VENDOR_SIZE/2)); if (distToVendor < VENDOR_SIZE / 2) { const distPlayerToVendor = Math.hypot((me.x + PLAYER_RADIUS) - (VENDOR_X + VENDOR_SIZE/2), (me.y + PLAYER_RADIUS) - (VENDOR_Y + VENDOR_SIZE/2)); if (distPlayerToVendor < VENDOR_INTERACT_RANGE) { vendorMenu.style.display = 'block'; return; } else { addChatMessage("You are too far away from the vendor.", "system"); return; } } let targetId = null, targetType = null; for (const p of Object.values(players)) { if (p.id !== localPlayerId && clickX >= p.x && clickX <= p.x + PLAYER_SIZE && clickY >= p.y && clickY <= p.y + PLAYER_SIZE) { targetId = p.id; targetType = 'player'; break; } } if (!targetId) { for (const n of Object.values(npcs)) { if (clickX >= n.x && clickX <= n.x + PLAYER_SIZE && clickY >= n.y && clickY <= n.y + PLAYER_SIZE) { targetId = n.id; targetType = 'npc'; break; } } } if (targetId) { doAttack(targetId, targetType); } }
-        function doAttack(targetId, targetType) { const me = players[localPlayerId]; if (!me || me.isDead || attackCooldown) return; if (isPlayerOnShrine(me)) { addChatMessage("You feel a sense of peace and cannot attack while on the shrine.", "system"); return; } let target; if (targetType === 'player') { target = players[targetId]; } else if (targetType === 'npc') { target = npcs[targetId]; } if (!target || target.isDead) return; if (isEntityInSafeZone(target)) { addChatMessage("That target is in a safe zone.", "system"); return; } const distance = Math.hypot((me.x + PLAYER_RADIUS) - (target.x + PLAYER_RADIUS), (me.y + PLAYER_RADIUS) - (target.y + PLAYER_RADIUS)); if (distance <= ATTACK_RANGE) { sendData({ type: 'attack', targetId: targetId, targetType: targetType }); } else { addChatMessage('You are too far away to attack.', 'system'); } attackCooldown = true; setTimeout(() => { attackCooldown = false; }, 500); }
-        function checkPlayerCollision(p1x, p1y, otherPlayer) { const distance = Math.hypot((p1x + PLAYER_RADIUS) - (otherPlayer.x + PLAYER_RADIUS), (p1y + PLAYER_RADIUS) - (otherPlayer.y + PLAYER_RADIUS)); return distance < PLAYER_SIZE; }
         
-        // --- HOST-SIDE NPC AI ---
-        function updateNpcAI() { if (!isHost) return; for (const id in npcs) { const npc = npcs[id]; if (npc.isDead) continue; let targetPlayer = null; let minDistance = NPC_AGGRO_RANGE; for (const pId in players) { const player = players[pId]; if (player.isDead || isEntityInSafeZone(player)) continue; const distance = Math.hypot(npc.x - player.x, npc.y - player.y); if (distance < minDistance) { minDistance = distance; targetPlayer = player; } } let hasMoved = false; if (targetPlayer) { if (minDistance > NPC_ATTACK_RANGE) { const dx = targetPlayer.x - npc.x, dy = targetPlayer.y - npc.y; const magnitude = Math.hypot(dx, dy); let nextX = npc.x + (dx / magnitude) * NPC_SLIME_SPEED; let nextY = npc.y + (dy / magnitude) * NPC_SLIME_SPEED; if (!isPositionInWater(nextX, nextY)) { npc.x = nextX; npc.y = nextY; hasMoved = true; } } if (minDistance <= NPC_ATTACK_RANGE && !npc.ai_attackCooldown) { setPlayerInCombat(targetPlayer); targetPlayer.health -= NPC_SLIME_DAMAGE; hostAnnounce(`A slime attacks ${targetPlayer.name}!`); if (targetPlayer.health <= 0) { targetPlayer.health = 0; targetPlayer.isDead = true; hostAnnounce(`${targetPlayer.name} has been slain by a slime!`); targetPlayer.deaths++; checkAndAwardTitle(targetPlayer); handlePlayerDeath(targetPlayer, npc); } broadcast({ type: 'update-health', id: targetPlayer.id, health: targetPlayer.health, isDead: targetPlayer.isDead }); npc.ai_attackCooldown = true; setTimeout(() => { npc.ai_attackCooldown = false; }, 1000); } } if (hasMoved) { npc.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, npc.x)); npc.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, npc.y)); broadcast({ type: 'npc-move', id: npc.id, x: npc.x, y: npc.y }); } } }
-        function spawnNpc() { if (!isHost) return; const spawnPoint = getSafeSpawnPoint(); const id = `npc_${Date.now()}_${Math.random()}`; const npcData = { id: id, x: spawnPoint.x, y: spawnPoint.y, health: NPC_SLIME_HEALTH, maxHealth: NPC_SLIME_HEALTH, isDead: false }; createNpc(npcData); const npcState = npcs[id]; if (npcState) { npcState.ai_lastMove = Date.now(); npcState.ai_attackCooldown = false; } broadcast({ type: 'spawn-npc', npc: getSerializableNpc(npcState) }); }
+        // --- MODIFIED: INPUT HANDLING FOR MORE RESPONSIVE MOUSE MOVEMENT ---
+        function handleInput() {
+            const me = players[localPlayerId];
+            if (!me || me.isDead || document.activeElement === chatInput || vendorMenu.style.display === 'block') {
+                if (isMovingWithMouse) { isMovingWithMouse = false; }
+                return;
+            }
 
-        // --- UI & CHAT ---
-        function showSpeechBubble(playerId, message) {
-            const player = players[playerId];
-            if (!player || !player.speechBubble) return;
-            if (player.speechTimeoutId) { clearTimeout(player.speechTimeoutId); }
-            player.speechBubble.textContent = message;
-            player.speechBubble.style.opacity = '1';
-            player.speechTimeoutId = setTimeout(() => { player.speechBubble.style.opacity = '0'; }, 4000);
+            let dx = 0;
+            let dy = 0;
+
+            // Prioritize mouse movement if the button is held down
+            if (isMovingWithMouse) {
+                // Calculate vector from player's center to mouse position for smoother tracking
+                dx = mouseTargetWorldPos.x - (me.x + PLAYER_RADIUS);
+                dy = mouseTargetWorldPos.y - (me.y + PLAYER_RADIUS);
+            } else { // Fallback to keyboard input
+                if (keysPressed['w']) dy--;
+                if (keysPressed['s']) dy++;
+                if (keysPressed['a']) dx--;
+                if (keysPressed['d']) dx++;
+            }
+
+            const magnitude = Math.hypot(dx, dy);
+
+            // If there's no input or we are already at the cursor, do nothing.
+            // This prevents division by zero and unnecessary movement packets.
+            if (magnitude < 1) { 
+                return;
+            }
+
+            const currentSpeed = me.buffs.speed.active ? PLAYER_BASE_SPEED * 1.5 : PLAYER_BASE_SPEED;
+            let newX = me.x + (dx / magnitude) * currentSpeed;
+            let newY = me.y + (dy / magnitude) * currentSpeed;
+
+            // Collision checks
+            if (isPositionInWater(newX, me.y)) newX = me.x;
+            if (isPositionInWater(me.x, newY)) newY = me.y;
+            if (isPositionInWater(newX, newY)) { newX = me.x; newY = me.y; }
+            
+            Object.values(players).forEach(other => {
+                if (other.id === localPlayerId || other.isDead) return;
+                if (checkPlayerCollision(newX, me.y, other)) { newX = me.x; }
+                if (checkPlayerCollision(me.x, newY, other)) { newY = me.y; }
+            });
+
+            const originalX = me.x, originalY = me.y;
+            me.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, newX));
+            me.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, newY));
+            if (me.x !== originalX || me.y !== originalY) {
+                sendData({ type: 'move', x: me.x, y: me.y });
+            }
+        }
+        
+        function handleKeyPress(e) { const me = players[localPlayerId]; if (!me || document.activeElement === chatInput || vendorMenu.style.display === 'block') return; const key = e.key.toLowerCase(); if (key === 'enter') { chatInput.focus(); keysPressed['enter'] = false; return; } switch(key) { case '1': sendData({ type: 'use-item', itemId: 'health_potion' }); break; case '2': sendData({ type: 'use-item', itemId: 'speed_potion' }); break; case '3': sendData({ type: 'use-item', itemId: 'damage_potion' }); break; case '4': case '5': case '6': if (currentTargetId) { const spellId = Object.keys(SPELLS).find(id => SPELLS[id].key === key); sendData({ type: 'start-cast', spellId: spellId, targetId: currentTargetId }); } else { addChatMessage("You must have a target to cast a spell.", "system"); } break; case 'tab': e.preventDefault(); cycleTarget(); break; case 'escape': clearTarget(); break; } }
+        
+        function onWorldClick(e) {
+            if (isMovingWithMouse) {
+                setTimeout(() => { isMovingWithMouse = false; }, 20);
+                return;
+            }
+            const me = players[localPlayerId]; 
+            if (!me || me.isDead) return; 
+
+            const worldRect = world.getBoundingClientRect(); 
+            const clickX = e.clientX - worldRect.left + cameraX; 
+            const clickY = e.clientY - worldRect.top + cameraY; 
+            const distToVendor = Math.hypot(clickX - (VENDOR_X + VENDOR_SIZE/2), clickY - (VENDOR_Y + VENDOR_SIZE/2)); 
+            if (distToVendor < VENDOR_SIZE / 2) { 
+                const distPlayerToVendor = Math.hypot((me.x + PLAYER_RADIUS) - (VENDOR_X + VENDOR_SIZE/2), (me.y + PLAYER_RADIUS) - (VENDOR_Y + VENDOR_SIZE/2)); 
+                if (distPlayerToVendor < VENDOR_INTERACT_RANGE) { 
+                    vendorMenu.style.display = 'block'; 
+                    return; 
+                } else { 
+                    addChatMessage("You are too far away from the vendor.", "system"); 
+                    return; 
+                } 
+            } 
+            let targetId = null, targetType = null; 
+            for (const p of Object.values(players)) { if (p.id !== localPlayerId && clickX >= p.x && clickX <= p.x + PLAYER_SIZE && clickY >= p.y && clickY <= p.y + PLAYER_SIZE) { targetId = p.id; targetType = 'player'; break; } } 
+            if (!targetId) { for (const n of Object.values(npcs)) { if (clickX >= n.x && clickX <= n.x + PLAYER_SIZE && clickY >= n.y && clickY <= n.y + PLAYER_SIZE) { targetId = n.id; targetType = 'npc'; break; } } } 
+            
+            if (targetId) { 
+                doAttack(targetId, targetType); 
+            } else if (currentTargetId) { 
+                const targetIsPlayer = !!players[currentTargetId]; 
+                doAttack(currentTargetId, targetIsPlayer ? 'player' : 'npc'); 
+            } 
         }
 
-        // *** MODIFIED *** UI update checks for host flag
+        function doAttack(targetId, targetType) { const me = players[localPlayerId]; if (!me || me.isDead || attackCooldown) return; if (isPlayerOnShrine(me)) { addChatMessage("You feel a sense of peace and cannot attack while on the shrine.", "system"); return; } let target; if (targetType === 'player') { target = players[targetId]; } else if (targetType === 'npc') { target = npcs[targetId]; } if (!target || target.isDead) return; if (isEntityInSafeZone(target)) { addChatMessage("That target is in a safe zone.", "system"); return; } const distance = Math.hypot((me.x + PLAYER_RADIUS) - (target.x + PLAYER_RADIUS), (me.y + PLAYER_RADIUS) - (target.y + PLAYER_RADIUS)); if (distance <= ATTACK_RANGE) { sendData({ type: 'attack', targetId: targetId, targetType: targetType }); } else { addChatMessage('You are too far away to attack.', 'system'); } attackCooldown = true; setTimeout(() => { attackCooldown = false; }, 500); }
+        function checkPlayerCollision(p1x, p1y, otherPlayer) { const distance = Math.hypot((p1x + PLAYER_RADIUS) - (otherPlayer.x + PLAYER_RADIUS), (p1y + PLAYER_RADIUS) - (otherPlayer.y + PLAYER_RADIUS)); return distance < PLAYER_SIZE; }
+        function cycleTarget() { const me = players[localPlayerId]; if (!me) return; const allTargets = [...Object.values(players), ...Object.values(npcs)]; const validTargets = allTargets.filter(t => t.id !== localPlayerId && !t.isDead).map(t => ({ ...t, dist: Math.hypot(me.x - t.x, me.y - t.y) })).filter(t => t.dist < 300).sort((a, b) => a.dist - b.dist); if (validTargets.length === 0) { clearTarget(); return; } const currentIndex = validTargets.findIndex(t => t.id === currentTargetId); const nextIndex = (currentIndex + 1) % validTargets.length; currentTargetId = validTargets[nextIndex].id; }
+        function clearTarget() { currentTargetId = null; }
+
+        function updateNpcAI() { if (!isHost) return; for (const id in npcs) { const npc = npcs[id]; if (npc.isDead) continue; let targetPlayer = null; let minDistance = NPC_AGGRO_RANGE; for (const pId in players) { const player = players[pId]; if (player.isDead || isEntityInSafeZone(player)) continue; const distance = Math.hypot(npc.x - player.x, npc.y - player.y); if (distance < minDistance) { minDistance = distance; targetPlayer = player; } } let hasMoved = false; if (targetPlayer) { if (minDistance > NPC_ATTACK_RANGE) { const dx = targetPlayer.x - npc.x, dy = targetPlayer.y - npc.y; const magnitude = Math.hypot(dx, dy); let nextX = npc.x + (dx / magnitude) * NPC_SLIME_SPEED; let nextY = npc.y + (dy / magnitude) * NPC_SLIME_SPEED; if (!isPositionInWater(nextX, nextY)) { npc.x = nextX; npc.y = nextY; hasMoved = true; } } if (minDistance <= NPC_ATTACK_RANGE && !npc.ai_attackCooldown) { setPlayerInCombat(targetPlayer); if (targetPlayer.isCasting) { interruptSpell(targetPlayer, "interrupted by damage"); } targetPlayer.health -= NPC_SLIME_DAMAGE; hostAnnounce(`A slime attacks ${targetPlayer.name}!`); if (targetPlayer.health <= 0) { targetPlayer.health = 0; targetPlayer.isDead = true; hostAnnounce(`${targetPlayer.name} has been slain by a slime!`); targetPlayer.deaths++; checkAndAwardTitle(targetPlayer); handlePlayerDeath(targetPlayer, npc); } broadcast({ type: 'update-health', id: targetPlayer.id, health: targetPlayer.health, isDead: targetPlayer.isDead, attackerId: npc.id }); const attackerEl = npc.el; const targetEl = targetPlayer.el; triggerAnimation(attackerEl, 'attack-lunge'); triggerAnimation(targetEl, 'damage-flash'); npc.ai_attackCooldown = true; setTimeout(() => { npc.ai_attackCooldown = false; }, 1000); } } if (hasMoved) { npc.x = Math.max(0, Math.min(WORLD_WIDTH_ACTUAL - PLAYER_SIZE, npc.x)); npc.y = Math.max(0, Math.min(WORLD_HEIGHT_ACTUAL - PLAYER_SIZE, npc.y)); broadcast({ type: 'npc-move', id: npc.id, x: npc.x, y: npc.y }); } } }
+        function spawnNpc() { if (!isHost) return; const spawnPoint = getSafeSpawnPoint(); const id = `npc_${Date.now()}_${Math.random()}`; const npcData = { id: id, x: spawnPoint.x, y: spawnPoint.y, health: NPC_SLIME_HEALTH, maxHealth: NPC_SLIME_HEALTH, isDead: false }; createNpc(npcData); const npcState = npcs[id]; if (npcState) { npcState.ai_lastMove = Date.now(); npcState.ai_attackCooldown = false; } broadcast({ type: 'spawn-npc', npc: getSerializableNpc(npcState) }); }
+
+        function showSpeechBubble(playerId, message) { const player = players[playerId]; if (!player || !player.speechBubble) return; if (player.speechTimeoutId) { clearTimeout(player.speechTimeoutId); } player.speechBubble.textContent = message; player.speechBubble.style.opacity = '1'; player.speechTimeoutId = setTimeout(() => { player.speechBubble.style.opacity = '0'; }, 4000); }
+        function showSpellEffect(targetEl, spellId) { const effectEl = document.createElement('div'); effectEl.style.position = 'absolute'; effectEl.style.pointerEvents = 'none'; effectEl.style.zIndex = 100; switch(spellId) { case 'magic_arrow': effectEl.textContent = '➤'; effectEl.style.color = '#e0aaff'; effectEl.style.fontSize = '30px'; break; case 'lightning': effectEl.textContent = '⚡'; effectEl.style.color = '#f0e68c'; effectEl.style.fontSize = '40px'; break; case 'flamestrike': effectEl.textContent = '🔥'; effectEl.style.color = '#ff6a00'; effectEl.style.fontSize = '50px'; break; } targetEl.appendChild(effectEl); setTimeout(() => effectEl.remove(), 800); }
+        
+        function createProjectile(id, casterId, targetId, spellId, travelTime) {
+            if (projectiles[id]) return;
+            const caster = players[casterId]; const target = players[targetId] || npcs[targetId];
+            if (!caster || !target) return;
+            const el = document.createElement('div');
+            el.className = 'spell-projectile';
+            const spellVisual = { 'magic_arrow': '➤', 'lightning': '⚡', 'flamestrike': '🔥' };
+            el.textContent = spellVisual[spellId] || '•';
+            el.style.color = SPELLS[spellId].name === 'Magic Arrow' ? '#e0aaff' : SPELLS[spellId].name === 'Lightning' ? '#f0e68c' : '#ff6a00';
+            const startX = caster.x + (PLAYER_SIZE / 2); const startY = caster.y + (PLAYER_SIZE / 2);
+            el.style.left = startX + 'px'; el.style.top = startY + 'px';
+            worldContainer.appendChild(el);
+            projectiles[id] = { id, el, spellId, startX, startY, endX: target.x + (PLAYER_SIZE / 2), endY: target.y + (PLAYER_SIZE / 2), targetId, startTime: Date.now(), travelTime };
+            setTimeout(() => { el.remove(); delete projectiles[id]; }, travelTime + 100);
+        }
+        function updateProjectiles() {
+            const now = Date.now();
+            for (const id in projectiles) {
+                const p = projectiles[id]; const target = players[p.targetId] || npcs[p.targetId];
+                const targetX = target ? target.x + (PLAYER_SIZE / 2) : p.endX;
+                const targetY = target ? target.y + (PLAYER_SIZE / 2) : p.endY;
+                const progress = Math.min(1, (now - p.startTime) / p.travelTime);
+                p.x = p.startX + (targetX - p.startX) * progress;
+                p.y = p.startY + (targetY - p.startY) * progress;
+                p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px';
+            }
+        }
+
         function updateUI() {
             worldContainer.style.transform = `translate(${-cameraX}px, ${-cameraY}px)`;
-            Object.values(players).forEach(p => { 
-                p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px'; 
-
-                const hostIcon = p.isHost ? '👑 ' : '';
-                p.nameTag.textContent = `${hostIcon}${p.name} ${p.title || ''}`.trim();
-                
-                p.healthBarInner.style.width = (p.health / MAX_HEALTH) * 100 + '%'; 
-                p.el.classList.toggle('ghost', p.isDead);
-                p.el.classList.toggle('speed-buff', p.buffs.speed.active);
-                p.el.classList.toggle('damage-buff', p.buffs.damage.active);
-            });
+            document.querySelectorAll('.targeted-entity').forEach(el => el.classList.remove('targeted-entity'));
+            Object.values(players).forEach(p => { p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px'; const hostIcon = p.isHost ? '👑 ' : ''; p.nameTag.textContent = `${hostIcon}${p.name} ${p.title || ''}`.trim(); p.healthBarInner.style.width = (p.health / MAX_HEALTH) * 100 + '%'; p.el.classList.toggle('ghost', p.isDead); p.el.classList.toggle('speed-buff', p.buffs.speed.active); p.el.classList.toggle('damage-buff', p.buffs.damage.active); });
             Object.values(npcs).forEach(n => { if (n.el) { n.el.style.left = n.x + 'px'; n.el.style.top = n.y + 'px'; n.healthBarInner.style.width = (n.health / n.maxHealth) * 100 + '%'; n.el.classList.toggle('ghost', n.isDead); } });
             Object.values(worldItems).forEach(i => { if (i.el) { i.el.style.left = i.x + 'px'; i.el.style.top = i.y + 'px'; } });
+            if (currentTargetId) { const target = players[currentTargetId] || npcs[currentTargetId]; if (target && !target.isDead) { target.el.classList.add('targeted-entity'); targetDisplay.style.display = 'block'; const targetMaxHealth = target.maxHealth || MAX_HEALTH; targetNameDisplay.textContent = target.name || 'Slime'; targetHealthBarInner.style.width = (target.health / targetMaxHealth) * 100 + '%'; } else { clearTarget(); } } else { targetDisplay.style.display = 'none'; }
             const me = players[localPlayerId];
-            if (me) { 
-                playerGoldDisplay.textContent = `Gold: ${me.gold}`; 
-                playerInventoryDisplay.textContent = `Pots: H[${me.inventory.health_potion}] S[${me.inventory.speed_potion}] D[${me.inventory.damage_potion}]`;
-            }
+            if (me) { playerGoldDisplay.textContent = `Gold: ${me.gold}`; document.getElementById('player-mana').textContent = `Mana: ${Math.floor(me.mana)}`; playerInventoryDisplay.textContent = `Pots: H[${me.inventory.health_potion}] S[${me.inventory.speed_potion}] D[${me.inventory.damage_potion}]`; }
         }
         function addChatMessage(message, sender) { const p = document.createElement('p'); if (sender === 'system') { p.className = 'system-msg'; p.innerHTML = message.replace(/\n/g, '<br>'); } else { const isLocal = players[localPlayerId] && sender === players[localPlayerId].name; p.className = isLocal ? 'my-msg' : 'their-msg'; p.textContent = `[${sender}]: ${message}`; } chatLog.appendChild(p); chatLog.scrollTop = chatLog.scrollHeight; }
         function onChatSubmit(e) { if (e.key === 'Enter') { e.preventDefault(); const message = chatInput.value; if (message) { sendData({ type: 'chat', message: message }); chatInput.value = ''; chatInput.blur(); } } }
