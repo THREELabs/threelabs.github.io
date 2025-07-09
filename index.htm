@@ -18,7 +18,7 @@
         #login-screen button:hover { background-color: #555; }
         #status-message { color: #ffaeae; min-height: 20px; }
         #game-world { width: var(--viewport-width); height: var(--viewport-height); position: relative; overflow: hidden; border: 2px solid #666; cursor: crosshair; }
-        #world-container { width: var(--world-width); height: var(--world-height); position: absolute; background-color: #1a472a; transition: transform 0.1s linear; }
+        #world-container { width: var(--world-width); height: var(--world-height); position: absolute; background-color: #1a472a; }
         #ui-panel { width: var(--viewport-width); height: var(--ui-height); background-color: #2a2a2a; border: 2px solid #666; border-top: none; display: flex; flex-direction: column; padding: 5px; box-sizing: border-box; }
         .map-feature { position: absolute; box-sizing: border-box; }
         #bridge-zone { position: absolute; top: 0; left: 700px; width: 1500px; height: 100%; }
@@ -26,7 +26,7 @@
         #britain-bridge { top: 650px; left: 0; width: 100%; height: 200px; background-color: #654321; border-top: 5px solid #4a3018; border-bottom: 5px solid #4a3018; }
         #bridge-planks { width: 100%; height: 100%; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.1) 20px, transparent 20px, transparent 40px); }
         #water-south { top: 850px; left: 0; width: 100%; height: 650px; background-color: #1a3a5a; }
-        .game-object { width: 30px; height: 30px; position: absolute; transition: top 0.1s linear, left 0.1s linear, box-shadow 0.3s ease-in-out; box-sizing: border-box; }
+        .game-object { width: 30px; height: 30px; position: absolute; transition: box-shadow 0.3s ease-in-out; box-sizing: border-box; }
         .player-object { border: 2px solid #111; border-radius: 50%; }
         .local-player { background-color: #4a90e2; z-index: 10; }
         .remote-player { background-color: #d0021b; z-index: 9; }
@@ -138,7 +138,7 @@
         let mouseTargetWorldPos = { x: null, y: null };
         let isAutoAttacking = false;
 
-        const PLAYER_SIZE = 30, PLAYER_RADIUS = PLAYER_SIZE / 2, MAX_HEALTH = 100, PLAYER_BASE_SPEED = 5, PLAYER_BASE_ATTACK_DAMAGE = 10;
+        const PLAYER_SIZE = 30, PLAYER_RADIUS = PLAYER_SIZE / 2, MAX_HEALTH = 100, PLAYER_BASE_SPEED = 9, PLAYER_BASE_ATTACK_DAMAGE = 10; // MODIFIED: Increased speed from 5 to 10
         const ATTACK_RANGE = 60, SLIME_GOLD_DROP = 10, GOLD_PILE_SIZE = 15, GOLD_DROP_RADIUS = 40, ATTACK_COOLDOWN_MS = 1000;
         const NPC_SLIME_HEALTH = 30, NPC_SLIME_DAMAGE = 5, NPC_SLIME_SPEED = 2, NPC_AGGRO_RANGE = 200, NPC_ATTACK_RANGE = 40, MAX_NPCS = 10;
         const SHRINE_X = 45, SHRINE_Y = 720, SHRINE_SIZE = 60, SHRINE_RADIUS = SHRINE_SIZE / 2;
@@ -157,6 +157,7 @@
             'lightning':   { name: 'Lightning',   words: 'Por Ort Grav', manaCost: 25, castTime: 1500, damage: 35, key: '5' },
             'flamestrike': { name: 'Flamestrike', words: 'Kal Vas Flam', manaCost: 40, castTime: 2000, damage: 60, key: '6' }
         };
+        const INTERPOLATION_FACTOR = 0.3; // --- NEW: Constant for smooth movement. Higher is snappier, lower is smoother.
 
         function setMouseTarget(e) {
             const worldRect = world.getBoundingClientRect();
@@ -237,7 +238,13 @@
                     case 'sync-response': Object.values(data.players).forEach(p => { if(p.id !== localPlayerId) createPlayer(p.id, p.name, false, p) }); if (data.npcs) { Object.values(data.npcs).forEach(n => createNpc(n)); } if (data.items) { Object.values(data.items).forEach(i => createWorldItem(i)); } break;
                     case 'despawn-npc': const npcToFade = npcs[data.id]; if (npcToFade && npcToFade.el) { npcToFade.el.style.opacity = '0'; setTimeout(() => { removeNpc(data.id); }, 500); } break;
                     case 'new-player': if (data.id !== localPlayerId) createPlayer(data.id, data.player.name, false, data.player); break;
-                    case 'move': if (players[data.id] && data.id !== localPlayerId) { players[data.id].x = data.x; players[data.id].y = data.y; } break;
+                    // --- MODIFIED: Client-side interpolation logic ---
+                    case 'move': 
+                        if (players[data.id] && data.id !== localPlayerId) {
+                            players[data.id].targetX = data.x;
+                            players[data.id].targetY = data.y;
+                        }
+                        break;
                     case 'update-health': const damagedPlayer = players[data.id]; if (damagedPlayer) { const attackerEl = players[data.attackerId]?.el || npcs[data.attackerId]?.el; triggerAnimation(attackerEl, 'attack-lunge'); triggerAnimation(damagedPlayer.el, 'damage-flash'); damagedPlayer.health = data.health; damagedPlayer.isDead = data.isDead; } break;
                     case 'update-gold': if (players[data.playerId]) { players[data.playerId].gold = data.gold; } break;
                     case 'chat': addChatMessage(data.message, data.name); if (data.playerId && data.name !== 'system') { showSpeechBubble(data.playerId, data.message); } break;
@@ -252,7 +259,14 @@
                     case 'buff-update': if (players[data.playerId]) { players[data.playerId].buffs = data.buffs; } break;
                     case 'title-update': if (players[data.playerId]) { players[data.playerId].title = data.title; } break;
                     case 'update-mana': if (players[data.playerId]) { players[data.playerId].mana = data.mana; } break;
-                    case 'cast-started': const caster = players[data.casterId]; if (caster) { caster.spellText.textContent = data.spell.words; caster.spellText.style.opacity = '1'; caster.spellText.style.marginBottom = '45px'; } break;
+                    case 'cast-started': 
+                        const caster = players[data.casterId]; 
+                        if (caster) { 
+                            caster.spellText.textContent = data.spell.words;
+                            caster.spellText.style.opacity = '1'; 
+                            caster.spellText.style.marginBottom = '45px'; 
+                        } 
+                        break;
                     case 'cast-finished': const finishedCaster = players[data.casterId]; if (finishedCaster) { finishedCaster.spellText.style.opacity = '0'; finishedCaster.spellText.style.marginBottom = '40px'; } break;
                     case 'spell-effect': const targetEl = players[data.targetId]?.el || npcs[data.targetId]?.el; if (targetEl) { showSpellEffect(targetEl, data.spellId); } break;
                     case 'spawn-projectile': createProjectile(data.projectileId, data.casterId, data.targetId, data.spellId, data.travelTime); break;
@@ -378,7 +392,8 @@
         function createPlayer(id, name, isLocal = false, initialState = {}) {
             if (players[id]) return players[id];
             const spawnPoint = initialState.x != null ? {x: initialState.x, y: initialState.y} : getSafeSpawnPoint();
-            const playerState = { id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), speechBubble: document.createElement('div'), spellText: document.createElement('div'), name: name, x: spawnPoint.x, y: spawnPoint.y, health: initialState.health ?? MAX_HEALTH, mana: initialState.mana ?? MAX_MANA, maxMana: MAX_MANA, isCasting: false, castingSpellId: null, castingTargetId: null, castingTimeoutId: null, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0, inventory: initialState.inventory ?? { health_potion: 0, speed_potion: 0, damage_potion: 0 }, buffs: initialState.buffs ?? { speed: { active: false, endTime: 0 }, damage: { active: false, endTime: 0 } }, title: initialState.title ?? '', pvpKills: initialState.pvpKills ?? 0, pveKills: initialState.pveKills ?? 0, deaths: initialState.deaths ?? 0, resurrectionStartTime: null, isInCombat: false, lastCombatTime: null, lastInputTime: Date.now(), isIdleKicked: false, speechTimeoutId: null, isHost: initialState.isHost ?? false };
+            // --- MODIFIED: Add targetX/Y for interpolation ---
+            const playerState = { id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), speechBubble: document.createElement('div'), spellText: document.createElement('div'), name: name, x: spawnPoint.x, y: spawnPoint.y, targetX: spawnPoint.x, targetY: spawnPoint.y, health: initialState.health ?? MAX_HEALTH, mana: initialState.mana ?? MAX_MANA, maxMana: MAX_MANA, isCasting: false, castingSpellId: null, castingTargetId: null, castingTimeoutId: null, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0, inventory: initialState.inventory ?? { health_potion: 0, speed_potion: 0, damage_potion: 0 }, buffs: initialState.buffs ?? { speed: { active: false, endTime: 0 }, damage: { active: false, endTime: 0 } }, title: initialState.title ?? '', pvpKills: initialState.pvpKills ?? 0, pveKills: initialState.pveKills ?? 0, deaths: initialState.deaths ?? 0, resurrectionStartTime: null, isInCombat: false, lastCombatTime: null, lastInputTime: Date.now(), isIdleKicked: false, speechTimeoutId: null, isHost: initialState.isHost ?? false };
             playerState.el.className = 'game-object player-object'; playerState.el.dataset.id = id; playerState.nameTag.className = 'name-tag'; playerState.healthBar.className = 'health-bar'; playerState.healthBarInner.className = 'health-bar-inner'; playerState.speechBubble.className = 'speech-bubble'; playerState.spellText.className = 'spell-text';
             if (isLocal) { playerState.el.classList.add('local-player'); } else { playerState.el.classList.add('remote-player'); }
             playerState.healthBar.appendChild(playerState.healthBarInner); playerState.el.appendChild(playerState.nameTag); playerState.el.appendChild(playerState.healthBar); playerState.el.appendChild(playerState.speechBubble); playerState.el.appendChild(playerState.spellText);
@@ -403,6 +418,17 @@
                 updateIdlePlayers();
                 updateBuffs();
             }
+            // --- NEW: Interpolation logic for smooth remote player movement ---
+            for (const id in players) {
+                if (id === localPlayerId) continue; // Don't interpolate the local player
+                const p = players[id];
+                const dx = p.targetX - p.x;
+                const dy = p.targetY - p.y;
+                // Move a fraction of the distance to the target each frame
+                p.x += dx * INTERPOLATION_FACTOR;
+                p.y += dy * INTERPOLATION_FACTOR;
+            }
+
             updateProjectiles();
             updateCamera();
             updateUI();
@@ -413,7 +439,6 @@
         
         function handleInput() {
             const me = players[localPlayerId];
-            // --- GHOST MECHANICS: Allow movement even when dead. Other action blocks are handled elsewhere.
             if (!me || document.activeElement === chatInput || vendorMenu.style.display === 'block') {
                 if (isMovingWithMouse) { isMovingWithMouse = false; }
                 return;
@@ -431,17 +456,21 @@
             }
 
             const magnitude = Math.hypot(dx, dy);
-            if (magnitude < 1) { return; }
+            if (magnitude < 1 && !isMovingWithMouse) { return; }
 
             const currentSpeed = me.buffs.speed.active ? PLAYER_BASE_SPEED * 1.5 : PLAYER_BASE_SPEED;
-            let newX = me.x + (dx / magnitude) * currentSpeed;
-            let newY = me.y + (dy / magnitude) * currentSpeed;
+            let newX = me.x;
+            let newY = me.y;
+            if (magnitude > 1) { // Only move if there is input
+                newX = me.x + (dx / magnitude) * currentSpeed;
+                newY = me.y + (dy / magnitude) * currentSpeed;
+            }
+            
 
             if (isPositionInWater(newX, me.y)) newX = me.x;
             if (isPositionInWater(me.x, newY)) newY = me.y;
             if (isPositionInWater(newX, newY)) { newX = me.x; newY = me.y; }
 
-            // --- GHOST MECHANICS: Disable player collision when dead (incorporeal) ---
             if (!me.isDead) {
                 Object.values(players).forEach(other => { if (other.id === localPlayerId || other.isDead) return; if (checkPlayerCollision(newX, me.y, other)) { newX = me.x; } if (checkPlayerCollision(me.x, newY, other)) { newY = me.y; } });
             }
@@ -466,7 +495,6 @@
 
         function handleKeyPress(e) {
             const me = players[localPlayerId];
-            // --- GHOST MECHANICS: Block all key-based actions if dead. ---
             if (!me || me.isDead || document.activeElement === chatInput || vendorMenu.style.display === 'block') return;
 
             const key = e.key.toLowerCase(); 
@@ -492,10 +520,6 @@
         }
         
         function onWorldClick(e) { 
-            if (isMovingWithMouse) {
-                setTimeout(() => { isMovingWithMouse = false; }, 20);
-                return;
-            }
             const me = players[localPlayerId]; 
             if (!me || me.isDead) return; 
 
@@ -507,17 +531,19 @@
                 const distPlayerToVendor = Math.hypot((me.x + PLAYER_RADIUS) - (VENDOR_X + VENDOR_SIZE/2), (me.y + PLAYER_RADIUS) - (VENDOR_Y + VENDOR_SIZE/2)); 
                 if (distPlayerToVendor < VENDOR_INTERACT_RANGE) { 
                     vendorMenu.style.display = 'block'; 
-                    return; 
                 } else { 
                     addChatMessage("You are too far away from the vendor.", "system"); 
-                    return; 
                 } 
+                isMovingWithMouse = false;
+                return; 
             } 
-            let foundTargetId = null, foundTargetType = null, foundTargetName = '';
-            for (const p of Object.values(players)) { if (p.id !== localPlayerId && !p.isDead && clickX >= p.x && clickX <= p.x + PLAYER_SIZE && clickY >= p.y && clickY <= p.y + PLAYER_SIZE) { foundTargetId = p.id; foundTargetType = 'player'; foundTargetName = p.name; break; } } 
-            if (!foundTargetId) { for (const n of Object.values(npcs)) { if (!n.isDead && clickX >= n.x && clickX <= n.x + PLAYER_SIZE && clickY >= n.y && clickY <= n.y + PLAYER_SIZE) { foundTargetId = n.id; foundTargetType = 'npc'; foundTargetName = 'a slime'; break; } } } 
+            
+            let foundTargetId = null, foundTargetName = '';
+            for (const p of Object.values(players)) { if (p.id !== localPlayerId && !p.isDead && clickX >= p.x && clickX <= p.x + PLAYER_SIZE && clickY >= p.y && clickY <= p.y + PLAYER_SIZE) { foundTargetId = p.id; foundTargetName = p.name; break; } } 
+            if (!foundTargetId) { for (const n of Object.values(npcs)) { if (!n.isDead && clickX >= n.x && clickX <= n.x + PLAYER_SIZE && clickY >= n.y && clickY <= n.y + PLAYER_SIZE) { foundTargetId = n.id; foundTargetName = 'a slime'; break; } } } 
             
             if (foundTargetId) {
+                isMovingWithMouse = false;
                 currentTargetId = foundTargetId;
                 isAutoAttacking = true;
                 addChatMessage(`You begin attacking ${foundTargetName}.`, 'system');
@@ -602,20 +628,11 @@
                 const target = players[currentTargetId] || npcs[currentTargetId];
                 if (target && !target.isDead) {
                     target.el.classList.add('targeted-entity');
-                    // The target display bar has been removed as per the request.
-                    // The yellow glow on the target remains.
-                    // targetDisplay.style.display = 'block';
-                    // const targetMaxHealth = target.maxHealth || MAX_HEALTH;
-                    // targetNameDisplay.textContent = target.name || 'Slime';
-                    // targetHealthBarInner.style.width = (target.health / targetMaxHealth) * 100 + '%';
                 } else {
                     clearTarget();
                 }
-            } else {
-                 // No need to hide the display if it's never shown.
-                 // targetDisplay.style.display = 'none';
             }
-
+            
             const me = players[localPlayerId];
             if (me) { playerGoldDisplay.textContent = `Gold: ${me.gold}`; document.getElementById('player-mana').textContent = `Mana: ${Math.floor(me.mana)}`; playerInventoryDisplay.textContent = `Pots: H[${me.inventory.health_potion}] S[${me.inventory.speed_potion}] D[${me.inventory.damage_potion}]`; }
         }
