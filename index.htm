@@ -138,7 +138,7 @@
         let mouseTargetWorldPos = { x: null, y: null };
         let isAutoAttacking = false;
 
-        const PLAYER_SIZE = 30, PLAYER_RADIUS = PLAYER_SIZE / 2, MAX_HEALTH = 100, PLAYER_BASE_SPEED = 9, PLAYER_BASE_ATTACK_DAMAGE = 10; // MODIFIED: Increased speed from 5 to 10
+        const PLAYER_SIZE = 30, PLAYER_RADIUS = PLAYER_SIZE / 2, MAX_HEALTH = 100, PLAYER_BASE_SPEED = 8, PLAYER_BASE_ATTACK_DAMAGE = 10;
         const ATTACK_RANGE = 60, SLIME_GOLD_DROP = 10, GOLD_PILE_SIZE = 15, GOLD_DROP_RADIUS = 40, ATTACK_COOLDOWN_MS = 1000;
         const NPC_SLIME_HEALTH = 30, NPC_SLIME_DAMAGE = 5, NPC_SLIME_SPEED = 2, NPC_AGGRO_RANGE = 200, NPC_ATTACK_RANGE = 40, MAX_NPCS = 10;
         const SHRINE_X = 45, SHRINE_Y = 720, SHRINE_SIZE = 60, SHRINE_RADIUS = SHRINE_SIZE / 2;
@@ -157,7 +157,7 @@
             'lightning':   { name: 'Lightning',   words: 'Por Ort Grav', manaCost: 25, castTime: 1500, damage: 35, key: '5' },
             'flamestrike': { name: 'Flamestrike', words: 'Kal Vas Flam', manaCost: 40, castTime: 2000, damage: 60, key: '6' }
         };
-        const INTERPOLATION_FACTOR = 0.3; // --- NEW: Constant for smooth movement. Higher is snappier, lower is smoother.
+        const INTERPOLATION_FACTOR = 0.2;
 
         function setMouseTarget(e) {
             const worldRect = world.getBoundingClientRect();
@@ -238,7 +238,6 @@
                     case 'sync-response': Object.values(data.players).forEach(p => { if(p.id !== localPlayerId) createPlayer(p.id, p.name, false, p) }); if (data.npcs) { Object.values(data.npcs).forEach(n => createNpc(n)); } if (data.items) { Object.values(data.items).forEach(i => createWorldItem(i)); } break;
                     case 'despawn-npc': const npcToFade = npcs[data.id]; if (npcToFade && npcToFade.el) { npcToFade.el.style.opacity = '0'; setTimeout(() => { removeNpc(data.id); }, 500); } break;
                     case 'new-player': if (data.id !== localPlayerId) createPlayer(data.id, data.player.name, false, data.player); break;
-                    // --- MODIFIED: Client-side interpolation logic ---
                     case 'move': 
                         if (players[data.id] && data.id !== localPlayerId) {
                             players[data.id].targetX = data.x;
@@ -392,7 +391,6 @@
         function createPlayer(id, name, isLocal = false, initialState = {}) {
             if (players[id]) return players[id];
             const spawnPoint = initialState.x != null ? {x: initialState.x, y: initialState.y} : getSafeSpawnPoint();
-            // --- MODIFIED: Add targetX/Y for interpolation ---
             const playerState = { id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), speechBubble: document.createElement('div'), spellText: document.createElement('div'), name: name, x: spawnPoint.x, y: spawnPoint.y, targetX: spawnPoint.x, targetY: spawnPoint.y, health: initialState.health ?? MAX_HEALTH, mana: initialState.mana ?? MAX_MANA, maxMana: MAX_MANA, isCasting: false, castingSpellId: null, castingTargetId: null, castingTimeoutId: null, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0, inventory: initialState.inventory ?? { health_potion: 0, speed_potion: 0, damage_potion: 0 }, buffs: initialState.buffs ?? { speed: { active: false, endTime: 0 }, damage: { active: false, endTime: 0 } }, title: initialState.title ?? '', pvpKills: initialState.pvpKills ?? 0, pveKills: initialState.pveKills ?? 0, deaths: initialState.deaths ?? 0, resurrectionStartTime: null, isInCombat: false, lastCombatTime: null, lastInputTime: Date.now(), isIdleKicked: false, speechTimeoutId: null, isHost: initialState.isHost ?? false };
             playerState.el.className = 'game-object player-object'; playerState.el.dataset.id = id; playerState.nameTag.className = 'name-tag'; playerState.healthBar.className = 'health-bar'; playerState.healthBarInner.className = 'health-bar-inner'; playerState.speechBubble.className = 'speech-bubble'; playerState.spellText.className = 'spell-text';
             if (isLocal) { playerState.el.classList.add('local-player'); } else { playerState.el.classList.add('remote-player'); }
@@ -418,13 +416,11 @@
                 updateIdlePlayers();
                 updateBuffs();
             }
-            // --- NEW: Interpolation logic for smooth remote player movement ---
             for (const id in players) {
-                if (id === localPlayerId) continue; // Don't interpolate the local player
+                if (id === localPlayerId) continue;
                 const p = players[id];
                 const dx = p.targetX - p.x;
                 const dy = p.targetY - p.y;
-                // Move a fraction of the distance to the target each frame
                 p.x += dx * INTERPOLATION_FACTOR;
                 p.y += dy * INTERPOLATION_FACTOR;
             }
@@ -456,17 +452,23 @@
             }
 
             const magnitude = Math.hypot(dx, dy);
-            if (magnitude < 1 && !isMovingWithMouse) { return; }
+            
+            // --- MODIFIED: Smaller dead zone for less jittering ---
+            if (magnitude < 2) {
+                if (isMovingWithMouse) {
+                    isMovingWithMouse = false; // Stop trying to move if we've arrived
+                }
+                return;
+            }
 
             const currentSpeed = me.buffs.speed.active ? PLAYER_BASE_SPEED * 1.5 : PLAYER_BASE_SPEED;
             let newX = me.x;
             let newY = me.y;
-            if (magnitude > 1) { // Only move if there is input
+            if (magnitude > 0) {
                 newX = me.x + (dx / magnitude) * currentSpeed;
                 newY = me.y + (dy / magnitude) * currentSpeed;
             }
             
-
             if (isPositionInWater(newX, me.y)) newX = me.x;
             if (isPositionInWater(me.x, newY)) newY = me.y;
             if (isPositionInWater(newX, newY)) { newX = me.x; newY = me.y; }
