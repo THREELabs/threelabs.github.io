@@ -158,6 +158,7 @@
         .health-bar-inner { width: 100%; height: 100%; background-color: #7ed321; transition: width 0.2s linear; }
         .player-object.speed-buff { box-shadow: 0 0 15px 5px #4a90e2; }
         .player-object.damage-buff { box-shadow: 0 0 15px 5px #e24a4a; }
+        .player-object.poisoned, .npc-object.poisoned { box-shadow: 0 0 15px 5px #4CAF50; }
         #player-stats { color: #f0e68c; padding: 4px; display: flex; justify-content: space-around; font-size: 16px; border-bottom: 1px solid #444; }
         #chat-log { flex-grow: 1; overflow-y: scroll; background-color: #1e1e1e; padding: 5px; font-size: 14px; text-align: left; }
         #chat-log p { margin: 0 0 4px 0; }
@@ -282,9 +283,9 @@
                 <table>
                     <thead><tr><th>Item</th><th>Description</th><th>Cost</th><th>Buy</th></tr></thead>
                     <tbody>
-                        <tr><td>Healing Potion</td><td>Restores 40 health. (Press 1)</td><td>50 G</td><td><button class="buy-btn" data-item="health_potion">Buy</button></td></tr>
-                        <tr><td>Speed Potion</td><td>+50% speed for 20s. (Press 2)</td><td>75 G</td><td><button class="buy-btn" data-item="speed_potion">Buy</button></td></tr>
-                        <tr><td>Damage Potion</td><td>+5 damage for 20s. (Press 3)</td><td>100 G</td><td><button class="buy-btn" data-item="damage_potion">Buy</button></td></tr>
+                        <tr><td>Healing Potion</td><td>Restores 40 health. (Press 6)</td><td>50 G</td><td><button class="buy-btn" data-item="health_potion">Buy</button></td></tr>
+                        <tr><td>Speed Potion</td><td>+50% speed for 20s.</td><td>75 G</td><td><button class="buy-btn" data-item="speed_potion">Buy</button></td></tr>
+                        <tr><td>Damage Potion</td><td>+5 damage for 20s.</td><td>100 G</td><td><button class="buy-btn" data-item="damage_potion">Buy</button></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -310,10 +311,9 @@
         const loginScreen = document.getElementById('login-screen'), gameContainer = document.getElementById('game-container'), playerNameInput = document.getElementById('player-name-input'), joinGameBtn = document.getElementById('join-game-btn'), statusMessage = document.getElementById('status-message'), world = document.getElementById('game-world'), worldContainer = document.getElementById('world-container'), chatLog = document.getElementById('chat-log'), chatInput = document.getElementById('chat-input'), playerGoldDisplay = document.getElementById('player-gold'), playerInventoryDisplay = document.getElementById('player-inventory'), vendorNpc = document.getElementById('vendor-npc'), vendorMenu = document.getElementById('vendor-menu'), closeVendorBtn = document.getElementById('close-vendor-btn'),
               targetDisplay = document.getElementById('target-display'), targetNameDisplay = document.getElementById('target-name'), targetHealthBarInner = document.getElementById('target-health-bar-inner');
         
-        const HOST_ID = 'ultima-brawler-game-v1-any-string';
+        const HOST_ID = 'ultima-brawler-game-host-v2';
         let peer, localPlayerId, isHost = false, currentTargetId = null;
         const players = {}, connections = {}, npcs = {}, worldItems = {}, projectiles = {};
-        const PEER_SERVER_CONFIG = { host: '415b144e-ecf4-4eef-96a1-12ec335a8f7a-00-2qp9bm6eqg9bm.spock.replit.dev', path: '/peerjs', secure: true, };
 
         const WORLD_WIDTH_ACTUAL = 2200, WORLD_HEIGHT_ACTUAL = 1500, BRIDGE_ZONE_START_X = 700, BRIDGE_TOP_Y = 650, BRIDGE_BOTTOM_Y = 850;
         let cameraX = 0, cameraY = 0;
@@ -347,9 +347,10 @@
         const SPELL_RANGE = 350, PROJECTILE_SPEED = 600;
         
         const SPELLS = {
-            'magic_arrow': { name: 'Magic Arrow', words: 'In Por Ylem', manaCost: 4, castTime: 700, damage: 1, key: '4' },
-            'lightning':   { name: 'Lightning',   words: 'Por Ort Grav', manaCost: 10, castTime: 2200, damage: 12, key: '5' },
-            'flamestrike': { name: 'Flamestrike', words: 'Kal Vas Flam', manaCost: 40, castTime: 3500, damage: 25, key: '6' }
+            'poison':      { name: 'Poison',      words: 'In Nox',       manaCost: 9,  castTime: 1500, damage: 0,  key: '1' },
+            'lightning':   { name: 'Lightning',   words: 'Por Ort Grav', manaCost: 10, castTime: 2200, damage: 12, key: '2' },
+            'magic_arrow': { name: 'Magic Arrow', words: 'In Por Ylem', manaCost: 4,  castTime: 700,  damage: 1,  key: '3' },
+            'flamestrike': { name: 'Flamestrike', words: 'Kal Vas Flam', manaCost: 40, castTime: 3500, damage: 25, key: '4' }
         };
 
         const INTERPOLATION_FACTOR = 0.2;
@@ -404,17 +405,15 @@
         function isPositionInWater(x, y) { if (x < BRIDGE_ZONE_START_X - PLAYER_SIZE) return false; if (y < BRIDGE_TOP_Y || y + PLAYER_SIZE > BRIDGE_BOTTOM_Y) return true; return false; }
         function isPositionInSafeZone(x) { return x >= SAFE_ZONE_START_X && x < SAFE_ZONE_END_X; }
         
-        // --- NEW: Function to check for building collision ---
         function isPositionInBuilding(x, y) {
             for (const building of BUILDINGS) {
                 if (checkBuildingCollision(x, y, building)) {
-                    return true; // Found a collision
+                    return true;
                 }
             }
-            return false; // No collision
+            return false;
         }
 
-        // --- MODIFIED: Updated to prevent spawning in buildings ---
         function getSafeSpawnPoint() { 
             let x, y; 
             do { 
@@ -424,9 +423,84 @@
             return { x, y }; 
         }
         
-        function onJoinGameClick() { const name = playerNameInput.value || `Player_${Math.floor(Math.random() * 1000)}`; joinGameBtn.disabled = true; statusMessage.textContent = 'Attempting to create game...'; peer = new Peer(HOST_ID, PEER_SERVER_CONFIG); peer.on('open', (id) => { console.log(`[SUCCESS] I am the HOST with ID: ${id}`); statusMessage.textContent = 'Game created! Waiting for players...'; isHost = true; setInterval(updateManaRegen, MANA_REGEN_INTERVAL); localPlayerId = id; peer.on('connection', setupConnection); finalizeGameEntry(name); }); peer.on('error', (err) => { if (err.type === 'unavailable-id') { console.log(`[INFO] Host already exists. Connecting as a client...`); statusMessage.textContent = 'Game found! Connecting as client...'; peer.destroy(); peer = new Peer(undefined, PEER_SERVER_CONFIG); peer.on('open', (id) => { localPlayerId = id; console.log(`[SUCCESS] I am a CLIENT with ID: ${id}`); statusMessage.textContent = 'Connecting to host...'; const connToHost = peer.connect(HOST_ID, { reliable: true }); setupConnection(connToHost); finalizeGameEntry(name); }); peer.on('error', (clientErr) => { console.error('[FATAL CLIENT ERROR]', clientErr); statusMessage.textContent = `Error: ${clientErr.type}. Please refresh.`; }); } else { console.error('[FATAL HOST ERROR]', err); statusMessage.textContent = `Error: ${err.type}. Check server or refresh.`; } }); }
-        function finalizeGameEntry(name) { loginScreen.style.display = 'none'; gameContainer.style.display = 'block'; createPlayer(localPlayerId, name, true); players[localPlayerId].el.classList.add('local-player'); if (isHost) { players[localPlayerId].isHost = true; for (let i = 0; i < MAX_NPCS; i++) { spawnNpc(); } } else { const hostConn = connections[HOST_ID]; if (hostConn && hostConn.open) { sendData({ type: 'sync-request', name: players[localPlayerId].name }); } else { hostConn.on('open', () => { sendData({ type: 'sync-request', name: players[localPlayerId].name }); }); } } startGame(); }
-        function setupConnection(conn) { connections[conn.peer] = conn; conn.on('data', (data) => handleData(data, conn.peer)); conn.on('close', () => { const disconnectedPlayerName = players[conn.peer]?.name || `${conn.peer.slice(0,6)}...`; addChatMessage(`${disconnectedPlayerName} has disconnected.`, 'system'); removePlayer(conn.peer); delete connections[conn.peer]; if (isHost) { broadcast({ type: 'disconnect', id: conn.peer }); } }); conn.on('error', (err) => { console.error(`Connection error with ${conn.peer}:`, err); }); }
+        function onJoinGameClick() { 
+            const name = playerNameInput.value || `Player_${Math.floor(Math.random() * 1000)}`; 
+            joinGameBtn.disabled = true; 
+            statusMessage.textContent = 'Attempting to create game...'; 
+            peer = new Peer(HOST_ID); 
+            peer.on('open', (id) => { 
+                // HOST PATH: This code runs if we successfully claimed the HOST_ID
+                console.log(`[SUCCESS] I am the HOST with ID: ${id}`); 
+                statusMessage.textContent = 'Game created! Waiting for players...'; 
+                isHost = true; 
+                setInterval(updateManaRegen, MANA_REGEN_INTERVAL); 
+                localPlayerId = id; 
+                peer.on('connection', setupConnection); 
+                finalizeGameEntry(name); 
+            }); 
+            peer.on('error', (err) => { 
+                if (err.type === 'unavailable-id') { 
+                    // CLIENT PATH: This code runs if the HOST_ID is already taken.
+                    console.log(`[INFO] Host already exists. Connecting as a client...`); 
+                    statusMessage.textContent = 'Game found! Connecting as client...'; 
+                    peer.destroy(); 
+                    peer = new Peer(); // Create a peer with a random ID for the client
+                    peer.on('open', (id) => { 
+                        localPlayerId = id; 
+                        console.log(`[SUCCESS] I am a CLIENT with ID: ${id}`); 
+                        statusMessage.textContent = 'Connecting to host...'; 
+                        const connToHost = peer.connect(HOST_ID, { reliable: true }); 
+                        // --- FIX: Pass the client's name to setupConnection to use it later ---
+                        setupConnection(connToHost, name); 
+                        // --- FIX: DO NOT call finalizeGameEntry here. Wait for connection to be open. ---
+                    }); 
+                    peer.on('error', (clientErr) => { 
+                        console.error('[FATAL CLIENT ERROR]', clientErr); 
+                        statusMessage.textContent = `Error: ${clientErr.type}. Please refresh.`; 
+                    }); 
+                } else { 
+                    console.error('[FATAL HOST ERROR]', err); 
+                    statusMessage.textContent = `Error: ${err.type}. Check server or refresh.`; 
+                } 
+            }); 
+        }
+
+        function finalizeGameEntry(name) { 
+            loginScreen.style.display = 'none'; 
+            gameContainer.style.display = 'block'; 
+            createPlayer(localPlayerId, name, true); 
+            players[localPlayerId].el.classList.add('local-player'); 
+            if (isHost) { 
+                players[localPlayerId].isHost = true; 
+                for (let i = 0; i < MAX_NPCS; i++) { spawnNpc(); } 
+            } else { 
+                // This now runs AFTER the connection is open, so hostConn will be ready.
+                const hostConn = connections[HOST_ID]; 
+                if (hostConn && hostConn.open) { 
+                    sendData({ type: 'sync-request', name: players[localPlayerId].name }); 
+                }
+            } 
+            startGame(); 
+        }
+
+        // --- FIX: `nameForClient` is a new parameter for handling the race condition ---
+        function setupConnection(conn, nameForClient = null) {
+            connections[conn.peer] = conn;
+            conn.on('data', (data) => handleData(data, conn.peer));
+            conn.on('close', () => { const disconnectedPlayerName = players[conn.peer]?.name || `${conn.peer.slice(0,6)}...`; addChatMessage(`${disconnectedPlayerName} has disconnected.`, 'system'); removePlayer(conn.peer); delete connections[conn.peer]; if (isHost) { broadcast({ type: 'disconnect', id: conn.peer }); } });
+            conn.on('error', (err) => { console.error(`Connection error with ${conn.peer}:`, err); });
+
+            // --- FIX: This is the core of the solution. ---
+            // If we are a client connecting to the host, wait for the connection to be fully open
+            // before we finalize entry into the game.
+            if (nameForClient) { // A name is only passed for the client's initial connection
+                conn.on('open', () => {
+                    console.log("Connection to host is now open. Finalizing game entry.");
+                    finalizeGameEntry(nameForClient);
+                });
+            }
+        }
+
         function sendData(data) { if (isHost) { handleData(data, localPlayerId); } else { const hostConn = connections[HOST_ID]; if (hostConn && hostConn.open) { hostConn.send(data); } } }
         function broadcast(data) { Object.values(connections).forEach(conn => { if (conn && conn.open) { conn.send(data); } }); }
 
@@ -441,10 +515,54 @@
         function handlePlayerDeath(killedPlayer, killer) { if (!isHost || killedPlayer.gold <= 0) return; let amountToDrop = 0; const isKillerNpc = killer.id.startsWith('npc_'); if (isKillerNpc) { amountToDrop = Math.floor(killedPlayer.gold / 2); } else { amountToDrop = killedPlayer.gold; } if (amountToDrop > 0) { killedPlayer.gold -= amountToDrop; broadcast({ type: 'update-gold', playerId: killedPlayer.id, gold: killedPlayer.gold }); const angle = Math.random() * 2 * Math.PI, radius = Math.random() * GOLD_DROP_RADIUS; const dropX = (killedPlayer.x + PLAYER_RADIUS + Math.cos(angle) * radius) - (GOLD_PILE_SIZE / 2); const dropY = (killedPlayer.y + PLAYER_RADIUS + Math.sin(angle) * radius) - (GOLD_PILE_SIZE / 2); const itemId = `gold_${Date.now()}_${Math.random()}`; const item = { id: itemId, type: 'gold', amount: amountToDrop, x: dropX, y: dropY }; createWorldItem(item); broadcast({ type: 'spawn-item', item: item }); hostAnnounce(`${killedPlayer.name} dropped ${amountToDrop} gold!`); } }
         function setPlayerInCombat(player) { if (!player) return; player.lastCombatTime = Date.now(); if (!player.isInCombat) { player.isInCombat = true; broadcast({ type: 'combat-status-update', playerId: player.id, inCombat: true }); player.el.classList.add('in-combat'); } }
         function updateCombatTimers() { if (!isHost) return; for (const id in players) { const player = players[id]; if (player.isInCombat && (Date.now() - player.lastCombatTime > COMBAT_TIMEOUT)) { player.isInCombat = false; player.lastCombatTime = null; broadcast({ type: 'combat-status-update', playerId: player.id, inCombat: false }); player.el.classList.remove('in-combat'); } } }
-        function updateResurrections() { if (!isHost) return; for (const id in players) { const player = players[id]; if (player.isDead) { const isOnShrine = isPlayerOnShrine(player); if (isOnShrine && !player.resurrectionStartTime) { player.resurrectionStartTime = Date.now(); messagePlayer(id, "You feel the shrine's power begin to restore your life force..."); } else if (!isOnShrine && player.resurrectionStartTime) { player.resurrectionStartTime = null; messagePlayer(id, "You moved away and broke the connection to the shrine."); } else if (isOnShrine && player.resurrectionStartTime && (Date.now() - player.resurrectionStartTime >= RESURRECTION_TIME)) { player.health = MAX_HEALTH; player.isDead = false; player.resurrectionStartTime = null; hostAnnounce(`${player.name} has been resurrected!`); broadcast({ type: 'update-health', id: id, health: player.health, isDead: player.isDead }); } } } }
-        function updateIdlePlayers() { if (!isHost) return; const now = Date.now(); for (const id in players) { const player = players[id]; if (player.isDead && !player.isIdleKicked && (now - player.lastInputTime > IDLE_TIMEOUT)) { player.isIdleKicked = true; const idleX = IDLE_ZONE.x + Math.random() * (IDLE_ZONE.width - PLAYER_SIZE); const idleY = IDLE_ZONE.y + Math.random() * (IDLE_ZONE.height - PLAYER_SIZE); player.x = idleX; player.y = idleY; hostAnnounce(`${player.name} was moved to the idle area for being inactive.`); broadcast({ type: 'move', id: player.id, x: player.x, y: player.y }); } } }
+        
+        /**
+         * This function, run by the host, handles player resurrection.
+         * It checks every dead player to see if they are standing on the shrine.
+         * If they are, it begins a resurrection timer. If they stay for the full duration, they are brought back to life.
+         */
+        function updateResurrections() { 
+            if (!isHost) return; 
+            for (const id in players) { 
+                const player = players[id]; 
+                if (player.isDead) { 
+                    const isOnShrine = isPlayerOnShrine(player); 
+                    if (isOnShrine && !player.resurrectionStartTime) { 
+                        player.resurrectionStartTime = Date.now(); 
+                        messagePlayer(id, "You feel the shrine's power begin to restore your life force..."); 
+                    } else if (!isOnShrine && player.resurrectionStartTime) { 
+                        player.resurrectionStartTime = null; 
+                        messagePlayer(id, "You moved away and broke the connection to the shrine."); 
+                    } else if (isOnShrine && player.resurrectionStartTime && (Date.now() - player.resurrectionStartTime >= RESURRECTION_TIME)) { 
+                        player.health = MAX_HEALTH; 
+                        player.isDead = false; 
+                        player.resurrectionStartTime = null; 
+                        hostAnnounce(`${player.name} has been resurrected!`); 
+                        broadcast({ type: 'update-health', id: id, health: player.health, isDead: player.isDead }); 
+                    } 
+                } 
+            } 
+        }
+        
+        function updateIdlePlayers() {
+            if (!isHost) return;
+            const now = Date.now();
+            for (const id in players) {
+                const player = players[id];
+                if (!player.isDead && !player.isIdleKicked && (now - player.lastInputTime > IDLE_TIMEOUT)) {
+                    player.isIdleKicked = true;
+                    const idleX = IDLE_ZONE.x + Math.random() * (IDLE_ZONE.width - PLAYER_SIZE);
+                    const idleY = IDLE_ZONE.y + Math.random() * (IDLE_ZONE.height - PLAYER_SIZE);
+                    player.x = idleX;
+                    player.y = idleY;
+                    hostAnnounce(`${player.name} was moved to the idle area for being inactive.`);
+                    broadcast({ type: 'move', id: player.id, x: player.x, y: player.y });
+                }
+            }
+        }
+
         function checkAndHandleItemPickup(player) { if (player.isDead) return; const PLAYER_PICKUP_RADIUS = PLAYER_RADIUS + 5; for (const itemId in worldItems) { const item = worldItems[itemId]; const distance = Math.hypot(player.x + PLAYER_RADIUS - (item.x + GOLD_PILE_SIZE / 2), player.y + PLAYER_RADIUS - (item.y + GOLD_PILE_SIZE / 2)); if (distance < PLAYER_PICKUP_RADIUS) { if (item.type === 'gold') { player.gold += item.amount; } removeWorldItem(itemId); broadcast({ type: 'remove-item', id: itemId }); broadcast({ type: 'update-gold', playerId: player.id, gold: player.gold }); hostAnnounce(`${player.name} picked up ${item.amount} gold.`); break; } } }
-        function updateBuffs() { if (!isHost) return; const now = Date.now(); for (const pId in players) { const player = players[pId]; for (const buffType in player.buffs) { const buff = player.buffs[buffType]; if (buff.active && now > buff.endTime) { buff.active = false; messagePlayer(pId, `Your ${buffType} potion has worn off.`); broadcast({ type: 'buff-update', playerId: pId, buffs: player.buffs }); } } } }
+        function updateBuffs() { if (!isHost) return; const now = Date.now(); for (const pId in players) { const player = players[pId]; for (const buffType in player.buffs) { if (buffType === 'poison') continue; const buff = player.buffs[buffType]; if (buff.active && now > buff.endTime) { buff.active = false; messagePlayer(pId, `Your ${buffType.replace('_', ' ')} potion has worn off.`); broadcast({ type: 'buff-update', playerId: pId, buffs: player.buffs }); } } } }
         function checkAndAwardTitle(player) { if (!isHost) return; let bestTitle = ""; for (const titleName in TITLE_DEFINITIONS) { const def = TITLE_DEFINITIONS[titleName]; if (player[def.requirement] >= def.value) { bestTitle = titleName; } } if (bestTitle && player.title !== bestTitle) { player.title = bestTitle; hostAnnounce(`${player.name} has earned the title: ${bestTitle}!`); broadcast({ type: 'title-update', playerId: player.id, title: player.title }); } }
         function generateAndBroadcastLeaderboard() { if (!isHost) return; const sortedPlayers = Object.values(players).sort((a, b) => b.gold - a.gold); const topPlayers = sortedPlayers.slice(0, 5); let leaderboardMessage = "--- Top Brawlers (by Gold) ---"; if (topPlayers.length === 0) { leaderboardMessage += "\nNo brawlers yet!"; } else { topPlayers.forEach((p, index) => { const titleText = p.title ? ` ${p.title}` : ''; leaderboardMessage += `\n#${index + 1}: ${p.name}${titleText} - ${p.gold}g`; }); } hostAnnounce(leaderboardMessage); }
         function updateManaRegen() { if (!isHost) return; for (const pId in players) { const player = players[pId]; if (!player.isDead && player.mana < player.maxMana) { player.mana = Math.min(player.maxMana, player.mana + MANA_REGEN_RATE); broadcast({ type: 'update-mana', playerId: pId, mana: player.mana }); if (pId === localPlayerId) { players[localPlayerId].mana = player.mana; } } } }
@@ -453,7 +571,8 @@
             if (!player || !player.isCasting) return;
             clearTimeout(player.castingTimeoutId);
             player.isCasting = false;
-            const fizzleMessage = `Your ${SPELLS[player.castingSpellId].name} spell was ${reason}!`;
+            const spellName = SPELLS[player.castingSpellId]?.name || "spell";
+            const fizzleMessage = `Your ${spellName} spell was ${reason}!`;
             messagePlayer(player.id, fizzleMessage);
             broadcast({ type: 'cast-finished', casterId: player.id });
             broadcast({ type: 'spell-fizzle', casterId: player.id }); 
@@ -464,6 +583,60 @@
                 if (isHost) { showFizzleEffect(interruptedCaster); } 
             }
         }
+
+        function updatePoisonEffects() {
+            if (!isHost) return;
+            const now = Date.now();
+            const allEntities = [...Object.values(players), ...Object.values(npcs)];
+
+            for (const entity of allEntities) {
+                if (entity.buffs?.poison?.active) {
+                    const poisonData = entity.buffs.poison;
+                    if (now > poisonData.endTime) {
+                        poisonData.active = false;
+                        if (entity.name) messagePlayer(entity.id, "The poison has worn off.");
+                        broadcast({ type: 'buff-update', playerId: entity.id, buffs: entity.buffs });
+                        continue;
+                    }
+
+                    if (now - poisonData.lastTickTime >= poisonData.tickInterval) {
+                        poisonData.lastTickTime = now;
+                        if (entity.isDead) continue;
+                        
+                        entity.health -= poisonData.tickDamage;
+                        entity.health = Math.max(0, entity.health);
+                        triggerAnimation(entity.el, 'damage-flash');
+                        
+                        const isTargetPlayer = !!entity.name;
+                        if (isTargetPlayer) { messagePlayer(entity.id, `You take ${poisonData.tickDamage} damage from poison.`); }
+                        if (entity.isCasting) { interruptSpell(entity, "interrupted by poison"); }
+                        
+                        if (entity.health <= 0) {
+                            entity.isDead = true;
+                            const targetName = entity.name || 'a slime';
+                            const poisoner = players[poisonData.casterId];
+                            hostAnnounce(`${targetName} has succumbed to poison!`);
+                            
+                            if (isTargetPlayer) {
+                                entity.deaths++; checkAndAwardTitle(entity);
+                                if(poisoner) { poisoner.pvpKills++; checkAndAwardTitle(poisoner); }
+                                handlePlayerDeath(entity, poisoner || {id: 'npc_poison'});
+                            } else {
+                                if(poisoner) { poisoner.pveKills++; checkAndAwardTitle(poisoner); }
+                                const dropX = entity.x + (PLAYER_RADIUS - GOLD_PILE_SIZE/2), dropY = entity.y + (PLAYER_RADIUS - GOLD_PILE_SIZE/2);
+                                const item = { id: `gold_${Date.now()}_${Math.random()}`, type: 'gold', amount: SLIME_GOLD_DROP, x: dropX, y: dropY };
+                                createWorldItem(item); broadcast({ type: 'spawn-item', item: item });
+                                setTimeout(() => { if (npcs[entity.id]) { removeNpc(entity.id); broadcast({ type: 'despawn-npc', id: entity.id }); } }, 5000);
+                                setTimeout(() => { spawnNpc(); }, 20000);
+                            }
+                        }
+                        const updateType = isTargetPlayer ? 'update-health' : 'npc-update-health';
+                        broadcast({ type: updateType, id: entity.id, health: entity.health, isDead: entity.isDead });
+                    }
+                }
+            }
+        }
+
 
         function lineIntersectsLine(p1, p2, p3, p4) {
             const den = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
@@ -508,7 +681,7 @@
                     case 'remove-item': removeWorldItem(data.id); break;
                     case 'combat-status-update': const p = players[data.playerId]; if (p) { p.isInCombat = data.inCombat; p.el.classList.toggle('in-combat', data.inCombat); } break;
                     case 'update-inventory': if (players[data.playerId]) { players[data.playerId].inventory = data.inventory; } break;
-                    case 'buff-update': if (players[data.playerId]) { players[data.playerId].buffs = data.buffs; } break;
+                    case 'buff-update': const entity = players[data.playerId] || npcs[data.playerId]; if (entity) { if (!entity.buffs) entity.buffs = {}; entity.buffs = data.buffs; } break;
                     case 'title-update': if (players[data.playerId]) { players[data.playerId].title = data.title; } break;
                     case 'update-mana': if (players[data.playerId]) { players[data.playerId].mana = data.mana; } break;
                     case 'cast-started': const caster = players[data.casterId]; if (caster) { caster.spellText.textContent = data.spell.words; caster.spellText.style.opacity = '1'; caster.spellText.style.marginBottom = '45px'; } break;
@@ -574,25 +747,40 @@
                         const projectileId = `proj_${Date.now()}`;
                         const spawnData = { type: 'spawn-projectile', projectileId, casterId: senderId, targetId: finalTarget.id, spellId: data.spellId, travelTime };
                         broadcast(spawnData); createProjectile(spawnData.projectileId, spawnData.casterId, spawnData.targetId, spawnData.spellId, spawnData.travelTime);
+                        
                         setTimeout(() => {
                             const hitTarget = players[finalTarget.id] || npcs[finalTarget.id];
                             if (!hitTarget || hitTarget.isDead) return;
+                            
                             const isTargetPlayer = !!hitTarget.name;
                             setPlayerInCombat(senderPlayer);
-                            if (isTargetPlayer) { setPlayerInCombat(hitTarget); if (hitTarget.isCasting) { interruptSpell(hitTarget, "interrupted by a spell"); } }
-                            hitTarget.health -= spell.damage; hostAnnounce(`${senderPlayer.name}'s ${spell.name} hits ${hitTarget.name || 'a slime'} for ${spell.damage} damage!`);
-                            if (hitTarget.health <= 0) {
-                                hitTarget.health = 0; hitTarget.isDead = true;
-                                const targetName = hitTarget.name || 'a slime';
-                                hostAnnounce(`${targetName} has been slain!`);
-                                if (isTargetPlayer) { hitTarget.deaths++; checkAndAwardTitle(hitTarget); senderPlayer.pvpKills++; checkAndAwardTitle(senderPlayer); handlePlayerDeath(hitTarget, senderPlayer); }
-                                else { senderPlayer.pveKills++; checkAndAwardTitle(senderPlayer); const dropX = hitTarget.x + (PLAYER_RADIUS - GOLD_PILE_SIZE / 2); const dropY = hitTarget.y + (PLAYER_RADIUS - GOLD_PILE_SIZE / 2); const item = { id: `gold_${Date.now()}_${Math.random()}`, type: 'gold', amount: SLIME_GOLD_DROP, x: dropX, y: dropY }; createWorldItem(item); broadcast({ type: 'spawn-item', item: item }); setTimeout(() => { if (npcs[hitTarget.id]) { removeNpc(hitTarget.id); broadcast({ type: 'despawn-npc', id: hitTarget.id }); } }, 5000); setTimeout(() => { spawnNpc(); }, 20000); }
+                            if (isTargetPlayer) { setPlayerInCombat(hitTarget); }
+                           
+                            if (data.spellId === 'poison') {
+                                if (!hitTarget.buffs) hitTarget.buffs = {};
+                                hitTarget.buffs.poison = { active: true, endTime: Date.now() + 10000, lastTickTime: Date.now(), tickInterval: 2000, tickDamage: 2, casterId: senderId };
+                                hostAnnounce(`${senderPlayer.name}'s poison spell envelops ${hitTarget.name || 'a slime'}!`);
+                                broadcast({ type: 'buff-update', playerId: hitTarget.id, buffs: hitTarget.buffs });
+                            } else {
+                                if (isTargetPlayer && hitTarget.isCasting) { interruptSpell(hitTarget, "interrupted by a spell"); }
+                                hitTarget.health -= spell.damage;
+                                hostAnnounce(`${senderPlayer.name}'s ${spell.name} hits ${hitTarget.name || 'a slime'} for ${spell.damage} damage!`);
+                                if (hitTarget.health <= 0) {
+                                    hitTarget.health = 0; hitTarget.isDead = true;
+                                    const targetName = hitTarget.name || 'a slime';
+                                    hostAnnounce(`${targetName} has been slain!`);
+                                    if (isTargetPlayer) { hitTarget.deaths++; checkAndAwardTitle(hitTarget); senderPlayer.pvpKills++; checkAndAwardTitle(senderPlayer); handlePlayerDeath(hitTarget, senderPlayer); }
+                                    else { senderPlayer.pveKills++; checkAndAwardTitle(senderPlayer); const dropX = hitTarget.x + (PLAYER_RADIUS - GOLD_PILE_SIZE / 2); const dropY = hitTarget.y + (PLAYER_RADIUS - GOLD_PILE_SIZE / 2); const item = { id: `gold_${Date.now()}_${Math.random()}`, type: 'gold', amount: SLIME_GOLD_DROP, x: dropX, y: dropY }; createWorldItem(item); broadcast({ type: 'spawn-item', item: item }); setTimeout(() => { if (npcs[hitTarget.id]) { removeNpc(hitTarget.id); broadcast({ type: 'despawn-npc', id: hitTarget.id }); } }, 5000); setTimeout(() => { spawnNpc(); }, 20000); }
+                                }
+                                const updateType = isTargetPlayer ? 'update-health' : 'npc-update-health';
+                                broadcast({ type: updateType, id: hitTarget.id, health: hitTarget.health, isDead: hitTarget.isDead, attackerId: senderId });
+                                if (isHost) triggerAnimation(hitTarget.el, 'damage-flash');
                             }
-                            const updateType = isTargetPlayer ? 'update-health' : 'npc-update-health';
-                            broadcast({ type: updateType, id: hitTarget.id, health: hitTarget.health, isDead: hitTarget.isDead, attackerId: senderId });
+                            
                             broadcast({ type: 'spell-effect', targetId: hitTarget.id, spellId: data.spellId });
-                            if (isHost) { showSpellEffect(hitTarget.el, data.spellId); triggerAnimation(hitTarget.el, 'damage-flash'); }
+                            if (isHost) showSpellEffect(hitTarget.el, data.spellId);
                         }, travelTime);
+
                     }, spell.castTime);
                     break;
             }
@@ -601,7 +789,7 @@
         function createPlayer(id, name, isLocal = false, initialState = {}) {
             if (players[id]) return players[id];
             const spawnPoint = initialState.x != null ? {x: initialState.x, y: initialState.y} : getSafeSpawnPoint();
-            const playerState = { id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), speechBubble: document.createElement('div'), spellText: document.createElement('div'), name: name, x: spawnPoint.x, y: spawnPoint.y, targetX: spawnPoint.x, targetY: spawnPoint.y, health: initialState.health ?? MAX_HEALTH, mana: initialState.mana ?? MAX_MANA, maxMana: MAX_MANA, isCasting: false, castingSpellId: null, castingTargetId: null, castingTimeoutId: null, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0, inventory: initialState.inventory ?? { health_potion: 0, speed_potion: 0, damage_potion: 0 }, buffs: initialState.buffs ?? { speed: { active: false, endTime: 0 }, damage: { active: false, endTime: 0 } }, title: initialState.title ?? '', pvpKills: initialState.pvpKills ?? 0, pveKills: initialState.pveKills ?? 0, deaths: initialState.deaths ?? 0, resurrectionStartTime: null, isInCombat: false, lastCombatTime: null, lastInputTime: Date.now(), isIdleKicked: false, speechTimeoutId: null, isHost: initialState.isHost ?? false };
+            const playerState = { id: id, el: document.createElement('div'), nameTag: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), speechBubble: document.createElement('div'), spellText: document.createElement('div'), name: name, x: spawnPoint.x, y: spawnPoint.y, targetX: spawnPoint.x, targetY: spawnPoint.y, health: initialState.health ?? MAX_HEALTH, mana: initialState.mana ?? MAX_MANA, maxMana: MAX_MANA, isCasting: false, castingSpellId: null, castingTargetId: null, castingTimeoutId: null, isDead: initialState.isDead ?? false, gold: initialState.gold ?? 0, inventory: initialState.inventory ?? { health_potion: 0, speed_potion: 0, damage_potion: 0 }, buffs: initialState.buffs ?? { speed: { active: false, endTime: 0 }, damage: { active: false, endTime: 0 }, poison: { active: false } }, title: initialState.title ?? '', pvpKills: initialState.pvpKills ?? 0, pveKills: initialState.pveKills ?? 0, deaths: initialState.deaths ?? 0, resurrectionStartTime: null, isInCombat: false, lastCombatTime: null, lastInputTime: Date.now(), isIdleKicked: false, speechTimeoutId: null, isHost: initialState.isHost ?? false };
             playerState.el.className = 'game-object player-object'; playerState.el.dataset.id = id; playerState.nameTag.className = 'name-tag'; playerState.healthBar.className = 'health-bar'; playerState.healthBarInner.className = 'health-bar-inner'; playerState.speechBubble.className = 'speech-bubble'; playerState.spellText.className = 'spell-text';
             if (isLocal) { playerState.el.classList.add('local-player'); } else { playerState.el.classList.add('remote-player'); }
             playerState.healthBar.appendChild(playerState.healthBarInner); playerState.el.appendChild(playerState.nameTag); playerState.el.appendChild(playerState.healthBar); playerState.el.appendChild(playerState.speechBubble); playerState.el.appendChild(playerState.spellText);
@@ -609,7 +797,7 @@
             players[id] = playerState; addChatMessage(`${name} has entered the realm.`, 'system'); return playerState;
         }
         function removePlayer(id) { if (players[id]) { players[id].el.remove(); delete players[id]; } }
-        function createNpc(npcData) { if (npcs[npcData.id]) return; const npcState = { id: npcData.id, el: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), x: npcData.x, y: npcData.y, health: npcData.health, maxHealth: npcData.maxHealth, isDead: npcData.isDead }; npcState.el.className = 'game-object npc-object'; npcState.el.dataset.id = npcData.id; npcState.healthBar.className = 'health-bar'; npcState.healthBarInner.className = 'health-bar-inner'; npcState.healthBar.appendChild(npcState.healthBarInner); npcState.el.appendChild(npcState.healthBar); worldContainer.appendChild(npcState.el); npcs[npcData.id] = npcState; }
+        function createNpc(npcData) { if (npcs[npcData.id]) return; const npcState = { id: npcData.id, el: document.createElement('div'), healthBar: document.createElement('div'), healthBarInner: document.createElement('div'), x: npcData.x, y: npcData.y, health: npcData.health, maxHealth: npcData.maxHealth, isDead: npcData.isDead, buffs: { poison: { active: false } } }; npcState.el.className = 'game-object npc-object'; npcState.el.dataset.id = npcData.id; npcState.healthBar.className = 'health-bar'; npcState.healthBarInner.className = 'health-bar-inner'; npcState.healthBar.appendChild(npcState.healthBarInner); npcState.el.appendChild(npcState.healthBar); worldContainer.appendChild(npcState.el); npcs[npcData.id] = npcState; }
         function removeNpc(id) { if (npcs[id]) { npcs[id].el.remove(); delete npcs[id]; } }
         function createWorldItem(item) { if (worldItems[item.id]) return; const itemEl = document.createElement('div'); itemEl.className = 'game-object gold-pile'; itemEl.style.left = item.x + 'px'; itemEl.style.top = item.y + 'px'; itemEl.dataset.id = item.id; worldItems[item.id] = { ...item, el: itemEl }; worldContainer.appendChild(itemEl); }
         function removeWorldItem(id) { if (worldItems[id]) { worldItems[id].el.remove(); delete worldItems[id]; } }
@@ -635,6 +823,7 @@
                 updateCombatTimers();
                 updateIdlePlayers();
                 updateBuffs();
+                updatePoisonEffects();
             }
             for (const id in players) {
                 if (id === localPlayerId) continue;
@@ -654,6 +843,11 @@
 
         function updateCamera() { const me = players[localPlayerId]; if (!me) return; const viewportWidth = parseInt(getComputedStyle(world).width); const viewportHeight = parseInt(getComputedStyle(world).height); cameraX = me.x - (viewportWidth / 2) + (PLAYER_SIZE / 2); cameraY = me.y - (viewportHeight / 2) + (PLAYER_SIZE / 2); cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH_ACTUAL - viewportWidth)); cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT_ACTUAL - viewportHeight)); }
         
+        /**
+         * Handles local player input for movement.
+         * A critical feature here is that collision with players and buildings is disabled when the player `isDead`.
+         * This allows the player's ghost to pass through objects to reach the resurrection shrine.
+         */
         function handleInput() {
             const me = players[localPlayerId];
             if (!me || document.activeElement === chatInput || vendorMenu.style.display === 'block') { if (isMovingWithMouse) { isMovingWithMouse = false; } return; }
@@ -686,12 +880,22 @@
             const key = e.key.toLowerCase(); 
             if (key === 'enter') { chatInput.focus(); keysPressed['enter'] = false; return; } 
             switch(key) { 
-                case '1': sendData({ type: 'use-item', itemId: 'health_potion' }); break; 
-                case '2': sendData({ type: 'use-item', itemId: 'speed_potion' }); break; 
-                case '3': sendData({ type: 'use-item', itemId: 'damage_potion' }); break; 
-                case '4': case '5': case '6': 
-                    if (currentTargetId) { const spellId = Object.keys(SPELLS).find(id => SPELLS[id].key === key); sendData({ type: 'start-cast', spellId: spellId, targetId: currentTargetId }); } else { addChatMessage("You must have a target to cast a spell.", "system"); } 
-                    break; 
+                case '1': // Poison
+                case '2': // Lightning
+                case '3': // Magic Arrow
+                case '4': // Flamestrike
+                    if (currentTargetId) { 
+                        const spellId = Object.keys(SPELLS).find(id => SPELLS[id].key === key); 
+                        if (spellId) {
+                            sendData({ type: 'start-cast', spellId: spellId, targetId: currentTargetId }); 
+                        }
+                    } else { 
+                        addChatMessage("You must have a target to cast a spell.", "system"); 
+                    } 
+                    break;
+                case '6': // Healing Potion
+                    sendData({ type: 'use-item', itemId: 'health_potion' }); 
+                    break;
                 case 'tab': e.preventDefault(); cycleTarget(); break; 
                 case 'escape': e.preventDefault(); clearTarget(); break; 
             } 
@@ -780,7 +984,18 @@
         function spawnNpc() { if (!isHost) return; const spawnPoint = getSafeSpawnPoint(); const id = `npc_${Date.now()}_${Math.random()}`; const npcData = { id: id, x: spawnPoint.x, y: spawnPoint.y, health: NPC_SLIME_HEALTH, maxHealth: NPC_SLIME_HEALTH, isDead: false }; createNpc(npcData); const npcState = npcs[id]; if (npcState) { npcState.ai_lastMove = Date.now(); npcState.ai_attackCooldown = false; } broadcast({ type: 'spawn-npc', npc: getSerializableNpc(npcState) }); }
 
         function showSpeechBubble(playerId, message) { const player = players[playerId]; if (!player || !player.speechBubble) return; if (player.speechTimeoutId) { clearTimeout(player.speechTimeoutId); } player.speechBubble.textContent = message; player.speechBubble.style.opacity = '1'; player.speechTimeoutId = setTimeout(() => { player.speechBubble.style.opacity = '0'; }, 4000); }
-        function showSpellEffect(targetEl, spellId) { const effectEl = document.createElement('div'); effectEl.style.position = 'absolute'; effectEl.style.pointerEvents = 'none'; effectEl.style.zIndex = 100; switch(spellId) { case 'magic_arrow': effectEl.textContent = '➤'; effectEl.style.color = '#e0aaff'; effectEl.style.fontSize = '30px'; break; case 'lightning': effectEl.textContent = '⚡'; effectEl.style.color = '#f0e68c'; effectEl.style.fontSize = '40px'; break; case 'flamestrike': effectEl.textContent = '🔥'; effectEl.style.color = '#ff6a00'; effectEl.style.fontSize = '50px'; break; } targetEl.appendChild(effectEl); setTimeout(() => effectEl.remove(), 800); }
+        function showSpellEffect(targetEl, spellId) {
+            const effectEl = document.createElement('div');
+            effectEl.style.position = 'absolute'; effectEl.style.pointerEvents = 'none'; effectEl.style.zIndex = 100;
+            switch(spellId) {
+                case 'magic_arrow': effectEl.textContent = '➤'; effectEl.style.color = '#e0aaff'; effectEl.style.fontSize = '30px'; break;
+                case 'lightning': effectEl.textContent = '⚡'; effectEl.style.color = '#f0e68c'; effectEl.style.fontSize = '40px'; break;
+                case 'flamestrike': effectEl.textContent = '🔥'; effectEl.style.color = '#ff6a00'; effectEl.style.fontSize = '50px'; break;
+                case 'poison': effectEl.textContent = '☠️'; effectEl.style.color = '#4CAF50'; effectEl.style.fontSize = '40px'; break;
+            }
+            targetEl.appendChild(effectEl);
+            setTimeout(() => effectEl.remove(), 800);
+        }
         
         function showFizzleEffect(caster) {
             if (!caster) return;
@@ -795,9 +1010,10 @@
             const caster = players[casterId]; const target = players[targetId] || npcs[targetId];
             if (!caster || !target) return;
             const el = document.createElement('div'); el.className = 'spell-projectile';
-            const spellVisual = { 'magic_arrow': '➤', 'lightning': '⚡', 'flamestrike': '🔥' };
-            el.textContent = spellVisual[spellId] || '•';
-            el.style.color = SPELLS[spellId].name === 'Magic Arrow' ? '#e0aaff' : SPELLS[spellId].name === 'Lightning' ? '#f0e68c' : '#ff6a00';
+            const spellVisuals = { 'magic_arrow': '➤', 'lightning': '⚡', 'flamestrike': '🔥', 'poison': '●' };
+            const spellColors = { 'magic_arrow': '#e0aaff', 'lightning': '#f0e68c', 'flamestrike': '#ff6a00', 'poison': '#4CAF50' };
+            el.textContent = spellVisuals[spellId] || '•';
+            el.style.color = spellColors[spellId] || '#fff';
             const startX = caster.x + (PLAYER_SIZE / 2); const startY = caster.y + (PLAYER_SIZE / 2);
             el.style.left = startX + 'px'; el.style.top = startY + 'px';
             worldContainer.appendChild(el);
@@ -818,8 +1034,28 @@
         function updateUI() {
             worldContainer.style.transform = `translate(${-cameraX}px, ${-cameraY}px)`;
             document.querySelectorAll('.targeted-entity').forEach(el => el.classList.remove('targeted-entity'));
-            Object.values(players).forEach(p => { p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px'; const hostIcon = p.isHost ? '👑 ' : ''; p.nameTag.textContent = `${hostIcon}${p.name} ${p.title || ''}`.trim(); p.healthBarInner.style.width = (p.health / MAX_HEALTH) * 100 + '%'; p.el.classList.toggle('ghost', p.isDead); p.el.classList.toggle('speed-buff', p.buffs.speed.active); p.el.classList.toggle('damage-buff', p.buffs.damage.active); });
-            Object.values(npcs).forEach(n => { if (n.el) { n.el.style.left = n.x + 'px'; n.el.style.top = n.y + 'px'; n.healthBarInner.style.width = (n.health / n.maxHealth) * 100 + '%'; n.el.classList.toggle('ghost', n.isDead); } });
+            Object.values(players).forEach(p => { 
+                p.el.style.left = p.x + 'px'; 
+                p.el.style.top = p.y + 'px'; 
+                const hostIcon = p.isHost ? '👑 ' : ''; 
+                p.nameTag.textContent = `${hostIcon}${p.name} ${p.title || ''}`.trim(); 
+                p.healthBarInner.style.width = (p.health / MAX_HEALTH) * 100 + '%'; 
+                p.el.classList.toggle('ghost', p.isDead); 
+                p.el.classList.toggle('speed-buff', p.buffs.speed.active); 
+                p.el.classList.toggle('damage-buff', p.buffs.damage.active); 
+                p.el.classList.toggle('poisoned', p.buffs.poison?.active); 
+            });
+            Object.values(npcs).forEach(n => { 
+                if (n.el) { 
+                    n.el.style.left = n.x + 'px'; 
+                    n.el.style.top = n.y + 'px'; 
+                    n.healthBarInner.style.width = (n.health / n.maxHealth) * 100 + '%'; 
+                    n.el.classList.toggle('ghost', n.isDead); 
+                    if (n.buffs) {
+                        n.el.classList.toggle('poisoned', n.buffs.poison?.active);
+                    }
+                } 
+            });
             Object.values(worldItems).forEach(i => { if (i.el) { i.el.style.left = i.x + 'px'; i.el.style.top = i.y + 'px'; } });
             if (currentTargetId) { const target = players[currentTargetId] || npcs[currentTargetId]; if (target && !target.isDead) { target.el.classList.add('targeted-entity'); } else { clearTarget(); } }
             const me = players[localPlayerId];
