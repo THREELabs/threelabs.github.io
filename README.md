@@ -86,3 +86,100 @@ To test multiplayer functionality, open the same `index.html` file in a second b
 *   **Spells**: Press keys `1` through `4` to cast spells on your current target.
 *   **Use Health Potion**: Press `6`.
 *   **Chat**: Press `Enter`, type your message, and press `Enter` again to send.
+*   
+## Setup and Installation
+
+*While the game client (`index.html`) can be run locally without any setup, this guide is for users who want to host their own private PeerJS signaling server for a more robust multiplayer experience.*
+
+### Prerequisites
+
+- A web browser
+- A Replit account (free)
+- Basic knowledge of HTML/JavaScript
+
+### Part 1: Set Up the Signaling Server (on Replit)
+
+1.  **Create a Replit Account**: Go to [Replit.com](https://replit.com) and sign up for a free account.
+
+2.  **Create a New Project**:
+    *   Click the **"+ Create Repl"** button.
+    *   Select the **"Node.js"** template.
+    *   Give your Repl a name (e.g., `my-peerjs-server`) and click **"Create Repl"**.
+
+3.  **Set up `package.json`**:
+    *   In the file list on the left, select the `package.json` file.
+    *   Replace its contents with the following code:
+       ```json
+       {
+         "name": "my-peerjs-server",
+         "version": "1.0.0",
+         "description": "A PeerJS Game Server",
+         "main": "server.js",
+         "scripts": {
+           "start": "node server.js"
+         },
+         "dependencies": {
+           "express": "^4.18.2",
+           "peer": "^1.0.2"
+         },
+         "engines": {
+           "node": "16.x"
+         }
+       }
+       ```
+
+4.  **Set up `server.js`**:
+    *   Rename the default `index.js` file to `server.js`.
+    *   Replace the contents of `server.js` with the following code:
+       ```javascript
+       const express = require('express');
+       const { ExpressPeerServer } = require('peer');
+
+       const app = express();
+       
+       // Replit runs on port 3000 by default
+       const server = app.listen(3000, () => {
+         console.log('Server is listening on port 3000');
+       });
+
+       const peerServer = ExpressPeerServer(server, {
+         debug: true,
+         allow_discovery: true,
+       });
+
+       app.use('/peerjs', peerServer);
+       console.log('PeerJS server is running and waiting for connections on /peerjs');
+       ```
+
+5.  **Get Your Server URL**:
+    *   Click the big green **"Run"** button at the top. Replit will install the dependencies and start the server.
+    *   A **WebView** tab will open on the right. The URL at the top of this pane is your server's public URL. It will look something like `https://your-repl-name.your-username.replit.dev`.
+    *   Copy just the hostname part (e.g., `your-repl-name.your-username.replit.dev`).
+
+### Part 2: Set Up the Game Client
+
+1.  **Download the Code**: Clone this repository or download the `index.html` file.
+
+2.  **Configure the Server Address**: Open `index.html` in a text editor and find the `PEER_SERVER_CONFIG` constant. Update it with your Replit URL:
+   ```javascript
+   // This is an example from the game code, which uses the public PeerJS server.
+   // To use your own server, you would need to add a configuration object.
+   // For this project, you would modify the peer instantiation directly:
+
+   // FROM:
+   peer = new Peer(HOST_ID); 
+   // and
+   peer = new Peer();
+
+   // TO:
+   peer = new Peer(HOST_ID, {
+       host: 'your-repl-name.your-username.replit.dev', // <-- CHANGE THIS
+       path: '/peerjs',
+       secure: true,
+   });
+   // and
+   peer = new Peer({
+       host: 'your-repl-name.your-username.replit.dev', // <-- CHANGE THIS
+       path: '/peerjs',
+       secure: true,
+   });
