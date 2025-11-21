@@ -336,6 +336,39 @@ function printLine(text, className = '') {
     output.scrollTop = output.scrollHeight;
 }
 
+function printImage(src, altText = 'Image') {
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'terminal-image-container';
+
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'image-wrapper';
+
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = altText;
+    img.className = 'terminal-image';
+
+    // Hide image if it fails to load (e.g. not generated yet)
+    img.onerror = function () {
+        imgContainer.style.display = 'none';
+        console.log(`Image not found: ${src}`);
+    };
+
+    const overlay = document.createElement('div');
+    overlay.className = 'screen-overlay';
+
+    imgWrapper.appendChild(img);
+    imgWrapper.appendChild(overlay);
+    imgContainer.appendChild(imgWrapper);
+    output.appendChild(imgContainer);
+
+    // Ensure scroll to bottom after image loads
+    img.onload = () => {
+        output.scrollTop = output.scrollHeight;
+    };
+    output.scrollTop = output.scrollHeight;
+}
+
 // Enhanced simulateLoading with dynamic messages
 function simulateLoading(seconds, callback, initialMessage = 'Processing', loadingMessages = ['Processing...']) {
     let messageIndex = 0;
@@ -614,7 +647,7 @@ function displayStats() {
     if (missionsContent) {
     }
 
-    // Show the stats panel (Check if elements exist first)
+    // Show the stats panel (Check if elements exist)
     if (statsPanel) {
         statsPanel.style.display = 'block';
     } else {
@@ -702,6 +735,11 @@ function levelComplete() {
         printLine("\nLEVEL COMPLETE!", 'success');
         printLine("--------------------------------------------------", 'success');
         printLine("Congratulations, Agent! You've completed all objectives for this mission.", 'success');
+        printLine("Congratulations, Agent! You've completed all objectives for this mission.", 'success');
+
+        // Show comic reward for the completed level
+        printImage(`level${gameState.level}_comic.png`, `Level ${gameState.level} Complete`);
+
         printLine("Preparing for level up...", 'info');
 
         // Automatically progress to the next level
@@ -744,6 +782,10 @@ function startLevel(level) {
     const levelData = gameState.levelData[level - 1];
     printLine(`\n${levelData.title}`, 'system');
     printLine("--------------------------------------------------", 'system');
+
+    // Show start image for the current level
+    printImage(`level${level}_start.png`, `Level ${level} Briefing`);
+
     printLine(levelData.description, 'info');
     printLine("\nOBJECTIVES:", 'warning');
 

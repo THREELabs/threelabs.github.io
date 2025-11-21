@@ -33,8 +33,13 @@ body {
 }
 
 @keyframes glow {
-    from { box-shadow: 0 0 20px rgba(0, 255, 0, 0.1); }
-    to { box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); }
+    from {
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+    }
+
+    to {
+        box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+    }
 }
 
 .logo {
@@ -62,14 +67,21 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.2),
-               inset 0 0 20px rgba(0, 255, 0, 0.1);
+        inset 0 0 20px rgba(0, 255, 0, 0.1);
     backdrop-filter: blur(5px);
     animation: bootup 1s ease-out;
 }
 
 @keyframes bootup {
-    0% { opacity: 0; transform: scale(0.95); }
-    100% { opacity: 1; transform: scale(1); }
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 #output {
@@ -121,11 +133,25 @@ body {
     outline: none;
 }
 
-.success { color: #0f0; }
-.error { color: #f00; }
-.warning { color: #ff0; }
-.info { color: #0ff; }
-.system { color: #f0f; }
+.success {
+    color: #0f0;
+}
+
+.error {
+    color: #f00;
+}
+
+.warning {
+    color: #ff0;
+}
+
+.info {
+    color: #0ff;
+}
+
+.system {
+    color: #f0f;
+}
 
 .progress-container {
     margin-top: 20px;
@@ -146,9 +172,9 @@ body {
 
 .progress {
     height: 100%;
-    background: linear-gradient(90deg, 
-        rgba(0, 255, 0, 0.5),
-        rgba(0, 255, 0, 0.8));
+    background: linear-gradient(90deg,
+            rgba(0, 255, 0, 0.5),
+            rgba(0, 255, 0, 0.8));
     width: 0%;
     transition: width 0.5s ease-out;
     position: relative;
@@ -161,18 +187,21 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.2) 50%,
-        transparent 100%
-    );
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.2) 50%,
+            transparent 100%);
     animation: progress-shine 2s linear infinite;
 }
 
 @keyframes progress-shine {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 .progress-text {
@@ -214,7 +243,8 @@ body {
     width: 100%;
 }
 
-#help-panel, #stats-panel {
+#help-panel,
+#stats-panel {
     margin-top: 10px;
     padding: 15px;
     border: 1px dashed #0f0;
@@ -230,23 +260,34 @@ body {
 }
 
 @keyframes fade-in {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-#help-panel h3, #stats-panel h3, #stats-panel h4 {
+#help-panel h3,
+#stats-panel h3,
+#stats-panel h4 {
     color: #0f0;
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-#help-panel p, #stats-panel p {
+#help-panel p,
+#stats-panel p {
     margin: 5px 0;
     color: rgba(0, 255, 0, 0.8);
 }
 
-#stats-content, #missions-content {
+#stats-content,
+#missions-content {
     margin-bottom: 15px;
 }
 
@@ -393,13 +434,25 @@ body {
 }
 
 @keyframes notification-slide {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 @keyframes notification-fade {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
 }
 
 .matrix-bg {
@@ -466,10 +519,12 @@ body {
         max-width: 100%;
         padding: 0 15px;
     }
+
     body {
         padding: 10px;
         font-size: 18px;
     }
+
     #terminal {
         height: auto;
         min-height: 70vh;
@@ -478,18 +533,20 @@ body {
 }
 
 @media (max-width: 768px) {
-    body { 
+    body {
         padding: 8px;
         font-size: 16px;
     }
-    .header { 
+
+    .header {
         padding: 12px;
         margin-bottom: 15px;
     }
-    .logo { 
+
+    .logo {
         font-size: 12px;
     }
-    
+
     #game-controls {
         position: fixed;
         bottom: 0;
@@ -501,7 +558,7 @@ body {
         flex-wrap: nowrap;
         justify-content: space-around;
     }
-    
+
     .control-btn {
         padding: 12px;
         font-size: 1em;
@@ -509,9 +566,10 @@ body {
         min-height: 48px;
         margin: 0 5px;
     }
-    
+
     #input-line {
-        margin-bottom: 60px; /* Space for bottom controls */
+        margin-bottom: 60px;
+        /* Space for bottom controls */
     }
 }
 
@@ -519,15 +577,19 @@ body {
     body {
         font-size: 16px;
     }
+
     .header {
         padding: 10px;
     }
+
     .logo {
         font-size: 10px;
     }
+
     #terminal {
         padding: 12px;
     }
+
     .control-btn {
         padding: 10px;
         font-size: 0.9em;
@@ -538,11 +600,113 @@ body {
     body {
         font-size: 14px;
     }
+
     #terminal {
         padding: 8px;
     }
+
     .control-btn {
         padding: 8px;
         font-size: 0.8em;
     }
+}
+
+/* Terminal Image Styling */
+/* Terminal Image Styling - Monitor Effect */
+.terminal-image-container {
+    margin: 30px 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.image-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    padding: 15px 15px 40px 15px;
+    /* Bezel with bottom chin */
+    background: #111;
+    border: 2px solid #333;
+    border-radius: 10px 10px 4px 4px;
+    box-shadow:
+        0 0 0 2px #000,
+        /* Outer edge */
+        0 0 30px rgba(0, 255, 0, 0.05);
+    /* Glow */
+}
+
+/* Monitor Chin Text */
+.image-wrapper::before {
+    content: 'TERMINAL DISPLAY // SECURE';
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #444;
+    font-size: 10px;
+    font-family: monospace;
+    letter-spacing: 2px;
+    pointer-events: none;
+}
+
+/* Power LED */
+.image-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 14px;
+    right: 20px;
+    width: 6px;
+    height: 6px;
+    background: #0f0;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #0f0;
+    animation: led-pulse 2s infinite;
+}
+
+@keyframes led-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.terminal-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid #222;
+    background: #000;
+    /* Screen curve effect */
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+/* Screen Overlay: Scanlines and Glare */
+.screen-overlay {
+    position: absolute;
+    top: 15px;
+    /* Match padding */
+    left: 15px;
+    right: 15px;
+    bottom: 40px;
+    /* Match bottom padding */
+    background:
+        /* Scanlines */
+        repeating-linear-gradient(0deg,
+            rgba(0, 0, 0, 0.15),
+            rgba(0, 0, 0, 0.15) 1px,
+            transparent 1px,
+            transparent 2px),
+        /* Glare */
+        linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 40%);
+    pointer-events: none;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+    /* Vignette */
+    z-index: 2;
 }
