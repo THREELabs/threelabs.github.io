@@ -1,0 +1,23 @@
+# Node
+node_modules/
+
+# Runtime junk
+server.log
+server.pid
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Test artifacts (screenshots)
+*.png.tmp
+*.png
+!road_edits_menu.png
+!**/.agents/**
+debug_shop_live.js
+scripts/debug_*.js
+dist/
+node_modules/
+dist/
+.herenow/
