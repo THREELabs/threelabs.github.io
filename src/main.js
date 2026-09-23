@@ -44,6 +44,12 @@ import { StartupReveal } from './ui/StartupReveal.js';
 
 const startupReveal = new StartupReveal();
 
+function setStartupStatus(text) {
+  const el = document.getElementById('startup-status');
+  if (el) el.textContent = text;
+}
+setStartupStatus('Initializing 3D Engine...');
+
 console.log('🏎️ Starting Dreamstate Highway 3D (Google3D)...');
 
 // 1. Initialize 3D Engine & WebGL2 Cel-Shaded Renderer
@@ -62,6 +68,7 @@ const worldBoundaries = new WorldBoundaries(renderer, splineRoad);
 renderer.scene.add(worldBoundaries.group);
 
 // 3. Build All 10 Authentic Regional Zone Sceneries with Dynamic Distance Culling
+setStartupStatus('Generating Scenic Zones...');
 const zoneBuilders = [
   { builder: new DesertSceneryBuilder(renderer, splineRoad), zMin: 0, zMax: 2600 },
   { builder: new MalibuSceneryBuilder(renderer, splineRoad), zMin: 2600, zMax: 5200 },
@@ -577,6 +584,7 @@ const saveManager = new SaveManager(gameState, physics);
 if (renderer.prewarmScene) {
   renderer.prewarmScene();
 }
+setStartupStatus('Starting Engine...');
 // 1-frame warm-up render under startup white overlay to allocate GPU framebuffers, textures & shadow maps
 renderer.render(0.016);
 
