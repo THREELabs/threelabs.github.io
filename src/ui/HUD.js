@@ -3443,14 +3443,8 @@ export class HUD {
         </div>
       </div>
 
-      <!-- Top Driving Status Bar: Real-Time Live FPS Tracker & Pause Menu -->
+      <!-- Top Driving Status Bar: Pause Menu -->
       <div id="hud-top-bar" class="hud-gameplay-panel">
-        <div id="hud-live-fps" class="hud-live-fps-badge" title="Live Real-Time FPS Tracker • Click to Open Telemetry & Benchmarks [TAB]">
-          <span class="fps-dot"></span>
-          <span id="hud-live-fps-val">60</span>
-          <span class="fps-unit">FPS</span>
-          <span id="hud-live-ms-val" class="fps-ms-val">16.6ms</span>
-        </div>
         <button id="hud-pause-btn" class="hud-top-btn" title="Pause Expedition & Options [ESC]">⏸️ MENU</button>
       </div>
 
@@ -3655,12 +3649,6 @@ export class HUD {
                     <div class="tablet-app-tag">Live radar map & route tracker</div>
                   </div>
 
-                  <!-- App 3: Zone Skipper -->
-                  <div class="tablet-app-card" data-open-app="zones">
-                    <div class="tablet-app-icon-wrap" style="background: linear-gradient(135deg, #0284c7, #2563eb);">⚡</div>
-                    <div class="tablet-app-name">Zone Skipper (Dev)</div>
-                    <div class="tablet-app-tag">Warp to 9 zones & repair bays</div>
-                  </div>
 
                   <!-- App 4: Optics & Camera -->
                   <div class="tablet-app-card" data-open-app="camera">
@@ -3809,135 +3797,6 @@ export class HUD {
                         <div class="checkpoint-left"><span class="checkpoint-icon">🗼</span><div><div class="checkpoint-name">ZONE 8: Washington & Seattle Gateway</div><div class="checkpoint-km">20.8 - 23.4 km</div></div></div>
                         <span class="checkpoint-status-badge badge-ahead" id="chk-badge-8">AHEAD</span>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 3. Zone Skipper App View (Dev Hub) -->
-            <div class="tablet-view" id="tab-view-zones">
-              <div class="tablet-nav-header">
-                <div class="tablet-nav-left">
-                  <button class="tablet-back-btn" data-back-home="true">⬅ APPS</button>
-                  <div class="tablet-view-title">⚡ ZONE SKIPPER & DEV WARP HUB</div>
-                </div>
-              </div>
-              <div class="tablet-scroll-body">
-                <div class="dev-quick-toolbar">
-                  <button class="dev-tool-btn dev-btn-primary" id="dev-warp-mountain-summit" style="background: linear-gradient(135deg, #059669, #047857); color: #fff; font-weight: 800; border: 1px solid #34d399;">⛰️ TOP OF OFF-ROAD MOUNTAIN</button>
-                  <button class="dev-tool-btn dev-btn-primary" id="dev-warp-nearest-shop">⚡ WARP TO NEAREST REPAIR SHOP [T]</button>
-                  <button class="dev-tool-btn dev-btn-primary" id="dev-test-mechanic-cinema" style="background: linear-gradient(135deg, #f59e0b, #ea580c); color: #fff;">🎬 TEST MECHANIC CINEMATIC</button>
-                  <button class="dev-tool-btn dev-btn-danger" id="dev-damage-front">💥 FRONT CRASH</button>
-                  <button class="dev-tool-btn dev-btn-danger" id="dev-damage-left">💥 LEFT T-BONE</button>
-                  <button class="dev-tool-btn dev-btn-danger" id="dev-damage-rear">💥 REAR CRASH</button>
-                  <button class="dev-tool-btn dev-btn-danger" id="dev-damage-90">🔥 90% ROLLOVER</button>
-                  <button class="dev-tool-btn dev-btn-success" id="dev-full-repair">✨ FULL REPAIR</button>
-                </div>
-
-                <div class="dev-tabs-container">
-                  <div class="dev-tab-header">
-                    <button class="dev-tab-btn active" data-tab="tab-zones-list">🗺️ 23.4km Highway Zones (9)</button>
-                    <button class="dev-tab-btn" data-tab="tab-offroad-list">⛰️ Off-Road & Summits</button>
-                    <button class="dev-tab-btn" data-tab="tab-shops-list">🔧 Auto Repair Shops (9)</button>
-                  </div>
-
-                  <div class="dev-tab-content active" id="tab-zones-list">
-                    <div class="zone-modal-grid">
-                      <!-- ⛰️ Top of Off-Road Mountain Summit Card -->
-                      <div class="zone-card offroad-card" data-warp-type="mountain-summit">
-                        <div class="zone-card-top"><span class="zone-num-badge" style="background: #059669; color: #fff;">OFF-ROAD SUMMIT</span><span style="color: #6ee7b7; font-weight: 800;">ELEV 3,500 FT (56m)</span></div>
-                        <div class="zone-card-name">⛰️ Cougar Ridge Mountain Summit</div>
-                        <div class="zone-card-sub">Timber Observation Deck, Panoramic Viewfinders & Downhill Chute</div>
-                      </div>
-                      <div class="zone-card" data-zone-id="0" data-z="100">
-                        <div class="zone-card-top"><span class="zone-num-badge">ZONE 0</span><span>0.0 - 2.6 km</span></div>
-                        <div class="zone-card-name">🏜️ Mojave Desert & Route 66</div>
-                        <div class="zone-card-sub">Diners, Dinosaurs & Bottle Trees</div>
-                      </div>
-                      <div class="zone-card" data-zone-id="1" data-z="2700">
-                        <div class="zone-card-top"><span class="zone-num-badge">ZONE 1</span><span>2.6 - 5.2 km</span></div>
-                        <div class="zone-card-name">🏖️ Malibu & Santa Monica</div>
-                        <div class="zone-card-sub">Pacific Coast Highway Coastal Bluffs</div>
-                      </div>
-                      <div class="zone-card" data-zone-id="2" data-z="5300">
-                        <div class="zone-card-top"><span class="zone-num-badge">ZONE 2</span><span>5.2 - 7.8 km</span></div>
-                        <div class="zone-card-name">🌊 Big Sur Coastline</div>
-                        <div class="zone-card-sub">Bixby Creek Bridge & Cliffside Highway</div>
-                      </div>
-                      <div class="zone-card" data-zone-id="3" data-z="7900">
-                        <div class="zone-card-top"><span class="zone-num-badge">ZONE 3</span><span>7.8 - 10.4 km</span></div>
-                        <div class="zone-card-name">⛳ Monterey & Laguna Seca</div>
-                        <div class="zone-card-sub">Cannery Row, Cypress Trees & Corkscrew</div>
-                      </div>
-                      <div class="zone-card" data-zone-id="4" data-z="10500">
-                        <div class="zone-card-top"><span class="zone-num-badge">ZONE 4</span><span>10.4 - 13.0 km</span></div>
-                        <div class="zone-card-name">🌉 San Francisco & Golden Gate</div>
-                        <div class="zone-card-sub">Suspension Towers, Marin Headlands</div>
-                      </div>
-                      <div class="zone-card" data-zone-id="5" data-z="13100">
-                        <div class="zone-card-top"><span class="zone-num-badge">ZONE 5</span><span>13.0 - 15.6 km</span></div>
-                        <div class="zone-card-name">🌲 Redwood National Forest</div>
-                        <div class="zone-card-sub">Avenue of the Giants & Ancient Canopies</div>
-                      </div>
-                      <div class="zone-card" data-zone-id="6" data-z="15700">
-                        <div class="zone-card-top"><span class="zone-num-badge">ZONE 6</span><span>15.6 - 18.2 km</span></div>
-                        <div class="zone-card-name">🌧️ Oregon Coastline</div>
-                        <div class="zone-card-sub">Haystack Rock, Sea Stacks & Driftwood</div>
-                      </div>
-                      <div class="zone-card" data-zone-id="7" data-z="18300">
-                        <div class="zone-card-top"><span class="zone-num-badge">ZONE 7</span><span>18.2 - 20.8 km</span></div>
-                        <div class="zone-card-name">💨 Columbia River Gorge</div>
-                        <div class="zone-card-sub">Bridge of the Gods & Cascade Mountains</div>
-                      </div>
-                      <div class="zone-card" data-zone-id="8" data-z="20900">
-                        <div class="zone-card-top"><span class="zone-num-badge">ZONE 8</span><span>20.8 - 23.4 km</span></div>
-                        <div class="zone-card-name">🗼 Washington & Seattle</div>
-                        <div class="zone-card-sub">Space Needle, Puget Sound & Finish Arch</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="dev-tab-content" id="tab-offroad-list">
-                    <div class="offroad-warp-grid">
-                      <div class="shop-card offroad-card" data-warp-type="mountain-summit">
-                        <div class="shop-card-badge" style="color: #6ee7b7;">ZONE 0 OFF-ROAD • ELEV 3,500 FT (56m)</div>
-                        <div class="shop-card-name">⛰️ Cougar Ridge Mountain Summit</div>
-                        <div class="shop-card-desc">Timber Observation Deck, Dual Panoramic Viewfinders & Expedition Camp</div>
-                        <button class="shop-warp-btn" style="background: linear-gradient(135deg, #059669, #047857);">WARP TO SUMMIT</button>
-                      </div>
-                      <div class="shop-card offroad-card" data-warp-type="trailhead">
-                        <div class="shop-card-badge" style="color: #fde68a;">ZONE 0 OFF-ROAD • 1.0 KM</div>
-                        <div class="shop-card-name">🧗 4x4 Mountain Trailhead & Staging</div>
-                        <div class="shop-card-desc">Air-Down Basin & Entry to 1,200m Mountain Rock Crawl Expedition</div>
-                        <button class="shop-warp-btn" style="background: linear-gradient(135deg, #d97706, #b45309);">WARP TO TRAILHEAD</button>
-                      </div>
-                      <div class="shop-card offroad-card" data-warp-type="downhill">
-                        <div class="shop-card-badge" style="color: #fca5a5;">ZONE 0 GRAVITY RUN • ELEV 56m DROP</div>
-                        <div class="shop-card-name">⚡ Downhill Express Sprint Chute</div>
-                        <div class="shop-card-desc">High-Speed Gravity Sprint Launch Portal down into Route 66</div>
-                        <button class="shop-warp-btn" style="background: linear-gradient(135deg, #dc2626, #b91c1c);">WARP TO LAUNCH</button>
-                      </div>
-                      <div class="shop-card offroad-card" data-warp-type="rainier-summit">
-                        <div class="shop-card-badge" style="color: #93c5fd;">ZONE 9 HIGHWAY • 25.6 KM</div>
-                        <div class="shop-card-name">❄️ Mount Rainier Glacier Summit</div>
-                        <div class="shop-card-desc">Cascade Alpine Pass Massif, Paradise Valley & Glacier Overlook</div>
-                        <button class="shop-warp-btn" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">WARP TO RAINIER</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="dev-tab-content" id="tab-shops-list">
-                    <div class="repair-shop-warp-grid">
-                      <div class="shop-card" data-z="1200" data-x="22"><div class="shop-card-badge">ZONE 0 • 1.2 KM</div><div class="shop-card-name">🏜️ Mojave 24HR Garage</div><button class="shop-warp-btn">WARP TO BAY</button></div>
-                      <div class="shop-card" data-z="3800" data-x="22"><div class="shop-card-badge">ZONE 1 • 3.8 KM</div><div class="shop-card-name">🏖️ Malibu Speed & Tune</div><button class="shop-warp-btn">WARP TO BAY</button></div>
-                      <div class="shop-card" data-z="6400" data-x="22"><div class="shop-card-badge">ZONE 2 • 6.4 KM</div><div class="shop-card-name">🌊 Big Sur Auto Care</div><button class="shop-warp-btn">WARP TO BAY</button></div>
-                      <div class="shop-card" data-z="9100" data-x="22"><div class="shop-card-badge">ZONE 3 • 9.1 KM</div><div class="shop-card-name">⛳ Monterey Performance</div><button class="shop-warp-btn">WARP TO BAY</button></div>
-                      <div class="shop-card" data-z="11800" data-x="22"><div class="shop-card-badge">ZONE 4 • 11.8 KM</div><div class="shop-card-name">🌉 Marin Service Depot</div><button class="shop-warp-btn">WARP TO BAY</button></div>
-                      <div class="shop-card" data-z="14200" data-x="22"><div class="shop-card-badge">ZONE 5 • 14.2 KM</div><div class="shop-card-name">🌲 Redwood Creek Auto</div><button class="shop-warp-btn">WARP TO BAY</button></div>
-                      <div class="shop-card" data-z="16800" data-x="22"><div class="shop-card-badge">ZONE 6 • 16.8 KM</div><div class="shop-card-name">🌧️ Oregon Coastal Garage</div><button class="shop-warp-btn">WARP TO BAY</button></div>
-                      <div class="shop-card" data-z="19600" data-x="22"><div class="shop-card-badge">ZONE 7 • 19.6 KM</div><div class="shop-card-name">💨 Columbia Speed Works</div><button class="shop-warp-btn">WARP TO BAY</button></div>
-                      <div class="shop-card" data-z="22200" data-x="22"><div class="shop-card-badge">ZONE 8 • 22.2 KM</div><div class="shop-card-name">🗼 Seattle Gateway Garage</div><button class="shop-warp-btn">WARP TO BAY</button></div>
                     </div>
                   </div>
                 </div>
@@ -4892,127 +4751,6 @@ export class HUD {
         this.openTabletApp('home');
       });
     });
-
-    // 4. Zone Skipper App Tabs & Dev Cards
-    this.container.querySelectorAll('.dev-tab-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const tabId = btn.getAttribute('data-tab');
-        this.container.querySelectorAll('.dev-tab-btn').forEach(b => b.classList.remove('active'));
-        this.container.querySelectorAll('.dev-tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        const content = this.container.querySelector(`#${tabId}`);
-        if (content) content.classList.add('active');
-      });
-    });
-
-    this.container.querySelectorAll('.zone-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const warpType = card.getAttribute('data-warp-type');
-        if (warpType === 'mountain-summit') {
-          this.warpToMountainSummit();
-          this.closeTablet();
-          return;
-        }
-        if (warpType === 'trailhead') {
-          this.warpToTrailhead();
-          this.closeTablet();
-          return;
-        }
-        if (warpType === 'downhill') {
-          this.warpToDownhill();
-          this.closeTablet();
-          return;
-        }
-        if (warpType === 'rainier-summit') {
-          this.warpToZone(9, 25600);
-          this.closeTablet();
-          return;
-        }
-        const zoneId = parseInt(card.getAttribute('data-zone-id'), 10);
-        const targetZ = parseFloat(card.getAttribute('data-z'));
-        this.warpToZone(zoneId, targetZ);
-        this.closeTablet();
-      });
-    });
-
-    this.container.querySelectorAll('.shop-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const warpType = card.getAttribute('data-warp-type');
-        if (warpType === 'mountain-summit') {
-          this.warpToMountainSummit();
-          this.closeTablet();
-          return;
-        }
-        if (warpType === 'trailhead') {
-          this.warpToTrailhead();
-          this.closeTablet();
-          return;
-        }
-        if (warpType === 'downhill') {
-          this.warpToDownhill();
-          this.closeTablet();
-          return;
-        }
-        if (warpType === 'rainier-summit') {
-          this.warpToZone(9, 25600);
-          this.closeTablet();
-          return;
-        }
-        const targetZ = parseFloat(card.getAttribute('data-z'));
-        const targetX = parseFloat(card.getAttribute('data-x') || '22');
-        this.warpToRepairShop(targetZ, targetX);
-        this.closeTablet();
-      });
-    });
-
-    // Dev Simulation Crash Tools & Quick Warps
-    const warpMountainSummit = this.container.querySelector('#dev-warp-mountain-summit');
-    if (warpMountainSummit) {
-      warpMountainSummit.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.closeTablet();
-        this.warpToMountainSummit();
-      });
-    }
-
-    const warpNearestShop = this.container.querySelector('#dev-warp-nearest-shop');
-    if (warpNearestShop) {
-      warpNearestShop.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.closeTablet();
-        this.warpToNearestRepairShop();
-      });
-    }
-
-    const testCinema = this.container.querySelector('#dev-test-mechanic-cinema');
-    if (testCinema) {
-      testCinema.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.closeTablet();
-        if (window.game && window.game.mechanicSceneManager) {
-          window.game.mechanicSceneManager.startMechanicScene();
-        }
-      });
-    }
-
-    const bindCrash = (id, type) => {
-      const el = this.container.querySelector(id);
-      if (el) {
-        el.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.applyDevCrash(type);
-        });
-      }
-    };
-    bindCrash('#dev-damage-front', 'front');
-    bindCrash('#dev-damage-left', 'left');
-    bindCrash('#dev-damage-rear', 'rear');
-    bindCrash('#dev-damage-90', 'rollover');
-    bindCrash('#dev-full-repair', 'repair');
-
     // 5. Camera App View
     this.container.querySelectorAll('[data-cam-mode]').forEach(card => {
       card.addEventListener('click', (e) => {
