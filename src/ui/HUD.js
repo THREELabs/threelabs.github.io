@@ -4143,10 +4143,10 @@ export class HUD {
                         <span></span><span></span><span></span><span></span><span></span>
                       </span>
                       <span class="yt-playing-badge" id="yt-deck-playing-state">READY TO PLAY</span>
-                      <a id="yt-deck-external-link" class="yt-deck-ext-btn" href="https://www.youtube.com/watch?v=MV_3Dpw-BRY" target="_blank" rel="noopener noreferrer" title="Open song directly on YouTube in a new tab">↗ YOUTUBE</a>
+                      <a id="yt-deck-external-link" class="yt-deck-ext-btn" href="https://www.youtube.com/watch?v=7j_U15xJnuY" target="_blank" rel="noopener noreferrer" title="Open song directly on YouTube in a new tab">↗ YOUTUBE</a>
                     </div>
-                    <div class="yt-deck-title" id="yt-deck-title">Nightcall</div>
-                    <div class="yt-deck-artist" id="yt-deck-artist">Kavinsky</div>
+                    <div class="yt-deck-title" id="yt-deck-title">Time Squared</div>
+                    <div class="yt-deck-artist" id="yt-deck-artist">Switch Mongo</div>
                     <div class="yt-deck-controls">
                       <button class="yt-ctrl-btn" id="yt-btn-prev" title="Previous Track">⏮</button>
                       <button class="yt-ctrl-btn yt-btn-play-large" id="yt-btn-play-toggle" title="Play / Pause">▶</button>

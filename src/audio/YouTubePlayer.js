@@ -10,6 +10,15 @@ import { gameState } from '../state.js';
 export const CURATED_ROAD_TRACKS = [
   // 🌴 Synthwave & Outrun
   {
+    id: '7j_U15xJnuY',
+    title: 'Time Squared',
+    artist: 'Switch Mongo',
+    genre: 'synthwave',
+    duration: '3:45',
+    tag: '🌴 Featured Track',
+    thumbnail: 'https://i.ytimg.com/vi/7j_U15xJnuY/hqdefault.jpg'
+  },
+  {
     id: 'MV_3Dpw-BRY',
     title: 'Nightcall',
     artist: 'Kavinsky',
@@ -509,7 +518,7 @@ export class YouTubePlayerManager {
     if (this.isReady) return;
 
     try {
-      const initialId = (gameState.youtubeApp && gameState.youtubeApp.currentVideoId) || 'MV_3Dpw-BRY';
+      const initialId = (gameState.youtubeApp && gameState.youtubeApp.currentVideoId) || '7j_U15xJnuY';
       const origin = encodeURIComponent(window.location.origin);
       const widgetReferrer = encodeURIComponent(window.location.href);
 
@@ -519,7 +528,7 @@ export class YouTubePlayerManager {
       iframe.id = 'youtube-iframe-mount';
       iframe.width = '100%';
       iframe.height = '100%';
-      iframe.src = `https://www.youtube-nocookie.com/embed/${initialId}?enablejsapi=1&autoplay=0&controls=1&modestbranding=1&rel=0&fs=0&playsinline=1&origin=${origin}&widget_referrer=${widgetReferrer}`;
+      iframe.src = `https://www.youtube-nocookie.com/embed/${initialId}?enablejsapi=1&autoplay=1&controls=1&modestbranding=1&rel=0&fs=0&playsinline=1&origin=${origin}&widget_referrer=${widgetReferrer}`;
       iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
       iframe.setAttribute('allowfullscreen', 'true');
@@ -538,6 +547,16 @@ export class YouTubePlayerManager {
               if (this.iframe) {
                 this.iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
                 this.iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+              }
+              if (this._queuedAutoplay) {
+                this.playTrack(this._queuedAutoplay);
+                this._queuedAutoplay = null;
+              } else if (gameState.youtubeApp && gameState.youtubeApp.isPlaying) {
+                try {
+                  if (typeof this.ytPlayer.playVideo === 'function') {
+                    this.ytPlayer.playVideo();
+                  }
+                } catch (e) {}
               }
               this._notifyStateChange();
             },
@@ -607,14 +626,14 @@ export class YouTubePlayerManager {
     if (typeof window === 'undefined' || !this.container) return;
     if (this.iframe) return;
 
-    const initialId = (gameState.youtubeApp && gameState.youtubeApp.currentVideoId) || 'MV_3Dpw-BRY';
+    const initialId = (gameState.youtubeApp && gameState.youtubeApp.currentVideoId) || '7j_U15xJnuY';
     const origin = encodeURIComponent(window.location.origin);
     const widgetReferrer = encodeURIComponent(window.location.href);
     const iframe = document.createElement('iframe');
     iframe.id = 'youtube-iframe-mount';
     iframe.width = '100%';
     iframe.height = '100%';
-    iframe.src = `https://www.youtube-nocookie.com/embed/${initialId}?enablejsapi=1&autoplay=0&controls=1&modestbranding=1&rel=0&fs=0&playsinline=1&origin=${origin}&widget_referrer=${widgetReferrer}`;
+    iframe.src = `https://www.youtube-nocookie.com/embed/${initialId}?enablejsapi=1&autoplay=1&controls=1&modestbranding=1&rel=0&fs=0&playsinline=1&origin=${origin}&widget_referrer=${widgetReferrer}`;
     iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
     iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     iframe.setAttribute('allowfullscreen', 'true');
@@ -625,6 +644,24 @@ export class YouTubePlayerManager {
     this.iframe = iframe;
     this.isReady = true;
     this._notifyStateChange();
+  }
+
+  /**
+   * Starts playback of the featured track on user interaction (satisfies mobile/desktop autoplay policy).
+   */
+  startAutoplayOnUserInteraction() {
+    const track = CURATED_ROAD_TRACKS.find(t => t.id === '7j_U15xJnuY') || CURATED_ROAD_TRACKS[0];
+    this.currentTrack = track;
+    if (this.isReady && this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
+      this.playTrack(track);
+    } else {
+      this._queuedAutoplay = track;
+      if (this.iframe && this.iframe.contentWindow) {
+        try {
+          this.iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        } catch (e) {}
+      }
+    }
   }
 
   /**

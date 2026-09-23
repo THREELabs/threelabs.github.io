@@ -123,11 +123,11 @@ export const gameState = {
   isTabletOpen: false,
   activeTabletApp: 'home',
   youtubeApp: {
-    isPlaying: false,
-    currentVideoId: 'MV_3Dpw-BRY',
-    currentTitle: 'Nightcall',
-    currentArtist: 'Kavinsky',
-    currentThumbnail: 'https://i.ytimg.com/vi/MV_3Dpw-BRY/hqdefault.jpg',
+    isPlaying: true,
+    currentVideoId: '7j_U15xJnuY',
+    currentTitle: 'Time Squared',
+    currentArtist: 'Switch Mongo',
+    currentThumbnail: 'https://i.ytimg.com/vi/7j_U15xJnuY/hqdefault.jpg',
     isSearchQuery: false,
     searchQuery: '',
     volume: 100,
@@ -283,11 +283,11 @@ export const gameState = {
     this.isTabletOpen = false;
     this.activeTabletApp = 'home';
     this.youtubeApp = {
-      isPlaying: false,
-      currentVideoId: 'MV_3Dpw-BRY',
-      currentTitle: 'Nightcall',
-      currentArtist: 'Kavinsky',
-      currentThumbnail: 'https://i.ytimg.com/vi/MV_3Dpw-BRY/hqdefault.jpg',
+      isPlaying: true,
+      currentVideoId: '7j_U15xJnuY',
+      currentTitle: 'Time Squared',
+      currentArtist: 'Switch Mongo',
+      currentThumbnail: 'https://i.ytimg.com/vi/7j_U15xJnuY/hqdefault.jpg',
       isSearchQuery: false,
       searchQuery: '',
       volume: 100,

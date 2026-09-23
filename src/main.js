@@ -41,6 +41,7 @@ import { MysteryCrimeScene } from './world/MysteryCrimeScene.js';
 import { SaveManager } from './engine/SaveManager.js';
 import { HUD } from './ui/HUD.js';
 import { StartupReveal } from './ui/StartupReveal.js';
+import { youtubePlayer } from './audio/YouTubePlayer.js';
 
 const startupReveal = new StartupReveal();
 
@@ -608,6 +609,14 @@ hud.setupStartGate(() => {
     sound.setupAudio();
   }
   _startupSmokeTimer = 2.5; // Start exhaust smoke timer right when vehicle awakens
+
+  // Start playing featured soundtrack automatically on game entry
+  try {
+    youtubePlayer.startAutoplayOnUserInteraction();
+  } catch (e) {
+    console.warn('YouTube autoplay trigger error:', e);
+  }
+
   console.log('🌅 Audio Active & Engine Running');
 });
 
