@@ -2698,15 +2698,16 @@ export class HUD {
         #youtube-persistent-container.yt-driving-mode,
         #youtube-persistent-container.yt-driving-dock {
           position: fixed !important;
-          left: -9999px !important;
-          top: -9999px !important;
-          width: 200px !important;
-          height: 200px !important;
-          opacity: 0.001 !important;
+          bottom: 0px !important;
+          right: 0px !important;
+          width: 240px !important;
+          height: 180px !important;
+          opacity: 0.005 !important;
           pointer-events: none !important;
-          z-index: -10 !important;
+          z-index: 1 !important;
           background: #000;
           clip-path: none !important;
+          overflow: hidden !important;
         }
         #youtube-persistent-container.yt-tablet-mode {
           position: fixed !important;
@@ -2718,14 +2719,15 @@ export class HUD {
         }
         #youtube-persistent-container.yt-tablet-hidden {
           position: fixed !important;
-          left: -9999px !important;
-          top: -9999px !important;
-          width: 200px !important;
-          height: 200px !important;
-          opacity: 0 !important;
+          bottom: 0px !important;
+          right: 0px !important;
+          width: 240px !important;
+          height: 180px !important;
+          opacity: 0.005 !important;
           pointer-events: none !important;
-          z-index: -10 !important;
+          z-index: 1 !important;
           clip-path: none !important;
+          overflow: hidden !important;
         }
 
         /* Tablet YouTube View Layout */
@@ -5214,7 +5216,12 @@ export class HUD {
     if (stereoPlayBtn) {
       stereoPlayBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        youtubePlayer.togglePlay();
+        if (youtubePlayer._isPlayingConfirmed && gameState.youtubeApp.isPlaying) {
+          youtubePlayer.pause();
+        } else {
+          youtubePlayer.ensurePlaying();
+          youtubePlayer.resume();
+        }
       });
     }
 

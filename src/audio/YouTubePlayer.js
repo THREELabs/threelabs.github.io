@@ -484,6 +484,10 @@ export class YouTubePlayerManager {
       document.body.appendChild(host);
     }
     this.container = host;
+    this.iframe = document.getElementById('youtube-iframe-mount');
+
+    // Attach global gesture trigger for instant mobile & desktop autoplay unlocking
+    this.setupAutoplayTrigger();
 
     // Check if YouTube IFrame API is already loaded or inject it
     if (window.YT && window.YT.Player) {
@@ -515,31 +519,29 @@ export class YouTubePlayerManager {
 
   _mountPlayer() {
     if (typeof window === 'undefined' || !this.container) return;
-    if (this.isReady) return;
+    if (this.isReady && this.ytPlayer) return;
 
     try {
       const initialId = (gameState.youtubeApp && gameState.youtubeApp.currentVideoId) || '7j_U15xJnuY';
-      const origin = encodeURIComponent(window.location.origin);
-      const widgetReferrer = encodeURIComponent(window.location.href);
 
-      // Pre-create iframe with strict-origin-when-cross-origin referrerpolicy and nocookie domain
-      this.container.innerHTML = '';
-      const iframe = document.createElement('iframe');
-      iframe.id = 'youtube-iframe-mount';
-      iframe.width = '100%';
-      iframe.height = '100%';
-      iframe.src = `https://www.youtube-nocookie.com/embed/${initialId}?enablejsapi=1&autoplay=1&controls=1&modestbranding=1&rel=0&fs=0&playsinline=1&origin=${origin}&widget_referrer=${widgetReferrer}`;
-      iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
-      iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
-      iframe.setAttribute('allowfullscreen', 'true');
-      iframe.style.border = 'none';
-
-      this.container.appendChild(iframe);
+      let iframe = document.getElementById('youtube-iframe-mount');
+      if (!iframe) {
+        this.container.innerHTML = '';
+        iframe = document.createElement('iframe');
+        iframe.id = 'youtube-iframe-mount';
+        iframe.width = '100%';
+        iframe.height = '100%';
+        iframe.src = `https://www.youtube.com/embed/${initialId}?enablejsapi=1&autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`;
+        iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+        iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+        iframe.setAttribute('allowfullscreen', 'true');
+        iframe.style.border = 'none';
+        this.container.appendChild(iframe);
+      }
       this.iframe = iframe;
 
       if (window.YT && window.YT.Player) {
         this.ytPlayer = new window.YT.Player('youtube-iframe-mount', {
-          host: 'https://www.youtube-nocookie.com',
           events: {
             onReady: (event) => {
               this.isReady = true;
@@ -548,22 +550,17 @@ export class YouTubePlayerManager {
                 this.iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
                 this.iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
               }
-              if (this._queuedAutoplay) {
-                this.playTrack(this._queuedAutoplay);
-                this._queuedAutoplay = null;
-              } else if (gameState.youtubeApp && gameState.youtubeApp.isPlaying) {
-                try {
-                  if (typeof this.ytPlayer.playVideo === 'function') {
-                    this.ytPlayer.playVideo();
-                  }
-                } catch (e) {}
-              }
+              try {
+                if (typeof this.ytPlayer.unMute === 'function') this.ytPlayer.unMute();
+                if (typeof this.ytPlayer.playVideo === 'function') this.ytPlayer.playVideo();
+              } catch (e) {}
               this._notifyStateChange();
             },
             onStateChange: (event) => {
               // YT.PlayerState.PLAYING === 1, PAUSED === 2, ENDED === 0
               if (event.data === 1) {
                 gameState.youtubeApp.isPlaying = true;
+                this._isPlayingConfirmed = true;
               } else if (event.data === 2 || event.data === 0) {
                 gameState.youtubeApp.isPlaying = false;
               }
@@ -627,13 +624,11 @@ export class YouTubePlayerManager {
     if (this.iframe) return;
 
     const initialId = (gameState.youtubeApp && gameState.youtubeApp.currentVideoId) || '7j_U15xJnuY';
-    const origin = encodeURIComponent(window.location.origin);
-    const widgetReferrer = encodeURIComponent(window.location.href);
     const iframe = document.createElement('iframe');
     iframe.id = 'youtube-iframe-mount';
     iframe.width = '100%';
     iframe.height = '100%';
-    iframe.src = `https://www.youtube-nocookie.com/embed/${initialId}?enablejsapi=1&autoplay=1&controls=1&modestbranding=1&rel=0&fs=0&playsinline=1&origin=${origin}&widget_referrer=${widgetReferrer}`;
+    iframe.src = `https://www.youtube.com/embed/${initialId}?enablejsapi=1&autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`;
     iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
     iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     iframe.setAttribute('allowfullscreen', 'true');
@@ -647,21 +642,53 @@ export class YouTubePlayerManager {
   }
 
   /**
+   * Sets up a window-wide gesture trigger so ANY touch/click/key automatically
+   * unlocks and starts playing the featured YouTube track on mobile & desktop browsers.
+   */
+  setupAutoplayTrigger() {
+    if (this._hasSetupAutoplayTrigger) return;
+    this._hasSetupAutoplayTrigger = true;
+
+    const trigger = () => {
+      if (this._isPlayingConfirmed) return;
+      this.ensurePlaying();
+    };
+
+    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
+      window.addEventListener(evt, trigger, { passive: true });
+    });
+  }
+
+  /**
+   * Ensures the featured track starts playing immediately.
+   */
+  ensurePlaying() {
+    const track = CURATED_ROAD_TRACKS.find(t => t.id === '7j_U15xJnuY') || CURATED_ROAD_TRACKS[0];
+    this.currentTrack = track;
+    gameState.youtubeApp.currentVideoId = track.id;
+    gameState.youtubeApp.currentTitle = track.title;
+    gameState.youtubeApp.currentArtist = track.artist;
+    gameState.youtubeApp.currentThumbnail = track.thumbnail;
+
+    if (this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
+      try {
+        if (typeof this.ytPlayer.unMute === 'function') this.ytPlayer.unMute();
+        this.ytPlayer.playVideo();
+      } catch (e) {}
+    }
+    if (this.iframe && this.iframe.contentWindow) {
+      try {
+        this.iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+        this.iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+      } catch (e) {}
+    }
+  }
+
+  /**
    * Starts playback of the featured track on user interaction (satisfies mobile/desktop autoplay policy).
    */
   startAutoplayOnUserInteraction() {
-    const track = CURATED_ROAD_TRACKS.find(t => t.id === '7j_U15xJnuY') || CURATED_ROAD_TRACKS[0];
-    this.currentTrack = track;
-    if (this.isReady && this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
-      this.playTrack(track);
-    } else {
-      this._queuedAutoplay = track;
-      if (this.iframe && this.iframe.contentWindow) {
-        try {
-          this.iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-        } catch (e) {}
-      }
-    }
+    this.ensurePlaying();
   }
 
   /**
@@ -784,9 +811,7 @@ export class YouTubePlayerManager {
 
   _updateIframeSrc(videoId) {
     if (typeof window === 'undefined') return;
-    const origin = encodeURIComponent(window.location.origin);
-    const widgetReferrer = encodeURIComponent(window.location.href);
-    const src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&enablejsapi=1&controls=1&modestbranding=1&rel=0&fs=0&playsinline=1&origin=${origin}&widget_referrer=${widgetReferrer}`;
+    const src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&controls=1&modestbranding=1&rel=0&playsinline=1`;
     if (this.iframe) {
       this.iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
       this.iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
@@ -816,10 +841,16 @@ export class YouTubePlayerManager {
     gameState.youtubeApp.isPlaying = true;
     if (this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
       try {
+        if (!gameState.youtubeApp.isMuted && typeof this.ytPlayer.unMute === 'function') {
+          this.ytPlayer.unMute();
+        }
         this.ytPlayer.playVideo();
       } catch (e) {}
     } else if (this.iframe && this.iframe.contentWindow) {
       try {
+        if (!gameState.youtubeApp.isMuted) {
+          this.iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+        }
         this.iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
       } catch (e) {}
     }
