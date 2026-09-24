@@ -3,6 +3,7 @@ import { AUTO_REPAIR_SHOPS, SCENIC_PARKING_LOTS } from '../world/SplineRoad.js';
 import { TrailSpline } from '../world/TrailSpline.js';
 import { DownhillSpline } from '../world/DownhillSpline.js';
 import { SUMMIT_LAYOUT } from '../world/TrailExperience.js';
+import { ZONE_CONTROL_POINTS, interpolateZoneZ } from '../constants.js';
 
 /**
  * ObstacleSystem
@@ -182,9 +183,11 @@ export class ObstacleSystem {
     ];
 
     landmarks.forEach(b => {
-      const transform = this.splineRoad ? this.splineRoad.getRoadTransformAtZ(b.z, b.lat, 0) : null;
+      const zoneIdx = b.z < 2600 ? 0 : Math.min(11, Math.floor(b.z / 2600));
+      const targetZ = zoneIdx === 0 ? b.z : interpolateZoneZ(b.z, ZONE_CONTROL_POINTS[zoneIdx]);
+      const transform = this.splineRoad ? this.splineRoad.getRoadTransformAtZ(targetZ, b.lat, 0) : null;
       const wx = transform ? transform.pos.x : b.lat;
-      const wz = transform ? transform.pos.z : b.z;
+      const wz = transform ? transform.pos.z : targetZ;
 
       this.staticObstacles.push({
         type: 'AABB',
@@ -213,15 +216,15 @@ export class ObstacleSystem {
       maxZ: -67.0
     });
 
-    // 2. Cascade Terminus Finish Line Deceleration Safety Barrier (Z = 26015m)
+    // 2. Montana Glacier Terminus Finish Line Deceleration Safety Barrier (Z = 62015m)
     this.staticObstacles.push({
       type: 'AABB',
-      name: 'Cascade Terminus Finish Line Concrete Safety Barrier',
-      z: 26015,
+      name: 'Montana Glacier Terminus Finish Line Concrete Safety Barrier',
+      z: 62015,
       minX: -60.0,
       maxX: 60.0,
-      minZ: 26014.0,
-      maxZ: 26025.0
+      minZ: 62014.0,
+      maxZ: 62025.0
     });
   }
 
@@ -305,7 +308,7 @@ export class ObstacleSystem {
     });
 
     // Cougar Falls Amphitheater Bluff (Across gorge, solid rock mass)
-    const wfTrans = this.splineRoad.getRoadTransformAtZ(1290.0, -200.0, 0);
+    const wfTrans = this.splineRoad.getRoadTransformAtZ(2830.0, -200.0, 0);
     this.addStaticObstacle({
       type: 'CYLINDER',
       name: 'Cougar Falls Amphitheater Bluff',
@@ -453,7 +456,7 @@ export class ObstacleSystem {
     }
 
     // 9. Thunder Falls Amphitheater Bluff
-    const tfTrans = this.splineRoad.getRoadTransformAtZ(1485.0, -275.0, 0);
+    const tfTrans = this.splineRoad.getRoadTransformAtZ(3025.0, -275.0, 0);
     if (tfTrans) {
       this.addStaticObstacle({
         type: 'CYLINDER',

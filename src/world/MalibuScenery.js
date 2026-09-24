@@ -1422,7 +1422,7 @@ export class MalibuSceneryBuilder {
 
       this.palmCrowns.push({
         mesh: crown,
-        z: z,
+        z: transform.pos.z,
         phase: i * 0.4,
         speed: 1.8 + Math.random() * 0.6
       });
@@ -1597,7 +1597,7 @@ export class MalibuSceneryBuilder {
   // 21. Gliding Pelicans
   buildGlidingPelicans() {
     this.pelicanFlock = new THREE.Group();
-    this.pelicanFlock.position.set(-30, 32, 2800);
+    this.pelicanFlock.position.set(-30, 32, 7000);
 
     const pelicanOffsets = [
       { x: 0, z: 0 },
@@ -2060,8 +2060,8 @@ export class MalibuSceneryBuilder {
 
     if (this.pelicanFlock) {
       this.pelicanFlock.position.z += 12.0 * dt;
-      if (this.pelicanFlock.position.z > 5250) {
-        this.pelicanFlock.position.z = 2650;
+      if (this.pelicanFlock.position.z > 14450) {
+        this.pelicanFlock.position.z = 6600;
       }
     }
   }

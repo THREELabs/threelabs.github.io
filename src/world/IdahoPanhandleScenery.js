@@ -628,9 +628,10 @@ export class IdahoPanhandleSceneryBuilder {
       this.searchlightMesh.rotation.z = Math.sin(gameState.gameTime * 1.4) * 0.55;
     }
 
-    // 4. Proximity trigger — cinematic vignette at mine (Z=28,300m)
+    // 4. Proximity trigger — cinematic vignette at mine
     if (!this.isCinematicPlaying && !this.hasTriggeredVignette) {
-      const zDist = Math.abs(playerPos.z - 28300);
+      const targetZ = this.mineTransform ? this.mineTransform.pos.z : 28300;
+      const zDist = Math.abs(playerPos.z - targetZ);
       if (zDist < 40.0 && this.mineTransform) {
         this._tempVec1.set(playerPos.x, playerPos.y, playerPos.z);
         const d = this._tempVec1.distanceTo(this.mineTransform.pos);

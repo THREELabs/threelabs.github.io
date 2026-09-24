@@ -1082,8 +1082,9 @@ export class CascadeSceneryBuilder {
     }
 
     // 2. Proximity Check for Interactive Cutscene Trigger
-    // Emergency alcove at Z = 25,200m
-    const zDist = Math.abs(playerPos.z - 25200);
+    // Emergency alcove
+    const targetZ = this.galleryTransform ? this.galleryTransform.pos.z : 25200;
+    const zDist = Math.abs(playerPos.z - targetZ);
     if (!this.isCinematicPlaying && !this.hasTriggeredVignette && zDist < 35.0) {
       this._tempVec1.set(playerPos.x, playerPos.y, playerPos.z);
       const galleryCenter = this.galleryTransform.pos;

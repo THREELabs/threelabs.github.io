@@ -752,9 +752,10 @@ export class MontanaGlacierSceneryBuilder {
       this.redJammerMesh.position.y = 0.1 + Math.sin(gameState.gameTime * 18.0) * 0.015;
     }
 
-    // 3. Proximity trigger — cinematic vignette at Logan Pass (Z=30,800m)
+    // 3. Proximity trigger — cinematic vignette at Logan Pass
     if (!this.isCinematicPlaying && !this.hasTriggeredVignette && playerPos) {
-      const zDist = Math.abs(playerPos.z - 30800);
+      const targetZ = this.loganTransform ? this.loganTransform.pos.z : 30800;
+      const zDist = Math.abs(playerPos.z - targetZ);
       if (zDist < 45.0 && this.loganTransform) {
         this._tempVec1.set(playerPos.x, playerPos.y, playerPos.z);
         const d = this._tempVec1.distanceTo(this.loganTransform.pos);

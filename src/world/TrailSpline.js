@@ -171,7 +171,7 @@ export const MUD_BOG_ZONES = [
     tMin: 0.105,
     tMax: 0.132,
     centerLat: -68.0,
-    centerZ: 1085.0,
+    centerZ: 2625.0,
     radius: 18.0,
     depth: 0.35,
     dragFactor: 2.6
@@ -182,7 +182,7 @@ export const MUD_BOG_ZONES = [
     tMin: 0.265,
     tMax: 0.290,
     centerLat: -138.0,
-    centerZ: 1240.0,
+    centerZ: 2780.0,
     radius: 20.0,
     depth: 0.40,
     dragFactor: 2.8
@@ -193,7 +193,7 @@ export const MUD_BOG_ZONES = [
     tMin: 0.575,
     tMax: 0.60,
     centerLat: -270.0,
-    centerZ: 1420.0,
+    centerZ: 2960.0,
     radius: 18.0,
     depth: 0.35,
     dragFactor: 2.7
@@ -204,7 +204,7 @@ export const MUD_BOG_ZONES = [
     tMin: 0.87,
     tMax: 0.92,
     centerLat: -260.0,
-    centerZ: 1085.0,
+    centerZ: 2625.0,
     radius: 22.0,
     depth: 0.30,
     dragFactor: 2.3
@@ -298,7 +298,7 @@ export class TrailSpline {
    */
   static queryTrail(latDist, z) {
     // Quick bounding box rejection across full 1,200m expedition wilderness
-    if (latDist > -14.0 || latDist < -420.0 || z < 960.0 || z > 1540.0) {
+    if (latDist > -14.0 || latDist < -420.0 || z < 2460.0 || z > 3100.0) {
       return null;
     }
 
@@ -365,7 +365,7 @@ export class TrailSpline {
     }
 
     // Summit Plateau Area: covers timber observation deck, boardwalk bridge, cantilever promontory (Elev: 56.0m)
-    const inSummitPlateau = (latDist <= -185.0 && latDist >= -320.0 && z >= 1020.0 && z <= 1180.0);
+    const inSummitPlateau = (latDist <= -185.0 && latDist >= -320.0 && z >= 2560.0 && z <= 2720.0);
     if (inSummitPlateau) {
       targetElev = 56.0;
     }
@@ -514,33 +514,33 @@ export class TrailSpline {
 
 export const TRAIL_ROCK_OBSTACLES = [
   // 1: Cougar Creek Stream Crossing riverbed stones & articulation wash (Stage 2-3, t ≈ 0.135 - 0.265)
-  { t: 0.140, lat: -80.0,  z: 1110.0, radius: 2.4, height: 0.52, type: 'dome', name: 'Riverbed Entry Cobblestone' },
-  { t: 0.155, lat: -88.0,  z: 1125.0, radius: 2.6, height: 0.60, type: 'dome', name: 'Lower Creek Stone 1' },
-  { t: 0.170, lat: -93.0,  z: 1140.0, radius: 2.5, height: 0.55, type: 'dome', name: 'Cougar Ford Bank Rock' },
-  { t: 0.185, lat: -103.0, z: 1158.0, radius: 2.8, height: 0.65, type: 'dome', name: 'Lower Creek Mid Slab' },
-  { t: 0.200, lat: -109.0, z: 1175.0, radius: 2.6, height: 0.58, type: 'dome', name: 'Riverbed Center Boulder' },
-  { t: 0.215, lat: -116.0, z: 1195.0, radius: 2.7, height: 0.65, type: 'dome', name: 'Rapids Boulder 1' },
-  { t: 0.230, lat: -123.0, z: 1205.0, radius: 2.5, height: 0.56, type: 'dome', name: 'Canyon Rapids Stone' },
-  { t: 0.245, lat: -128.0, z: 1215.0, radius: 2.9, height: 0.70, type: 'dome', name: 'Rapids Boulder 2' },
-  { t: 0.258, lat: -134.0, z: 1228.0, radius: 2.7, height: 0.62, type: 'slab', name: 'Riverbed Exit Threshold Slab' },
+  { t: 0.140, lat: -80.0,  z: 2650.0, radius: 2.4, height: 0.52, type: 'dome', name: 'Riverbed Entry Cobblestone' },
+  { t: 0.155, lat: -88.0,  z: 2665.0, radius: 2.6, height: 0.60, type: 'dome', name: 'Lower Creek Stone 1' },
+  { t: 0.170, lat: -93.0,  z: 2680.0, radius: 2.5, height: 0.55, type: 'dome', name: 'Cougar Ford Bank Rock' },
+  { t: 0.185, lat: -103.0, z: 2698.0, radius: 2.8, height: 0.65, type: 'dome', name: 'Lower Creek Mid Slab' },
+  { t: 0.200, lat: -109.0, z: 2715.0, radius: 2.6, height: 0.58, type: 'dome', name: 'Riverbed Center Boulder' },
+  { t: 0.215, lat: -116.0, z: 2735.0, radius: 2.7, height: 0.65, type: 'dome', name: 'Rapids Boulder 1' },
+  { t: 0.230, lat: -123.0, z: 2745.0, radius: 2.5, height: 0.56, type: 'dome', name: 'Canyon Rapids Stone' },
+  { t: 0.245, lat: -128.0, z: 2755.0, radius: 2.9, height: 0.70, type: 'dome', name: 'Rapids Boulder 2' },
+  { t: 0.258, lat: -134.0, z: 2768.0, radius: 2.7, height: 0.62, type: 'slab', name: 'Riverbed Exit Threshold Slab' },
 
   // 2: Boulder Canyon Technical Rock Crawl Arena (Stage 5-6)
-  { t: 0.410, lat: -180.0, z: 1365.0, radius: 3.2, height: 0.85, type: 'dome', name: 'Sledgehammer Rock 1' },
-  { t: 0.425, lat: -188.0, z: 1378.0, radius: 3.1, height: 0.88, type: 'slab', name: 'Crawl Incline Wedge' },
-  { t: 0.440, lat: -195.0, z: 1390.0, radius: 3.4, height: 0.92, type: 'dome', name: 'Boulder Arena Apex' },
-  { t: 0.455, lat: -205.0, z: 1405.0, radius: 3.2, height: 0.90, type: 'slab', name: 'Center Shelf Step' },
-  { t: 0.470, lat: -218.0, z: 1420.0, radius: 3.5, height: 0.92, type: 'dome', name: 'Granite Apex Boulder' },
-  { t: 0.490, lat: -232.0, z: 1435.0, radius: 3.3, height: 0.88, type: 'dome', name: 'Thunder Canyon Gate Rock' },
+  { t: 0.410, lat: -180.0, z: 2905.0, radius: 3.2, height: 0.85, type: 'dome', name: 'Sledgehammer Rock 1' },
+  { t: 0.425, lat: -188.0, z: 2918.0, radius: 3.1, height: 0.88, type: 'slab', name: 'Crawl Incline Wedge' },
+  { t: 0.440, lat: -195.0, z: 2930.0, radius: 3.4, height: 0.92, type: 'dome', name: 'Boulder Arena Apex' },
+  { t: 0.455, lat: -205.0, z: 2945.0, radius: 3.2, height: 0.90, type: 'slab', name: 'Center Shelf Step' },
+  { t: 0.470, lat: -218.0, z: 2960.0, radius: 3.5, height: 0.92, type: 'dome', name: 'Granite Apex Boulder' },
+  { t: 0.490, lat: -232.0, z: 2975.0, radius: 3.3, height: 0.88, type: 'dome', name: 'Thunder Canyon Gate Rock' },
 
   // 3: Thunder Creek Waterfall Ford riverbed stones & rapids (Stage 7-8)
-  { t: 0.595, lat: -278.0, z: 1405.0, radius: 2.8, height: 0.65, type: 'dome', name: 'Thunder Creek Approach Stone' },
-  { t: 0.615, lat: -282.0, z: 1385.0, radius: 2.6, height: 0.58, type: 'dome', name: 'Thunder Ford Bank Stone' },
-  { t: 0.630, lat: -292.0, z: 1370.0, radius: 3.0, height: 0.70, type: 'slab', name: 'Thunder Creek Exit Ledge' },
+  { t: 0.595, lat: -278.0, z: 2945.0, radius: 2.8, height: 0.65, type: 'dome', name: 'Thunder Creek Approach Stone' },
+  { t: 0.615, lat: -282.0, z: 2925.0, radius: 2.6, height: 0.58, type: 'dome', name: 'Thunder Ford Bank Stone' },
+  { t: 0.630, lat: -292.0, z: 2910.0, radius: 3.0, height: 0.70, type: 'slab', name: 'Thunder Creek Exit Ledge' },
 
   // 4: Devil's Shelf Cascading Waterfall Rock Ledges (Stage 9-10)
-  { t: 0.785, lat: -282.0, z: 1205.0, radius: 5.0, height: 0.65, type: 'slab', name: 'Shelf Tier 1' },
-  { t: 0.805, lat: -276.0, z: 1175.0, radius: 5.2, height: 0.65, type: 'slab', name: 'Shelf Tier 2' },
-  { t: 0.820, lat: -272.0, z: 1155.0, radius: 4.8, height: 0.68, type: 'slab', name: 'Cascade Ledge' },
-  { t: 0.835, lat: -268.0, z: 1135.0, radius: 5.0, height: 0.65, type: 'slab', name: 'Shelf Tier 3' },
-  { t: 0.850, lat: -264.0, z: 1115.0, radius: 4.6, height: 0.70, type: 'slab', name: 'Summit Threshold Slab' }
+  { t: 0.785, lat: -282.0, z: 2745.0, radius: 5.0, height: 0.65, type: 'slab', name: 'Shelf Tier 1' },
+  { t: 0.805, lat: -276.0, z: 2715.0, radius: 5.2, height: 0.65, type: 'slab', name: 'Shelf Tier 2' },
+  { t: 0.820, lat: -272.0, z: 2695.0, radius: 4.8, height: 0.68, type: 'slab', name: 'Cascade Ledge' },
+  { t: 0.835, lat: -268.0, z: 2675.0, radius: 5.0, height: 0.65, type: 'slab', name: 'Shelf Tier 3' },
+  { t: 0.850, lat: -264.0, z: 2655.0, radius: 4.6, height: 0.70, type: 'slab', name: 'Summit Threshold Slab' }
 ];

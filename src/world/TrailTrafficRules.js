@@ -22,7 +22,7 @@ export class TrailTrafficRules {
   }
 
   project(position) {
-    if (position.z < 925 || position.z > 1580) return null;
+    if (position.z < 2440 || position.z > 3100) return null;
     let best = null;
     for (const route of this.routes) {
       for (let i=0;i<route.points.length-1;i++) {

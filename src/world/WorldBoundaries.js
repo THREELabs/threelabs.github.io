@@ -263,11 +263,11 @@ export class WorldBoundaries {
     const railGeo = new THREE.BoxGeometry(0.12, 0.42, 20.2);
     const refGeo = new THREE.BoxGeometry(0.14, 0.22, 0.06);
 
-    // Coastal zones: Malibu (2600-5200m), Big Sur (5200-7800m), Oregon Coast (15600-18200m)
+    // Coastal zones: Malibu (6500-14500m), Big Sur (14500-20500m), Oregon Coast (36000-40500m)
     const coastalRanges = [
-      { start: 2600, end: 5180 },
-      { start: 5220, end: 7780 },
-      { start: 15600, end: 18180 }
+      { start: 6500, end: 14480 },
+      { start: 14520, end: 20480 },
+      { start: 36000, end: 40480 }
     ];
 
     coastalRanges.forEach(range => {
@@ -315,9 +315,9 @@ export class WorldBoundaries {
     const reflectorGeo = new THREE.BoxGeometry(0.16, 0.26, 0.06);
 
     const STEP_Z = 35;
-    for (let z = 340; z <= 23350; z += STEP_Z) {
+    for (let z = 340; z <= 61950; z += STEP_Z) {
       // Do not build floating outer boundary fences over open bridge water spans
-      if ((z >= 6550 && z <= 6750) || (z >= 11400 && z <= 12000) || (z >= 18600 && z <= 18800)) continue;
+      if ((z >= 18550 && z <= 18750) || (z >= 28600 && z <= 29200) || (z >= 31750 && z <= 31950) || (z >= 41300 && z <= 41500)) continue;
 
       const roadInfo = this.splineRoad.getRoadInfo(0, z);
       const rx = roadInfo.roadPoint.x;
@@ -325,7 +325,7 @@ export class WorldBoundaries {
       [-58, 58].forEach((lateralOffset, sideIdx) => {
         const isRight = lateralOffset > 0;
         // Skip perimeter fence if within parking lot area, auto repair shop, or off-road trail corridor
-        const isCoyoteTrailOpening = !isRight && z >= 950 && z <= 1180;
+        const isCoyoteTrailOpening = !isRight && z >= 2440 && z <= 3080;
         if (isCoyoteTrailOpening) return;
 
         const inTurnoutArea = SCENIC_PARKING_LOTS.some(

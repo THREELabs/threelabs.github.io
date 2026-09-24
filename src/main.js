@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { batchStaticProps } from './engine/StaticMeshBatcher.js';
 import { gameState } from './state.js';
-import { ZONES } from './constants.js';
+import { ZONES, ZONE_CONTROL_POINTS, interpolateZoneZ } from './constants.js';
 import { SceneRenderer } from './engine/Renderer.js';
 import { InputManager } from './engine/Input.js';
 import { SafariJeep } from './vehicles/SafariJeep.js';
@@ -68,21 +68,72 @@ renderer.scene.add(terrain.group);
 const worldBoundaries = new WorldBoundaries(renderer, splineRoad);
 renderer.scene.add(worldBoundaries.group);
 
-// 3. Build All 10 Authentic Regional Zone Sceneries with Dynamic Distance Culling
+// Create coordinate adapter so zone builders authored with [zoneIdx*2600..(zoneIdx+1)*2600]
+// seamlessly place their landmarks, buildings, and props at their expanded 62km world locations.
+function createZoneSplineRoadAdapter(road, zoneIdx) {
+  if (zoneIdx === 0) return road;
+  const controlPoints = ZONE_CONTROL_POINTS[zoneIdx];
+  if (!controlPoints) return road;
+
+  return new Proxy(road, {
+    get(target, prop, receiver) {
+      if (prop === 'getRoadTransformAtZ') {
+        return (authoredZ, latOffset = 0, yOffset = 0) => {
+          const worldZ = interpolateZoneZ(authoredZ, controlPoints);
+          return target.getRoadTransformAtZ(worldZ, latOffset, yOffset);
+        };
+      }
+      if (prop === 'getGroundElevation') {
+        return (x, authoredZ) => {
+          const worldZ = interpolateZoneZ(authoredZ, controlPoints);
+          return target.getGroundElevation(x, worldZ);
+        };
+      }
+      if (prop === 'getRoadInfo') {
+        return (x, authoredZ) => {
+          const worldZ = interpolateZoneZ(authoredZ, controlPoints);
+          return target.getRoadInfo(x, worldZ);
+        };
+      }
+      if (prop === 'getCurvatureAtZ') {
+        return (authoredZ) => {
+          const worldZ = interpolateZoneZ(authoredZ, controlPoints);
+          return target.getCurvatureAtZ(worldZ);
+        };
+      }
+      if (prop === 'getElevationAtZ') {
+        return (authoredZ) => {
+          const worldZ = interpolateZoneZ(authoredZ, controlPoints);
+          return target.getElevationAtZ(worldZ);
+        };
+      }
+      if (prop === 'getBankingAtZ') {
+        return (authoredZ) => {
+          const worldZ = interpolateZoneZ(authoredZ, controlPoints);
+          return target.getBankingAtZ(worldZ);
+        };
+      }
+      const val = Reflect.get(target, prop, receiver);
+      return typeof val === 'function' ? val.bind(target) : val;
+    }
+  });
+}
+
+// 3. Build All 12 Authentic Regional Zone Sceneries with Dynamic Distance Culling
 setStartupStatus('Generating Scenic Zones...');
 const zoneBuilders = [
-  { builder: new DesertSceneryBuilder(renderer, splineRoad), zMin: ZONES[0].zMin, zMax: ZONES[0].zMax },
-  { builder: new MalibuSceneryBuilder(renderer, splineRoad), zMin: ZONES[1].zMin, zMax: ZONES[1].zMax },
-  { builder: new BigSurSceneryBuilder(renderer, splineRoad), zMin: ZONES[2].zMin, zMax: ZONES[2].zMax },
-  { builder: new MontereySceneryBuilder(renderer, splineRoad), zMin: ZONES[3].zMin, zMax: ZONES[3].zMax },
-  { builder: new NorCalSceneryBuilder(renderer, splineRoad), zMin: ZONES[4].zMin, zMax: ZONES[4].zMax },
-  { builder: new RedwoodSceneryBuilder(renderer, splineRoad), zMin: ZONES[5].zMin, zMax: ZONES[5].zMax },
-  { builder: new OregonSceneryBuilder(renderer, splineRoad), zMin: ZONES[6].zMin, zMax: ZONES[6].zMax },
-  { builder: new ColumbiaGorgeSceneryBuilder(renderer, splineRoad), zMin: ZONES[7].zMin, zMax: ZONES[7].zMax },
-  { builder: new WashingtonSceneryBuilder(renderer, splineRoad), zMin: ZONES[8].zMin, zMax: ZONES[8].zMax },
-  { builder: new CascadeSceneryBuilder(renderer, splineRoad), zMin: ZONES[9].zMin, zMax: ZONES[9].zMax },
-  { builder: new IdahoPanhandleSceneryBuilder(renderer, splineRoad), zMin: ZONES[10].zMin, zMax: ZONES[10].zMax },
-  { builder: new MontanaGlacierSceneryBuilder(renderer, splineRoad), zMin: ZONES[11].zMin, zMax: ZONES[11].zMax }
+  { builder: new DesertSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 0)), zMin: ZONES[0].zMin, zMax: ZONES[0].zMax },
+  { builder: new MalibuSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 1)), zMin: ZONES[1].zMin, zMax: ZONES[1].zMax },
+  { builder: new BigSurSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 2)), zMin: ZONES[2].zMin, zMax: ZONES[2].zMax },
+  { builder: new MontereySceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 3)), zMin: ZONES[3].zMin, zMax: ZONES[3].zMax },
+  { builder: new NorCalSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 4)), zMin: ZONES[4].zMin, zMax: ZONES[4].zMax },
+  { builder: new RedwoodSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 5)), zMin: ZONES[5].zMin, zMax: ZONES[5].zMax },
+  { builder: new OregonSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 6)), zMin: ZONES[6].zMin, zMax: ZONES[6].zMax },
+  { builder: new ColumbiaGorgeSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 7)), zMin: ZONES[7].zMin, zMax: ZONES[7].zMax },
+  { builder: new WashingtonSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 8)), zMin: ZONES[8].zMin, zMax: ZONES[8].zMax },
+  { builder: new CascadeSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 9)), zMin: ZONES[9].zMin, zMax: ZONES[9].zMax },
+  { builder: new IdahoPanhandleSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 10)), zMin: ZONES[10].zMin, zMax: ZONES[10].zMax },
+  { builder: new MontanaGlacierSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 11)), zMin: ZONES[11].zMin, zMax: ZONES[11].zMax }
 ];
 
 // Performance Optimization: Batch static meshes sharing identical materials inside spatial chunks

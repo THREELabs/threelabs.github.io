@@ -29,9 +29,9 @@ export class EnvironmentManager {
     // Distant Horizon Mountain Ridge Chains across the 12,500m Pacific Coast drive
     this.mountainsGroup = new THREE.Group();
 
-    const mountainGeo = new THREE.PlaneGeometry(160, 13000, 24, 260);
+    const mountainGeo = new THREE.PlaneGeometry(160, 64000, 24, 640);
     mountainGeo.rotateX(-Math.PI * 0.5);
-    mountainGeo.translate(0, 0, 6500);
+    mountainGeo.translate(0, 0, 32000);
 
     const pos = mountainGeo.attributes.position;
     const colors = new Float32Array(pos.count * 3);
@@ -52,11 +52,11 @@ export class EnvironmentManager {
       const ridgeNoise = Math.sin(vz * 0.008) * 65 + Math.cos(vz * 0.022) * 40 + Math.sin(vz * 0.055) * 22;
       const rawPeak = Math.max(28, 90 + ridgeNoise);
 
-      // Smoothly carve pass in Zone 0 (Z: 850m - 1350m) to open sightlines through Cougar Ridge to Surprise City
+      // Smoothly carve pass in Zone 0 (Z: 2350m - 2950m) to open sightlines through Cougar Ridge to Surprise City
       let passWeight = 1.0;
-      if (vz >= 850 && vz <= 1350) {
-        const passDist = Math.abs(vz - 1100);
-        const passT = THREE.MathUtils.clamp(passDist / 250.0, 0, 1);
+      if (vz >= 2350 && vz <= 2950) {
+        const passDist = Math.abs(vz - 2650);
+        const passT = THREE.MathUtils.clamp(passDist / 300.0, 0, 1);
         passWeight = passT * passT * (3.0 - 2.0 * passT);
       }
 
@@ -65,13 +65,13 @@ export class EnvironmentManager {
       pos.setY(i, peakY);
 
       let col = new THREE.Color(0x425442);
-      if (vz < 2600) {
+      if (vz < 6500) {
         col.copy(cDesertRidge);
-      } else if (vz < 7800) {
+      } else if (vz < 20500) {
         col.copy(cCoastalRidge);
-      } else if (vz < 13000) {
+      } else if (vz < 31000) {
         col.copy(cMarinRidge);
-      } else if (vz < 15600) {
+      } else if (vz < 36000) {
         col.copy(cRedwoodRidge);
       } else {
         col.copy(cCascadeRidge);
@@ -93,11 +93,11 @@ export class EnvironmentManager {
       ? this.renderer.textures.mountainRidgeNormalPBR(512) 
       : null;
     if (diffMountain) {
-      diffMountain.repeat.set(4, 52);
+      diffMountain.repeat.set(4, 256);
       diffMountain.wrapS = diffMountain.wrapT = THREE.RepeatWrapping;
     }
     if (normMountain) {
-      normMountain.repeat.set(4, 52);
+      normMountain.repeat.set(4, 256);
       normMountain.wrapS = normMountain.wrapT = THREE.RepeatWrapping;
     }
 
@@ -591,11 +591,11 @@ export class EnvironmentManager {
         side: THREE.DoubleSide
       });
 
-      for (let c = 0; c < 30; c++) {
+      for (let c = 0; c < 60; c++) {
         const cirrusMesh = new THREE.Mesh(cirrusGeo, cirrusMat);
         const cirrusX = (Math.random() - 0.5) * 2000;
         const cirrusY = 390 + Math.random() * 110;
-        const cirrusZ = (c / 30) * 13000 - 400;
+        const cirrusZ = (c / 60) * 63000 - 400;
         cirrusMesh.position.set(cirrusX, cirrusY, cirrusZ);
         cirrusMesh.rotation.y = (Math.random() - 0.5) * 0.6;
         cirrusMesh.scale.set(1.3 + Math.random() * 0.8, 1, 1.2 + Math.random() * 0.6);
@@ -1256,15 +1256,15 @@ export class EnvironmentManager {
     // Determine current active zone for weather VFX
     const z = Math.max(0, playerPos.z);
     let zoneIdx = 0;
-    if (z < 2600) zoneIdx = 0;
-    else if (z < 5200) zoneIdx = 1;
-    else if (z < 7800) zoneIdx = 2;
-    else if (z < 10400) zoneIdx = 3;
-    else if (z < 13000) zoneIdx = 4;
-    else if (z < 15600) zoneIdx = 5;
-    else if (z < 18200) zoneIdx = 6;
-    else if (z < 20800) zoneIdx = 7;
-    else zoneIdx = 8;
+    for (let i = 0; i < ZONES.length; i++) {
+      if (z >= ZONES[i].zMin && z < ZONES[i].zMax) {
+        zoneIdx = i;
+        break;
+      }
+    }
+    if (z >= ZONES[ZONES.length - 1].zMax) {
+      zoneIdx = ZONES.length - 1;
+    }
     const currentZone = ZONES[zoneIdx] || ZONES[0];
     const precipType = currentZone.precipitation || 'none';
 

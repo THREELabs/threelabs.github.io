@@ -7174,7 +7174,7 @@ export class DesertSceneryBuilder {
 
     const cityBaseX = 480;
     const cityBaseY = 12.0;
-    const cityBaseZ = 1100;
+    const cityBaseZ = (summitPos && typeof summitPos.z === 'number') ? summitPos.z : 2640;
 
     // 1. Shimmering Pacific Ocean Bay Horizon
     const oceanGeo = new THREE.PlaneGeometry(900, 1200);
@@ -8085,7 +8085,7 @@ export class DesertSceneryBuilder {
     if (this.surpriseCityGroup) {
       if (playerPos) {
         const isHighAltitude = playerPos.y > 22.0;
-        const isNearSummit = Math.abs(playerPos.z - 1100) < 400 && playerPos.x > 180;
+        const isNearSummit = Math.abs(playerPos.z - 2640) < 400 && (playerPos.x < -180 || playerPos.x > 180);
         this.surpriseCityGroup.visible = Boolean(isHighAltitude || isNearSummit);
       } else {
         this.surpriseCityGroup.visible = false;
@@ -8094,8 +8094,8 @@ export class DesertSceneryBuilder {
 
     // 6C. Cougar Ridge Off-Road Course Distance Culling
     // Keeps the trail geometry, waterways, and summits visible throughout Zone 0 (Mojave Desert),
-    // eliminating sudden mid-zone visibility flips and shader/texture compilation freezes at Z=450m & Z=600m
-    const nearTrail = (playerZ <= 2200) || (playerPos && playerPos.x < -18);
+    // eliminating sudden mid-zone visibility flips and shader/texture compilation freezes
+    const nearTrail = (playerZ <= 3600) || (Math.abs(playerZ - 2750) < 1200) || (playerPos && playerPos.x < -18);
     if (this.coyoteRidgeTrail) {
       this.coyoteRidgeTrail.visible = nearTrail;
     }

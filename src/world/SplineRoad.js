@@ -1631,8 +1631,8 @@ export class SplineRoad {
     }
 
     // Cougar Ridge Grand 1,200m+ Off-Road Expedition Corridor & Summit Plateau
-    const isTrailZone = (z >= 960 && z <= 1530 && lateralDist <= -14 && lateralDist >= -420);
-    const isSummit = isTrailZone && (lateralDist <= -170 && lateralDist >= -340 && z >= 1010 && z <= 1190);
+    const isTrailZone = (z >= 2460 && z <= 3080 && lateralDist <= -14 && lateralDist >= -420);
+    const isSummit = isTrailZone && (lateralDist <= -170 && lateralDist >= -340 && z >= 2560 && z <= 2740);
     const routeZ = bestT * this.totalLength;
     const isOnDownhill = DownhillSpline.isDownhillRoute(lateralDist, routeZ);
 
@@ -1670,13 +1670,13 @@ export class SplineRoad {
   }
 
   isCoyoteRidgeTrail(x, z) {
-    if (z < 960 || z > 1530) return false;
+    if (z < 2440 || z > 3100) return false;
     const rInfo = this.getRoadInfo(x, z);
     return !!rInfo.isOnTrail;
   }
 
   getCoyoteRidgeTrailInfo(x, z) {
-    if (z < 960 || z > 1530) return null;
+    if (z < 2440 || z > 3100) return null;
     const rInfo = this.getRoadInfo(x, z);
     return rInfo.trailInfo;
   }
@@ -2334,8 +2334,8 @@ export class SplineRoad {
         stripe.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
         lotGroup.add(stripe);
 
-        // Concrete Wheel Stop at head of stall
-        if (s < numStalls) {
+        // Concrete Wheel Stop at head of stall (skip for off-road trail entrance on Coyote Ridge)
+        if (s < numStalls && lot.id !== 'turnout_coyote_ridge') {
           const curb = new THREE.Mesh(curbGeo, this.matCurb);
           const curbLocalX = isRightSide ? (lot.width * 0.5 - 1.2) : -(lot.width * 0.5 - 1.2);
           const curbLocalZ = stallZ + stallSpacing * 0.5;
@@ -2352,71 +2352,75 @@ export class SplineRoad {
       }
 
       // 4. Perimeter Scenic Viewpoint Railings & Balustrades
-      const outerRailX = isRightSide ? (lot.width * 0.5 + 0.2) : -(lot.width * 0.5 + 0.2);
-      const railSteps = Math.floor(lot.length / 3.0);
+      // For turnout_coyote_ridge, the outer back edge connects directly to the off-road trail and downhill merge.
+      // Leave the outer back edge open so vehicles can drive freely onto the mountain trail.
+      if (lot.id !== 'turnout_coyote_ridge') {
+        const outerRailX = isRightSide ? (lot.width * 0.5 + 0.2) : -(lot.width * 0.5 + 0.2);
+        const railSteps = Math.floor(lot.length / 3.0);
 
-      for (let r = 0; r <= railSteps; r++) {
-        const railZ = -lot.length * 0.5 + r * 3.0;
+        for (let r = 0; r <= railSteps; r++) {
+          const railZ = -lot.length * 0.5 + r * 3.0;
 
-        if (lot.theme.includes('stone')) {
-          // Stone masonry parapet pillar
-          const stonePost = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.0, 0.45), this.matStoneWall);
-          stonePost.position.copy(transform.pos).add(
-            new THREE.Vector3()
-              .addScaledVector(transform.normal, outerRailX)
-              .addScaledVector(transform.tangent, railZ)
-          );
-          stonePost.position.y += 0.5;
-          stonePost.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
-          stonePost.castShadow = true;
-          lotGroup.add(stonePost);
-
-          if (r < railSteps) {
-            const stoneWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.7, 2.6), this.matStoneWall);
-            stoneWall.position.copy(transform.pos).add(
+          if (lot.theme.includes('stone')) {
+            // Stone masonry parapet pillar
+            const stonePost = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.0, 0.45), this.matStoneWall);
+            stonePost.position.copy(transform.pos).add(
               new THREE.Vector3()
                 .addScaledVector(transform.normal, outerRailX)
-                .addScaledVector(transform.tangent, railZ + 1.5)
+                .addScaledVector(transform.tangent, railZ)
             );
-            stoneWall.position.y += 0.35;
-            stoneWall.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
-            stoneWall.castShadow = true;
-            lotGroup.add(stoneWall);
-          }
-        } else {
-          // Timber / Boardwalk Railing
-          const postGeo = new THREE.BoxGeometry(0.18, 1.2, 0.18);
-          const post = new THREE.Mesh(postGeo, this.matWoodRailing);
-          post.position.copy(transform.pos).add(
-            new THREE.Vector3()
-              .addScaledVector(transform.normal, outerRailX)
-              .addScaledVector(transform.tangent, railZ)
-          );
-          post.position.y += 0.6;
-          post.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
-          post.castShadow = true;
-          lotGroup.add(post);
+            stonePost.position.y += 0.5;
+            stonePost.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
+            stonePost.castShadow = true;
+            lotGroup.add(stonePost);
 
-          if (r < railSteps) {
-            const topRail = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 2.9), this.matWoodRailing);
-            topRail.position.copy(transform.pos).add(
+            if (r < railSteps) {
+              const stoneWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.7, 2.6), this.matStoneWall);
+              stoneWall.position.copy(transform.pos).add(
+                new THREE.Vector3()
+                  .addScaledVector(transform.normal, outerRailX)
+                  .addScaledVector(transform.tangent, railZ + 1.5)
+              );
+              stoneWall.position.y += 0.35;
+              stoneWall.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
+              stoneWall.castShadow = true;
+              lotGroup.add(stoneWall);
+            }
+          } else {
+            // Timber / Boardwalk Railing
+            const postGeo = new THREE.BoxGeometry(0.18, 1.2, 0.18);
+            const post = new THREE.Mesh(postGeo, this.matWoodRailing);
+            post.position.copy(transform.pos).add(
               new THREE.Vector3()
                 .addScaledVector(transform.normal, outerRailX)
-                .addScaledVector(transform.tangent, railZ + 1.5)
+                .addScaledVector(transform.tangent, railZ)
             );
-            topRail.position.y += 1.05;
-            topRail.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
-            lotGroup.add(topRail);
+            post.position.y += 0.6;
+            post.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
+            post.castShadow = true;
+            lotGroup.add(post);
 
-            const midRail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 2.9), this.matWoodRailing);
-            midRail.position.copy(transform.pos).add(
-              new THREE.Vector3()
-                .addScaledVector(transform.normal, outerRailX)
-                .addScaledVector(transform.tangent, railZ + 1.5)
-            );
-            midRail.position.y += 0.55;
-            midRail.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
-            lotGroup.add(midRail);
+            if (r < railSteps) {
+              const topRail = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 2.9), this.matWoodRailing);
+              topRail.position.copy(transform.pos).add(
+                new THREE.Vector3()
+                  .addScaledVector(transform.normal, outerRailX)
+                  .addScaledVector(transform.tangent, railZ + 1.5)
+              );
+              topRail.position.y += 1.05;
+              topRail.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
+              lotGroup.add(topRail);
+
+              const midRail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 2.9), this.matWoodRailing);
+              midRail.position.copy(transform.pos).add(
+                new THREE.Vector3()
+                  .addScaledVector(transform.normal, outerRailX)
+                  .addScaledVector(transform.tangent, railZ + 1.5)
+              );
+              midRail.position.y += 0.55;
+              midRail.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
+              lotGroup.add(midRail);
+            }
           }
         }
       }
@@ -2441,10 +2445,12 @@ export class SplineRoad {
       lens2.position.x = 0.09;
       scopeGroup.add(lens2);
 
+      const scopeOuterX = isRightSide ? (lot.width * 0.5 - 1.2) : -(lot.width * 0.5 - 1.2);
+      const scopeZOffset = lot.id === 'turnout_coyote_ridge' ? -lot.length * 0.38 : 0;
       scopeGroup.position.copy(transform.pos).add(
         new THREE.Vector3()
-          .addScaledVector(transform.normal, outerRailX - (isRightSide ? 0.9 : -0.9))
-          .addScaledVector(transform.tangent, 0)
+          .addScaledVector(transform.normal, scopeOuterX)
+          .addScaledVector(transform.tangent, scopeZOffset)
       );
       scopeGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), transform.tangent);
       lotGroup.add(scopeGroup);

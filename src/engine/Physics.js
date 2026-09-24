@@ -1832,10 +1832,11 @@ export class VehiclePhysics {
       const roadInfo = this.splineRoad.getRoadInfo(this.position.x, this.position.z);
       const roadCenter = roadInfo.roadPoint;
       const lateralDist = (roadInfo && typeof roadInfo.lateralDist === 'number') ? roadInfo.lateralDist : (this.position.x - roadCenter.x);
-      const isBridge = (this.position.z >= 6550 && this.position.z <= 6750) ||
-                       (this.position.z >= 11400 && this.position.z <= 12000) ||
-                       (this.position.z >= 18600 && this.position.z <= 18800);
-      const inTrailCorridor = !!(roadInfo && roadInfo.isOnTrail) || (this.position.z >= 940 && this.position.z <= 1360 && lateralDist < -14);
+      const isBridge = (this.position.z >= 18550 && this.position.z <= 18750) ||
+                       (this.position.z >= 28600 && this.position.z <= 29200) ||
+                       (this.position.z >= 31750 && this.position.z <= 31950) ||
+                       (this.position.z >= 41300 && this.position.z <= 41500);
+      const inTrailCorridor = !!(roadInfo && roadInfo.isOnTrail) || (this.position.z >= 2440 && this.position.z <= 3080 && lateralDist < -14);
       const effectiveMaxLeft = inTrailCorridor ? 380.0 : (roadInfo.isTurnout ? 85.0 : corridorOffset);
       const effectiveMaxRight = roadInfo.isTurnout ? 85.0 : corridorOffset;
       const clampMaxLateral = (lateralDist < 0) ? effectiveMaxLeft : effectiveMaxRight;

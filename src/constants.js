@@ -637,6 +637,142 @@ ZONES.forEach(z => {
 });
 export const TOTAL_HIGHWAY_LENGTH = cumulativeZoneZ; // 62,000 meters
 
+/**
+ * Piecewise linear control points mapping each zone builder's authored Z coordinates
+ * [zoneIdx * 2600 .. (zoneIdx + 1) * 2600] to the expanded 62km world coordinates.
+ */
+export const ZONE_CONTROL_POINTS = {
+  1: [ // Malibu (authored: 2600..5200 -> world: 6500..14500)
+    [2600, 6500],
+    [2900, 7600],
+    [3500, 9800],
+    [4100, 11200],
+    [4800, 12950],
+    [5050, 14000],
+    [5180, 14400],
+    [5200, 14500]
+  ],
+  2: [ // Big Sur (authored: 5200..7800 -> world: 14500..20500)
+    [5200, 14500],
+    [5500, 15100],
+    [6300, 17900],
+    [6650, 18650],
+    [7300, 19400],
+    [7600, 20150],
+    [7800, 20500]
+  ],
+  3: [ // Monterey & Carmel (authored: 7800..10400 -> world: 20500..25500)
+    [7800, 20500],
+    [8300, 21300],
+    [8800, 22250],
+    [9300, 23200],
+    [9750, 24150],
+    [10150, 25100],
+    [10400, 25500]
+  ],
+  4: [ // NorCal & Marin (authored: 10400..13000 -> world: 25500..31000)
+    [10400, 25500],
+    [10800, 26300],
+    [11400, 28000],
+    [11700, 28900],
+    [12400, 29800],
+    [12800, 30650],
+    [13000, 31000]
+  ],
+  5: [ // Redwood Forest (authored: 13000..15600 -> world: 31000..36000)
+    [13000, 31000],
+    [13500, 31850],
+    [13900, 32800],
+    [14400, 33750],
+    [14950, 34700],
+    [15300, 35600],
+    [15600, 36000]
+  ],
+  6: [ // Oregon Coast (authored: 15600..18200 -> world: 36000..40500)
+    [15600, 36000],
+    [16100, 36900],
+    [16600, 37950],
+    [17100, 39000],
+    [17650, 40050],
+    [18200, 40500]
+  ],
+  7: [ // Columbia River Gorge (authored: 18200..20800 -> world: 40500..45000)
+    [18200, 40500],
+    [18700, 41400],
+    [19250, 42450],
+    [19850, 43500],
+    [20450, 44550],
+    [20800, 45000]
+  ],
+  8: [ // Washington & Olympic (authored: 20800..23400 -> world: 45000..49500)
+    [20800, 45000],
+    [21450, 45900],
+    [21950, 46950],
+    [22550, 48000],
+    [23100, 49050],
+    [23400, 49500]
+  ],
+  9: [ // Cascade Pass (authored: 23400..26000 -> world: 49500..53500)
+    [23400, 49500],
+    [24100, 50700],
+    [24900, 52300],
+    [25600, 53100],
+    [26000, 53500]
+  ],
+  10: [ // Idaho Panhandle (authored: 26000..28600 -> world: 53500..57500)
+    [26000, 53500],
+    [26800, 54700],
+    [27600, 56300],
+    [28300, 57100],
+    [28600, 57500]
+  ],
+  11: [ // Montana Glacier (authored: 28600..31200 -> world: 57500..62000)
+    [28600, 57500],
+    [29200, 58800],
+    [30000, 60000],
+    [30800, 61200],
+    [31200, 62000]
+  ]
+};
+
+export function interpolateZoneZ(authoredZ, controlPoints) {
+  if (!controlPoints || controlPoints.length === 0) return authoredZ;
+  if (authoredZ <= controlPoints[0][0]) return controlPoints[0][1];
+  const last = controlPoints[controlPoints.length - 1];
+  if (authoredZ >= last[0]) return last[1];
+
+  for (let i = 0; i < controlPoints.length - 1; i++) {
+    const p0 = controlPoints[i];
+    const p1 = controlPoints[i + 1];
+    if (authoredZ >= p0[0] && authoredZ <= p1[0]) {
+      const span = p1[0] - p0[0];
+      if (span <= 0.0001) return p0[1];
+      const t = (authoredZ - p0[0]) / span;
+      return p0[1] + t * (p1[1] - p0[1]);
+    }
+  }
+  return last[1];
+}
+
+export function inverseZoneZ(worldZ, controlPoints) {
+  if (!controlPoints || controlPoints.length === 0) return worldZ;
+  if (worldZ <= controlPoints[0][1]) return controlPoints[0][0];
+  const last = controlPoints[controlPoints.length - 1];
+  if (worldZ >= last[1]) return last[0];
+
+  for (let i = 0; i < controlPoints.length - 1; i++) {
+    const p0 = controlPoints[i];
+    const p1 = controlPoints[i + 1];
+    if (worldZ >= p0[1] && worldZ <= p1[1]) {
+      const span = p1[1] - p0[1];
+      if (span <= 0.0001) return p0[0];
+      const t = (worldZ - p0[1]) / span;
+      return p0[0] + t * (p1[0] - p0[0]);
+    }
+  }
+  return last[0];
+}
+
 export const LANDMARKS = [
   // Zone 0: Mojave Desert (0 - 6500m)
   { id: 'bottle_tree', name: "Elmer's Bottle Tree Ranch", offsetMeters: 600 },
