@@ -879,10 +879,10 @@ export class CascadeSceneryBuilder {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 8. CASCADE TERMINUS GRAND FINISH LINE GATEWAY (Z = 26,000m)
+  // 8. CASCADE TERMINUS GRAND FINISH LINE GATEWAY (Z = 53,500m)
   // ─────────────────────────────────────────────────────────────────────────
   buildCascadeFinishLine() {
-    const t = this.splineRoad.getRoadTransformAtZ(26000, 0, 0);
+    const t = this.splineRoad.getRoadTransformAtZ(53500, 0, 0);
     const finishGroup = new THREE.Group();
     finishGroup.name = 'Scenic_CascadeTerminusFinishLine';
     finishGroup.position.copy(t.pos);

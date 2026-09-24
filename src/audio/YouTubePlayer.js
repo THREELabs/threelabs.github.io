@@ -7,6 +7,8 @@
 
 import { gameState } from '../state.js';
 
+export const KSPC_RADIO_STREAM_URL = 'https://kspc.radioca.st/stream?type=http&nocache=41177';
+
 export const CURATED_ROAD_TRACKS = [
   // 🌴 Synthwave & Outrun
   {
@@ -453,6 +455,7 @@ export class YouTubePlayerManager {
     this.recentHistory = [];
     this.activeFilter = 'all';
     this.onStateChangeCallbacks = new Set();
+    this.radioAudio = null;
     
     // Default initial track
     this.currentTrack = CURATED_ROAD_TRACKS[0];
@@ -488,6 +491,18 @@ export class YouTubePlayerManager {
 
     // Attach global gesture trigger for instant mobile & desktop autoplay unlocking
     this.setupAutoplayTrigger();
+
+    // Listen for postMessage from fallback iframe if YT.Player isn't wrapping it
+    window.addEventListener('message', (event) => {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data && data.event === 'infoDelivery' && data.info && data.info.playerState === 0) {
+          if (!gameState.youtubeApp.isRadioPlaying) {
+            this.transitionToRadioStation();
+          }
+        }
+      } catch (e) {}
+    });
 
     // Check if YouTube IFrame API is already loaded or inject it
     if (window.YT && window.YT.Player) {
@@ -561,8 +576,12 @@ export class YouTubePlayerManager {
               if (event.data === 1) {
                 gameState.youtubeApp.isPlaying = true;
                 this._isPlayingConfirmed = true;
-              } else if (event.data === 2 || event.data === 0) {
+              } else if (event.data === 2) {
                 gameState.youtubeApp.isPlaying = false;
+              } else if (event.data === 0) {
+                // Song ended! Transition to KSPC live radio with dial static SFX
+                gameState.youtubeApp.isPlaying = false;
+                this.transitionToRadioStation();
               }
               this._notifyStateChange();
             },
@@ -713,6 +732,9 @@ export class YouTubePlayerManager {
 
     if (!track) return;
 
+    // Halt any active radio stream when switching to a YouTube track
+    this.stopRadioStream();
+
     if (!track.id && track.searchQuery) {
       this.searchAndPlay(track.searchQuery);
       return;
@@ -825,6 +847,9 @@ export class YouTubePlayerManager {
 
   pause() {
     gameState.youtubeApp.isPlaying = false;
+    if (gameState.youtubeApp.isRadioPlaying && this.radioAudio) {
+      try { this.radioAudio.pause(); } catch (e) {}
+    }
     if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
       try {
         this.ytPlayer.pauseVideo();
@@ -839,6 +864,10 @@ export class YouTubePlayerManager {
 
   resume() {
     gameState.youtubeApp.isPlaying = true;
+    if (gameState.youtubeApp.isRadioPlaying) {
+      this.playRadioStream();
+      return;
+    }
     if (this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
       try {
         if (!gameState.youtubeApp.isMuted && typeof this.ytPlayer.unMute === 'function') {
@@ -868,6 +897,9 @@ export class YouTubePlayerManager {
   setVolume(val) {
     const clamped = Math.max(0, Math.min(100, Math.round(val)));
     gameState.youtubeApp.volume = clamped;
+    if (this.radioAudio) {
+      this.radioAudio.volume = (clamped / 100) * 0.85;
+    }
     if (this.ytPlayer && typeof this.ytPlayer.setVolume === 'function') {
       try {
         this.ytPlayer.setVolume(clamped);
@@ -886,6 +918,16 @@ export class YouTubePlayerManager {
 
   toggleMute() {
     gameState.youtubeApp.isMuted = !gameState.youtubeApp.isMuted;
+    if (this.radioAudio) {
+      this.radioAudio.muted = gameState.youtubeApp.isMuted;
+      if (gameState.youtubeApp.isRadioPlaying) {
+        if (gameState.youtubeApp.isMuted) {
+          try { this.radioAudio.pause(); } catch (e) {}
+        } else {
+          try { this.radioAudio.play().catch(() => {}); } catch (e) {}
+        }
+      }
+    }
     if (this.ytPlayer) {
       try {
         if (gameState.youtubeApp.isMuted) {
@@ -901,6 +943,90 @@ export class YouTubePlayerManager {
       } catch (e) {}
     }
     this._notifyStateChange();
+  }
+
+  /**
+   * 📻 Transitions from YouTube track end to KSPC live radio with authentic dial static
+   */
+  transitionToRadioStation() {
+    if (gameState.youtubeApp.isRadioPlaying) return;
+
+    // 1. Play static radio tuning sound effect
+    if (window.game && window.game.soundEngine && typeof window.game.soundEngine.playRadioTuningStatic === 'function') {
+      window.game.soundEngine.playRadioTuningStatic(1.4);
+    }
+
+    // 2. Pause YouTube player
+    if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
+      try { this.ytPlayer.pauseVideo(); } catch (e) {}
+    } else if (this.iframe && this.iframe.contentWindow) {
+      try {
+        this.iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+      } catch (e) {}
+    }
+
+    // 3. Briefly delay (~650ms) to allow static dial sound to sweep across the airwaves, then connect live stream
+    setTimeout(() => {
+      this.playRadioStream();
+    }, 650);
+  }
+
+  /**
+   * 📻 Connect and stream KSPC 88.7 FM live broadcast
+   */
+  playRadioStream() {
+    if (!this.radioAudio) {
+      this.radioAudio = new Audio();
+      this.radioAudio.crossOrigin = 'anonymous';
+      this.radioAudio.preload = 'none';
+
+      this.radioAudio.addEventListener('error', (e) => {
+        console.warn('Radio stream network error, retrying...', e);
+        if (gameState.youtubeApp.isRadioPlaying) {
+          setTimeout(() => {
+            if (this.radioAudio && gameState.youtubeApp.isRadioPlaying) {
+              this.radioAudio.src = `https://kspc.radioca.st/stream?type=http&nocache=${Date.now()}`;
+              this.radioAudio.play().catch(() => {});
+            }
+          }, 2000);
+        }
+      });
+    }
+
+    this.radioAudio.src = `https://kspc.radioca.st/stream?type=http&nocache=${Date.now()}`;
+    this.radioAudio.muted = Boolean(gameState.youtubeApp.isMuted);
+    const vol = (gameState.youtubeApp.volume !== undefined ? gameState.youtubeApp.volume : 100) / 100;
+    this.radioAudio.volume = Math.max(0, Math.min(1, vol * 0.85));
+
+    this.radioAudio.play().then(() => {
+      gameState.youtubeApp.isRadioPlaying = true;
+      gameState.youtubeApp.isPlaying = true;
+      gameState.youtubeApp.currentTitle = 'KSPC 88.7 FM';
+      gameState.youtubeApp.currentArtist = 'Live College Radio • Claremont';
+      gameState.youtubeApp.currentThumbnail = '';
+      this._isPlayingConfirmed = true;
+      this._notifyStateChange();
+    }).catch(err => {
+      console.warn('Radio autoplay error:', err);
+      gameState.youtubeApp.isRadioPlaying = true;
+      gameState.youtubeApp.isPlaying = false;
+      gameState.youtubeApp.currentTitle = 'KSPC 88.7 FM (Click ▶ to Listen)';
+      gameState.youtubeApp.currentArtist = 'Live College Radio';
+      this._notifyStateChange();
+    });
+  }
+
+  /**
+   * 📻 Halts radio stream and resets source
+   */
+  stopRadioStream() {
+    if (this.radioAudio) {
+      try {
+        this.radioAudio.pause();
+        this.radioAudio.src = '';
+      } catch (e) {}
+    }
+    gameState.youtubeApp.isRadioPlaying = false;
   }
 
   nextTrack() {

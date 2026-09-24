@@ -284,6 +284,7 @@ export const gameState = {
     this.activeTabletApp = 'home';
     this.youtubeApp = {
       isPlaying: true,
+      isRadioPlaying: false,
       currentVideoId: '7j_U15xJnuY',
       currentTitle: 'Time Squared',
       currentArtist: 'Switch Mongo',

@@ -7,29 +7,29 @@ import * as THREE from 'three';
 
 export const TRAIL_WAYPOINTS = [
   // 0: Staging Area & Air-Down Basin (Turnout entrance)
-  { t: 0.00, lat: -22.0,  z: 1010.0, elev: 0.1,  width: 14.0 },
+  { t: 0.00, lat: -22.0,  z: 2550.0, elev: 0.1,  width: 14.0 },
   // 1: Lower Canyon Red Rock Wash & S-Curves
-  { t: 0.08, lat: -55.0,  z: 1060.0, elev: 6.5,  width: 11.0 },
+  { t: 0.08, lat: -55.0,  z: 2600.0, elev: 6.5,  width: 11.0 },
   // 2: Cougar Creek Lower Stream Crossing & River Pebble Ford
-  { t: 0.17, lat: -95.0,  z: 1140.0, elev: 13.0, width: 11.5 },
+  { t: 0.17, lat: -95.0,  z: 2680.0, elev: 13.0, width: 11.5 },
   // 3: Cougar Creek Canyon Run & Rushing Rapids
-  { t: 0.26, lat: -135.0, z: 1230.0, elev: 20.0, width: 12.0 },
+  { t: 0.26, lat: -135.0, z: 2770.0, elev: 20.0, width: 12.0 },
   // 4: Cougar Falls Scenic Vista Overlook & Hairpin Turn
-  { t: 0.35, lat: -155.0, z: 1310.0, elev: 26.0, width: 16.0 },
+  { t: 0.35, lat: -155.0, z: 2850.0, elev: 26.0, width: 16.0 },
   // 5: Boulder Canyon Technical Rock Crawl Arena
-  { t: 0.44, lat: -195.0, z: 1390.0, elev: 33.0, width: 13.5 },
+  { t: 0.44, lat: -195.0, z: 2930.0, elev: 33.0, width: 13.5 },
   // 6: Thunder Canyon & Roaring Thunder Falls Vista
-  { t: 0.53, lat: -250.0, z: 1450.0, elev: 39.0, width: 15.0 },
+  { t: 0.53, lat: -250.0, z: 2990.0, elev: 39.0, width: 15.0 },
   // 7: Thunder Creek Waterfall Ford & Step Cascades
-  { t: 0.62, lat: -290.0, z: 1380.0, elev: 43.5, width: 12.5 },
+  { t: 0.62, lat: -290.0, z: 2920.0, elev: 43.5, width: 12.5 },
   // 8: Devil's Backbone Knife-Edge Alpine Ridge Traverse
-  { t: 0.72, lat: -295.0, z: 1260.0, elev: 48.0, width: 9.5  },
+  { t: 0.72, lat: -295.0, z: 2800.0, elev: 48.0, width: 9.5  },
   // 9: Devil's Shelf Cascading Waterfall Rock Ledges
-  { t: 0.81, lat: -275.0, z: 1170.0, elev: 52.0, width: 11.0 },
+  { t: 0.81, lat: -275.0, z: 2710.0, elev: 52.0, width: 11.0 },
   // 10: Hanging Valley Ponderosa Pine Forest Grove
-  { t: 0.90, lat: -255.0, z: 1070.0, elev: 54.5, width: 13.0 },
+  { t: 0.90, lat: -255.0, z: 2610.0, elev: 54.5, width: 13.0 },
   // 11: Grand Summit Vista Plateau & Cantilever Skybridge
-  { t: 1.00, lat: -245.0, z: 1100.0, elev: 56.0, width: 26.0 }
+  { t: 1.00, lat: -245.0, z: 2640.0, elev: 56.0, width: 26.0 }
 ];
 
 export const STREAM_CROSSINGS = [
@@ -39,7 +39,7 @@ export const STREAM_CROSSINGS = [
     tMin: 0.132,
     tMax: 0.265,
     centerLat: -115.0,
-    centerZ: 1185.0,
+    centerZ: 2725.0,
     radius: 85.0,
     waterLevelOffset: 0.08,
     depth: 0.30,
@@ -51,7 +51,7 @@ export const STREAM_CROSSINGS = [
     tMin: 0.59,
     tMax: 0.66,
     centerLat: -290.0,
-    centerZ: 1380.0,
+    centerZ: 2920.0,
     radius: 38.0,
     waterLevelOffset: 0.08,
     depth: 0.32,
@@ -68,20 +68,20 @@ export const WATERFALL_VIEW_AREAS = [
     name: 'Cougar Falls Scenic Vista',
     t: 0.35,
     lat: -155.0,
-    z: 1310.0,
+    z: 2850.0,
     elev: 26.0,
     radius: 32.0,
-    waterfallPos: { lat: -200.0, z: 1290.0, topElev: 48.0, midElev: 36.5, plungeElev: 25.0 }
+    waterfallPos: { lat: -200.0, z: 2830.0, topElev: 48.0, midElev: 36.5, plungeElev: 25.0 }
   },
   {
     id: 'thunder_falls',
     name: 'Thunder Falls Grand Amphitheater',
     t: 0.53,
     lat: -250.0,
-    z: 1450.0,
+    z: 2990.0,
     elev: 39.0,
     radius: 36.0,
-    waterfallPos: { lat: -275.0, z: 1485.0, topElev: 65.0, midElev: 48.0, plungeElev: 35.0 }
+    waterfallPos: { lat: -275.0, z: 3025.0, topElev: 65.0, midElev: 48.0, plungeElev: 35.0 }
   }
 ];
 

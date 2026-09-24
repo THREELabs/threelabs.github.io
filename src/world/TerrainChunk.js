@@ -112,15 +112,15 @@ export class TerrainChunkManager {
 
         let vertexCol = new THREE.Color(0x6e8252);
 
-        // Zone 0: Mojave Desert (Z < 2600m)
-        if (vz < 2600) {
+        // Zone 0: Mojave Desert (Z < 6500m)
+        if (vz < 6500) {
           vertexCol.copy(cDesertSand);
           if (elevation > 2.5) vertexCol.lerp(cDesertDune, Math.min(0.7, (elevation - 2.5) * 0.25));
           if (elevation < 0.2) vertexCol.lerp(cDesertClay, 0.4);
           if (elevation > 7.0 || Math.abs(vx) > 42) vertexCol.lerp(cDesertRock, 0.55);
 
-          // Cougar Ridge 4x4 Mountain Massif & Expedition Trail (Z: 940m - 1560m)
-          if (vz >= 940 && vz <= 1560) {
+          // Cougar Ridge 4x4 Mountain Massif & Expedition Trail (Z: 2480m - 3100m)
+          if (vz >= 2480 && vz <= 3100) {
             const roadTrans = this.splineRoad.getRoadTransformAtZ(vz, 0, 0);
             const latFromCenter = (vx - roadTrans.pos.x) * (-1); // negative is mountain side
 
@@ -182,8 +182,8 @@ export class TerrainChunkManager {
             }
           }
         }
-        // Zone 1: Malibu & PCH (Z: 2600m - 5200m)
-        else if (vz >= 2600 && vz < 5200) {
+        // Zone 1: Malibu & PCH (Z: 6500m - 14500m)
+        else if (vz >= 6500 && vz < 14500) {
           const roadTrans = this.splineRoad.getRoadTransformAtZ(vz, 0, 0);
           const latDist = vx - roadTrans.pos.x;
           if (latDist < -10) {
@@ -197,59 +197,59 @@ export class TerrainChunkManager {
             vertexCol.copy(cMalibuBeach);
           }
         }
-        // Zone 2: Big Sur (Z: 5200m - 7800m)
-        else if (vz >= 5200 && vz < 7800) {
+        // Zone 2: Big Sur (Z: 14500m - 20500m)
+        else if (vz >= 14500 && vz < 20500) {
           vertexCol.copy(cBigSurGreen);
           if (elevation > 18.0 || Math.abs(vx) > 28) vertexCol.lerp(cBigSurCliff, 0.6);
         }
-        // Zone 3: Monterey Bay & Carmel (Z: 7800m - 10400m)
-        else if (vz >= 7800 && vz < 10400) {
+        // Zone 3: Monterey Bay & Carmel (Z: 20500m - 25500m)
+        else if (vz >= 20500 && vz < 25500) {
           vertexCol.copy(cMontereyGolf);
           if (vx < -18 || elevation > 10.0) vertexCol.lerp(cMontereyRock, 0.5);
         }
-        // Zone 4: NorCal & Marin (Z: 10400m - 13000m)
-        else if (vz >= 10400 && vz < 13000) {
+        // Zone 4: NorCal & Marin (Z: 25500m - 31000m)
+        else if (vz >= 25500 && vz < 31000) {
           vertexCol.copy(cNorCalHills);
         }
-        // Zone 5: Redwood Forest (Z: 13000m - 15600m)
-        else if (vz >= 13000 && vz < 15600) {
+        // Zone 5: Redwood Forest (Z: 31000m - 36000m)
+        else if (vz >= 31000 && vz < 36000) {
           vertexCol.copy(cRedwoodForest);
         }
-        // Zone 6: Oregon Coast (Z: 15600m - 18200m)
-        else if (vz >= 15600 && vz < 18200) {
+        // Zone 6: Oregon Coast (Z: 36000m - 40500m)
+        else if (vz >= 36000 && vz < 40500) {
           if (vx < -14) {
             vertexCol.copy(cOregonTideSand);
           } else {
             vertexCol.copy(cOregonSpruce);
           }
         }
-        // Zone 7: Columbia River Gorge (Z: 18200m - 20800m)
-        else if (vz >= 18200 && vz < 20800) {
+        // Zone 7: Columbia River Gorge (Z: 40500m - 45000m)
+        else if (vz >= 40500 && vz < 45000) {
           vertexCol.copy(cColumbiaBasalt);
         }
-        // Zone 8: Washington & Olympic (Z: 20800m - 23400m)
-        else if (vz >= 20800 && vz < 23400) {
+        // Zone 8: Washington & Olympic (Z: 45000m - 49500m)
+        else if (vz >= 45000 && vz < 49500) {
           vertexCol.copy(cWashingtonForest);
         }
-        // Zone 9: Cascade Alpine Pass & Mount Rainier (Z: 23400m - 26000m)
-        else if (vz >= 23400 && vz < 26000) {
+        // Zone 9: Cascade Alpine Pass & Mount Rainier (Z: 49500m - 53500m)
+        else if (vz >= 49500 && vz < 53500) {
           if (elevation > 35.0 || vx > 30.0) {
             vertexCol.copy(cCascadeSnow);
           } else {
             vertexCol.copy(cCascadeGranite);
           }
         }
-        // Zone 10: Idaho Panhandle & Lake Coeur d'Alene (Z: 26000m - 28600m)
-        else if (vz >= 26000 && vz < 28600) {
+        // Zone 10: Idaho Panhandle & Lake Coeur d'Alene (Z: 53500m - 57500m)
+        else if (vz >= 53500 && vz < 57500) {
           if (vx < -18 && elevation < 6.0) {
             vertexCol.copy(cIdahoLake);
           } else {
             vertexCol.copy(cIdahoPine);
           }
         }
-        // Zone 11: Montana Big Sky & Glacier Going-to-the-Sun (Z: 28600m - 31200m)
+        // Zone 11: Montana Big Sky & Glacier Going-to-the-Sun (Z: 57500m - 62000m)
         else {
-          if (vz < 29400 && vx < -18 && elevation < 14.0) {
+          if (vz < 59400 && vx < -18 && elevation < 14.0) {
             vertexCol.copy(cGlacierLake);
           } else if (elevation > 60.0) {
             vertexCol.copy(cGlacierSnow);
@@ -271,21 +271,21 @@ export class TerrainChunkManager {
       chunkGeo.computeBoundingSphere();
 
       let chunkMat = this.matTerrainDesert;
-      if (zMin >= 28600) { // Montana Glacier Alpine Pass
+      if (zMin >= 57500) { // Montana Glacier Alpine Pass
         chunkMat = this.matTerrainMountain;
-      } else if (zMin >= 26000) { // Idaho Panhandle Timber Country
+      } else if (zMin >= 53500) { // Idaho Panhandle Timber Country
         chunkMat = this.matTerrainForest;
-      } else if (zMin >= 23400) { // Cascade Alpine Mountains & Glaciers
+      } else if (zMin >= 49500) { // Cascade Alpine Mountains & Glaciers
         chunkMat = this.matTerrainMountain;
-      } else if (zMin >= 20800) { // Washington Olympic Forest
+      } else if (zMin >= 45000) { // Washington Olympic Forest
         chunkMat = this.matTerrainForest;
-      } else if (zMin >= 18200) { // Columbia Gorge Basalt & Mountains
+      } else if (zMin >= 40500) { // Columbia Gorge Basalt & Mountains
         chunkMat = this.matTerrainMountain;
-      } else if (zMin >= 13000) { // Redwood & Oregon Forest
+      } else if (zMin >= 31000) { // Redwood & Oregon Forest
         chunkMat = this.matTerrainForest;
-      } else if (zMin >= 5200 && zMin < 10400) { // Big Sur & Monterey Cliffs
+      } else if (zMin >= 14500 && zMin < 25500) { // Big Sur & Monterey Cliffs
         chunkMat = this.matTerrainCoastal;
-      } else if (zMin >= 2600) { // Malibu & NorCal Hills
+      } else if (zMin >= 6500) { // Malibu & NorCal Hills
         chunkMat = this.matTerrainSoil;
       }
 

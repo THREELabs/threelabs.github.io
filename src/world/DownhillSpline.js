@@ -9,25 +9,25 @@ import * as THREE from 'three';
 
 export const DOWNHILL_WAYPOINTS = [
   // 0: Summit Launch Portal & Staging Gate (elev 56m)
-  { t: 0.00, lat: -228.0, z: 1102.0, elev: 56.0, width: 16.0, bank: 0.00 },
+  { t: 0.00, lat: -228.0, z: 2642.0, elev: 56.0, width: 16.0, bank: 0.00 },
   // 1: Granite Gateway Chute (Rapid initial drop through twin monoliths)
-  { t: 0.10, lat: -208.0, z: 1122.0, elev: 49.5, width: 14.0, bank: 0.05 },
+  { t: 0.10, lat: -208.0, z: 2662.0, elev: 49.5, width: 14.0, bank: 0.05 },
   // 2: Eagle Ridge High Bank (Banked left sweeper around mountain shoulder)
-  { t: 0.22, lat: -176.0, z: 1148.0, elev: 42.0, width: 15.0, bank: 0.08 },
+  { t: 0.22, lat: -176.0, z: 2688.0, elev: 42.0, width: 15.0, bank: 0.08 },
   // 3: Bridalveil Waterfall Approach (Fast canyon descent approaching the rock grotto)
-  { t: 0.32, lat: -148.0, z: 1152.0, elev: 35.5, width: 15.0, bank: -0.05 },
+  { t: 0.32, lat: -148.0, z: 2692.0, elev: 35.5, width: 15.0, bank: -0.05 },
   // 4: Bridalveil Waterfall Grotto (Under-Waterfall natural rock arch passage)
-  { t: 0.38, lat: -132.0, z: 1142.0, elev: 31.5, width: 14.5, bank: 0.02 },
+  { t: 0.38, lat: -132.0, z: 2682.0, elev: 31.5, width: 14.5, bank: 0.02 },
   // 5: Cougar Fangs Slalom Chicane (Banked S-curve through split granite boulders)
-  { t: 0.48, lat: -112.0, z: 1118.0, elev: 26.0, width: 14.0, bank: -0.07 },
+  { t: 0.48, lat: -112.0, z: 2658.0, elev: 26.0, width: 14.0, bank: -0.07 },
   // 6: Mojave Halfpipe Rollercoaster Dip (Compression dip into an acceleration rise)
-  { t: 0.60, lat: -92.0,  z: 1075.0, elev: 19.5, width: 15.5, bank: 0.06 },
+  { t: 0.60, lat: -92.0,  z: 2615.0, elev: 19.5, width: 15.5, bank: 0.06 },
   // 7: Red Rock Sandstone Chute (Desert willow groves & canyon bluffs)
-  { t: 0.72, lat: -74.0,  z: 1038.0, elev: 14.0, width: 16.0, bank: -0.04 },
+  { t: 0.72, lat: -74.0,  z: 2578.0, elev: 14.0, width: 16.0, bank: -0.04 },
   // 8: Alluvial Delta Sprint (Wide high-speed canyon exit glide)
-  { t: 0.86, lat: -48.0,  z: 998.0,  elev: 7.0,  width: 18.0, bank: 0.02 },
+  { t: 0.86, lat: -48.0,  z: 2538.0, elev: 7.0,  width: 18.0, bank: 0.02 },
   // 9: Highway 1 Turnout Re-entry Arch (Smooth merge onto Highway 1 turnout apron)
-  { t: 1.00, lat: -22.0,  z: 960.0,  elev: 0.1,  width: 22.0, bank: 0.00 }
+  { t: 1.00, lat: -22.0,  z: 2500.0, elev: 0.1,  width: 22.0, bank: 0.00 }
 ];
 
 export const DOWNHILL_STAGES = [
@@ -132,8 +132,8 @@ export class DownhillSpline {
    * Returns null if outside bounding envelope or too far.
    */
   static queryDownhill(latDist, z) {
-    // Bounding box for downhill route: latDist in [-250, -12], z in [930, 1175]
-    if (latDist < -250.0 || latDist > -12.0 || z < 930.0 || z > 1175.0) {
+    // Bounding box for downhill route: latDist in [-250, -12], z in [2470, 2715]
+    if (latDist < -250.0 || latDist > -12.0 || z < 2470.0 || z > 2715.0) {
       return null;
     }
 

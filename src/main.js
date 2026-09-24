@@ -71,18 +71,18 @@ renderer.scene.add(worldBoundaries.group);
 // 3. Build All 10 Authentic Regional Zone Sceneries with Dynamic Distance Culling
 setStartupStatus('Generating Scenic Zones...');
 const zoneBuilders = [
-  { builder: new DesertSceneryBuilder(renderer, splineRoad), zMin: 0, zMax: 2600 },
-  { builder: new MalibuSceneryBuilder(renderer, splineRoad), zMin: 2600, zMax: 5200 },
-  { builder: new BigSurSceneryBuilder(renderer, splineRoad), zMin: 5200, zMax: 7800 },
-  { builder: new MontereySceneryBuilder(renderer, splineRoad), zMin: 7800, zMax: 10400 },
-  { builder: new NorCalSceneryBuilder(renderer, splineRoad), zMin: 10400, zMax: 13000 },
-  { builder: new RedwoodSceneryBuilder(renderer, splineRoad), zMin: 13000, zMax: 15600 },
-  { builder: new OregonSceneryBuilder(renderer, splineRoad), zMin: 15600, zMax: 18200 },
-  { builder: new ColumbiaGorgeSceneryBuilder(renderer, splineRoad), zMin: 18200, zMax: 20800 },
-  { builder: new WashingtonSceneryBuilder(renderer, splineRoad), zMin: 20800, zMax: 23400 },
-  { builder: new CascadeSceneryBuilder(renderer, splineRoad), zMin: 23400, zMax: 26000 },
-  { builder: new IdahoPanhandleSceneryBuilder(renderer, splineRoad), zMin: 26000, zMax: 28600 },
-  { builder: new MontanaGlacierSceneryBuilder(renderer, splineRoad), zMin: 28600, zMax: 31200 }
+  { builder: new DesertSceneryBuilder(renderer, splineRoad), zMin: ZONES[0].zMin, zMax: ZONES[0].zMax },
+  { builder: new MalibuSceneryBuilder(renderer, splineRoad), zMin: ZONES[1].zMin, zMax: ZONES[1].zMax },
+  { builder: new BigSurSceneryBuilder(renderer, splineRoad), zMin: ZONES[2].zMin, zMax: ZONES[2].zMax },
+  { builder: new MontereySceneryBuilder(renderer, splineRoad), zMin: ZONES[3].zMin, zMax: ZONES[3].zMax },
+  { builder: new NorCalSceneryBuilder(renderer, splineRoad), zMin: ZONES[4].zMin, zMax: ZONES[4].zMax },
+  { builder: new RedwoodSceneryBuilder(renderer, splineRoad), zMin: ZONES[5].zMin, zMax: ZONES[5].zMax },
+  { builder: new OregonSceneryBuilder(renderer, splineRoad), zMin: ZONES[6].zMin, zMax: ZONES[6].zMax },
+  { builder: new ColumbiaGorgeSceneryBuilder(renderer, splineRoad), zMin: ZONES[7].zMin, zMax: ZONES[7].zMax },
+  { builder: new WashingtonSceneryBuilder(renderer, splineRoad), zMin: ZONES[8].zMin, zMax: ZONES[8].zMax },
+  { builder: new CascadeSceneryBuilder(renderer, splineRoad), zMin: ZONES[9].zMin, zMax: ZONES[9].zMax },
+  { builder: new IdahoPanhandleSceneryBuilder(renderer, splineRoad), zMin: ZONES[10].zMin, zMax: ZONES[10].zMax },
+  { builder: new MontanaGlacierSceneryBuilder(renderer, splineRoad), zMin: ZONES[11].zMin, zMax: ZONES[11].zMax }
 ];
 
 // Performance Optimization: Batch static meshes sharing identical materials inside spatial chunks
@@ -1006,6 +1006,8 @@ window.game = {
   ZONES,
   resetExpedition,
   sound,
+  soundEngine: sound,
+  youtubePlayer,
   worldBoundaries,
   hud,
   input,

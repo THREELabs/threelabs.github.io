@@ -17,7 +17,7 @@ export const KNOWN_STORAGE_KEYS = [
   'dreamstate_highway_save_v1',
   'baja_racer_save_v0'
 ];
-export const ROAD_MAX_Z = 26000;
+export const ROAD_MAX_Z = 62000;
 const MIN_SAVE_INTERVAL_MS = 2000; // Throttle frequent saves to protect 60/120 FPS performance
 
 /**

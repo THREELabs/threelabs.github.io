@@ -7243,7 +7243,7 @@ export class HUD {
     ctx.beginPath();
     const segRange = 220;
     const startZ = Math.max(0, pz - segRange);
-    const endZ = Math.min(26000, pz + segRange);
+    const endZ = Math.min((splineRoad && splineRoad.totalLength) ? splineRoad.totalLength : 62000, pz + segRange);
     for (let z = startZ; z <= endZ; z += 14) {
       const roadPt = splineRoad.getRoadInfo(0, z).roadPoint;
       const rx = (roadPt.x - px) * mapScale;
@@ -7408,7 +7408,8 @@ export class HUD {
   updateTabletLiveTelemetry(physics, splineRoad) {
     const zone = ZONES[gameState.currentZoneIndex] || ZONES[0];
     const distKm = (gameState.distanceMeters / 1000).toFixed(1);
-    const progressPct = Math.min(100, Math.max(0, (gameState.distanceMeters / 26000) * 100));
+    const totalHwyLen = (splineRoad && splineRoad.totalLength) ? splineRoad.totalLength : 62000;
+    const progressPct = Math.min(100, Math.max(0, (gameState.distanceMeters / totalHwyLen) * 100));
 
     if (this.tabletClock) {
       const d = new Date();
@@ -7422,7 +7423,7 @@ export class HUD {
     if (this.tabMilestoneZoneName) this.tabMilestoneZoneName.textContent = zone.name;
     if (this.tabMilestoneZoneSub) this.tabMilestoneZoneSub.textContent = zone.sub;
     if (this.tabMilestoneTemp) this.tabMilestoneTemp.textContent = zone.temperature ? `☀️ ${zone.temperature}` : '☀️ 104°F';
-    if (this.tabMilestoneDist) this.tabMilestoneDist.textContent = `${distKm} km / 23.4 km`;
+    if (this.tabMilestoneDist) this.tabMilestoneDist.textContent = `${distKm} km / ${(totalHwyLen / 1000).toFixed(1)} km`;
     if (this.tabMilestonePct) this.tabMilestonePct.textContent = `${Math.round(progressPct)}%`;
     if (this.tabProgressFill) this.tabProgressFill.style.width = `${progressPct}%`;
     if (this.tabMilestoneStatus) this.tabMilestoneStatus.textContent = `ZONE ${gameState.currentZoneIndex} ACTIVE`;
@@ -7693,10 +7694,10 @@ export class HUD {
       let closestDist = Infinity;
       let isInCurrentLot = false;
 
-      // Expanded discovery horizon (750m) gives players ample advance warning at high speeds
-      const ALERT_HORIZON = 750;
-      const NEAR_ZONE_DIST = 380; // Continuously visible when approaching turnout exit zone (380m)
-      const ADVANCE_DURATION = 12000; // Auto-dismiss advance banner after 12 seconds when far out
+      // Highway advance alert horizon (360m gives ~7 seconds advance notice at 180 km/h without sign overlap)
+      const ALERT_HORIZON = 360;
+      const NEAR_ZONE_DIST = 220; // Continuously visible when approaching turnout exit zone (220m)
+      const ADVANCE_DURATION = 10000; // Auto-dismiss advance banner after 10 seconds when far out
 
       const rInfo = splineRoad.getRoadInfo ? splineRoad.getRoadInfo(pX, pZ) : null;
       const isOnTrail = Boolean(gameState.isOnTrail || (rInfo && rInfo.isOnTrail));
@@ -7705,72 +7706,6 @@ export class HUD {
         closestLot = rInfo.turnoutData;
         closestDist = 0;
         isInCurrentLot = true;
-      }
-      // Scenic Destination Corridors: Consolidates closely clustered turnouts into unified highway advance signposts
-      const SCENIC_CORRIDORS = [
-        {
-          id: 'corridor_route66_start',
-          zMin: 0,
-          zMax: 450,
-          targetZ: 400,
-          name: "Route 66 Heritage Corridor",
-          sub: "Elmer's Bottle Tree Ranch (Left) & Wigwam Village (Right)",
-          sideText: 'EXITS BOTH SIDES ⇄',
-          sideColor: '#f59e0b'
-        },
-        {
-          id: 'corridor_cabazon',
-          zMin: 900,
-          zMax: 1650,
-          targetZ: 1580,
-          name: "Cabazon Roadside Attractions",
-          sub: "Claude Bell Giant Dinosaurs (Left) & Desert Outlets Plaza (Right)",
-          sideText: 'EXITS BOTH SIDES ⇄',
-          sideColor: '#f59e0b'
-        },
-        {
-          id: 'corridor_santa_monica',
-          zMin: 1950,
-          zMax: 2950,
-          targetZ: 2850,
-          name: "Santa Monica Pier & Coastal Promenade",
-          sub: "Muscle Beach • Historic Yacht Pier • Pacific Wheel • Bluffs",
-          sideText: 'SANTA MONICA EXITS ⇄',
-          sideColor: '#0ea5e9'
-        },
-        {
-          id: 'corridor_north_malibu',
-          zMin: 4700,
-          zMax: 5180,
-          targetZ: 5080,
-          name: "Point Mugu & Coast Roadhouses",
-          sub: "El Matador Sea Arches • Neptune's Net Seafood • Point Mugu Cut",
-          sideText: 'COASTAL EXITS ⇄',
-          sideColor: '#38bdf8'
-        }
-      ];
-
-      let activeCorridor = null;
-      if (!isInCurrentLot && !isOnTrail) {
-        for (let c = 0; c < SCENIC_CORRIDORS.length; c++) {
-          const cor = SCENIC_CORRIDORS[c];
-          if (pZ >= cor.zMin && pZ <= cor.zMax) {
-            activeCorridor = cor;
-            break;
-          }
-        }
-      }
-
-      if (!isInCurrentLot && !isOnTrail && activeCorridor) {
-        closestLot = {
-          id: activeCorridor.id,
-          name: activeCorridor.name,
-          sub: activeCorridor.sub,
-          customExitText: activeCorridor.sideText,
-          customExitColor: activeCorridor.sideColor,
-          z: activeCorridor.targetZ
-        };
-        closestDist = Math.max(0, activeCorridor.targetZ - pZ);
       } else if (!isInCurrentLot && !isOnTrail) {
         for (let i = 0; i < SCENIC_PARKING_LOTS.length; i++) {
           const lot = SCENIC_PARKING_LOTS[i];

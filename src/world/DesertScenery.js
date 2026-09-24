@@ -678,8 +678,8 @@ export class DesertSceneryBuilder {
       this.group.add(spireMesh);
     });
 
-    // Natural Sandstone Highway Arch (Span over highway at z=1420)
-    const archTrans = this.splineRoad.getRoadTransformAtZ(1420, 0, 0);
+    // Natural Sandstone Highway Arch (Span over highway at z=3850)
+    const archTrans = this.splineRoad.getRoadTransformAtZ(3850, 0, 0);
     const arch = new THREE.Group();
     arch.position.copy(archTrans.pos);
     arch.rotation.y = archTrans.heading;
@@ -705,11 +705,11 @@ export class DesertSceneryBuilder {
     this.group.add(arch);
   }
 
-  // 2. Cabazon Giant Dinosaurs Landmark (z=1550) — Authentic Claude Bell Roadside Attraction
+  // 2. Cabazon Giant Dinosaurs Landmark (z=4500) — Authentic Claude Bell Roadside Attraction
   buildCabazonDinosaurs() {
     const dinoGroup = new THREE.Group();
     // Position 37m back from turnout center (lat = -65) for cinematic framing
-    const trans = this.splineRoad.getRoadTransformAtZ(1550, -65, 0);
+    const trans = this.splineRoad.getRoadTransformAtZ(4500, -65, 0);
     dinoGroup.position.copy(trans.pos);
     dinoGroup.rotation.y = trans.heading;
 
@@ -1290,10 +1290,10 @@ export class DesertSceneryBuilder {
     this.group.add(dinoGroup);
   }
 
-  // 3. Route 66 Retro Neon Diner & Vintage Gas Station (z=750)
+  // 3. Route 66 Retro Neon Diner & Vintage Gas Station (z=1900)
   buildRoute66DinerAndGasStation() {
     const complex = new THREE.Group();
-    const trans = this.splineRoad.getRoadTransformAtZ(750, 34, 0);
+    const trans = this.splineRoad.getRoadTransformAtZ(1900, 34, 0);
     complex.position.copy(trans.pos);
     // Face 30 degrees angled toward oncoming traffic so the front facade, ribbon glass, and signs are in full view
     complex.rotation.y = trans.heading + Math.PI * 0.62;
@@ -1716,11 +1716,11 @@ export class DesertSceneryBuilder {
     this.group.add(shopGroup);
   }
 
-  // 4. Elmer's Bottle Tree Ranch / Desert Folk Art (z=350)
+  // 4. Elmer's Bottle Tree Ranch / Desert Folk Art (z=600)
   buildElmersBottleTreeRanch() {
     const ranch = new THREE.Group();
     ranch.name = 'Scenic_ElmersBottleTreeRanch';
-    const trans = this.splineRoad.getRoadTransformAtZ(350, -34.0, 0);
+    const trans = this.splineRoad.getRoadTransformAtZ(600, -34.0, 0);
     ranch.position.copy(trans.pos);
     ranch.rotation.y = trans.heading + 0.2;
 
@@ -2089,10 +2089,10 @@ export class DesertSceneryBuilder {
     });
   }
 
-  // 10b. Route 66 Cadillac Ranch Art Installation (Z = 1520m, X = -36m)
+  // 10b. Route 66 Cadillac Ranch Art Installation (Z = 4100m, X = -36m)
   // 6 Vintage American cruisers half-buried nose-down at 45° with vibrant multi-colored graffiti layers
   buildCadillacRanchArtInstallation() {
-    const t = this.splineRoad.getRoadTransformAtZ(1520, -36, 0);
+    const t = this.splineRoad.getRoadTransformAtZ(4100, -36, 0);
     const ranchGroup = new THREE.Group();
     ranchGroup.position.copy(t.pos);
     ranchGroup.rotation.y = t.heading;
@@ -2241,9 +2241,9 @@ export class DesertSceneryBuilder {
     });
   }
 
-  // 12. Roy's Motel Neon Sign, Cafe & Bungalows (z=2300)
+  // 12. Roy's Motel Neon Sign, Cafe & Bungalows (z=6300)
   buildRoysMotelSign() {
-    const transform = this.splineRoad.getRoadTransformAtZ(2300, 36, 0);
+    const transform = this.splineRoad.getRoadTransformAtZ(6300, 36, 0);
     const roys = new THREE.Group();
     roys.position.copy(transform.pos);
     // Face across the road, angled toward oncoming traffic
@@ -2579,9 +2579,9 @@ export class DesertSceneryBuilder {
     this.tumbleweeds = [];
   }
 
-  // 15. Wigwam Motel — 19 Teepee Cabins in Horseshoe Arc (Z=420m, X=+36)
+  // 15. Wigwam Motel — 19 Teepee Cabins in Horseshoe Arc (Z=1250m, X=+36)
   buildWigwamMotelCottages() {
-    const baseT = this.splineRoad.getRoadTransformAtZ(420, 36, 0);
+    const baseT = this.splineRoad.getRoadTransformAtZ(1250, 36, 0);
     const motel = new THREE.Group();
     motel.position.copy(baseT.pos);
     motel.rotation.y = baseT.heading - 0.25;
@@ -2633,7 +2633,7 @@ export class DesertSceneryBuilder {
     }
 
     // "WIGWAM MOTEL" Neon sign
-    const signT = this.splineRoad.getRoadTransformAtZ(405, 22, 0);
+    const signT = this.splineRoad.getRoadTransformAtZ(1235, 22, 0);
     const signPost = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 6, 6), this.matWoodPole);
     signPost.position.set(signT.pos.x, signT.pos.y + 3, signT.pos.z);
     this.group.add(signPost);
@@ -2649,9 +2649,9 @@ export class DesertSceneryBuilder {
     this.group.add(motel);
   }
 
-  // 16. Desert Hills Premium Outlets Mall (Z=1580–1650m, X=+36)
+  // 16. Desert Hills Premium Outlets Mall (Z=5150m, X=+36)
   buildDesertHillsOutletMall() {
-    const transform = this.splineRoad.getRoadTransformAtZ(1615, 36, 0);
+    const transform = this.splineRoad.getRoadTransformAtZ(5150, 36, 0);
     const mall = new THREE.Group();
     mall.position.copy(transform.pos);
     // Face across the road toward oncoming traffic
@@ -2702,9 +2702,9 @@ export class DesertSceneryBuilder {
     this.group.add(mall);
   }
 
-  // 17. Vintage Gas Station & General Store (Z=1040m, X=+32)
+  // 17. Vintage Gas Station & General Store (Z=2150m, X=+32)
   buildVintageGasStation() {
-    const transform = this.splineRoad.getRoadTransformAtZ(1040, 32, 0);
+    const transform = this.splineRoad.getRoadTransformAtZ(2150, 32, 0);
     const station = new THREE.Group();
     station.position.copy(transform.pos);
     // Face across the road toward oncoming traffic
@@ -2759,9 +2759,9 @@ export class DesertSceneryBuilder {
     this.group.add(station);
   }
 
-  // 18. Calico Ghost Town Historical Signage & Distant Silhouette (Z=1900m, X=+28)
+  // 18. Calico Ghost Town Historical Signage & Distant Silhouette (Z=5700m, X=+28)
   buildCalicoBoulderSignage() {
-    const transform = this.splineRoad.getRoadTransformAtZ(1900, 28, 0);
+    const transform = this.splineRoad.getRoadTransformAtZ(5700, 28, 0);
     const calicoGroup = new THREE.Group();
     calicoGroup.position.copy(transform.pos);
     calicoGroup.rotation.y = transform.heading - 0.3;
@@ -2783,7 +2783,7 @@ export class DesertSceneryBuilder {
     calicoGroup.add(calicoPlaque);
 
     // Distant water tower silhouette on ridge (X = +100)
-    const towerT = this.splineRoad.getRoadTransformAtZ(1920, 100, 15);
+    const towerT = this.splineRoad.getRoadTransformAtZ(5720, 100, 15);
     const waterTower = new THREE.Group();
     waterTower.position.copy(towerT.pos);
     const tank = new THREE.Mesh(new THREE.CylinderGeometry(4.5, 4.5, 6, 8), this.matWoodSignBrown);
@@ -3024,8 +3024,8 @@ export class DesertSceneryBuilder {
     // 3. TURNOUT ENTRANCE APRON & DIRECTIONAL SIGNAGE
     // =========================================================================
     const apronGeo = new THREE.BufferGeometry();
-    const apronPos0 = this.splineRoad.getRoadTransformAtZ(996, -18, 0).pos;
-    const apronPos1 = this.splineRoad.getRoadTransformAtZ(1024, -18, 0).pos;
+    const apronPos0 = this.splineRoad.getRoadTransformAtZ(2536, -18, 0).pos;
+    const apronPos1 = this.splineRoad.getRoadTransformAtZ(2564, -18, 0).pos;
     const apronPos2 = spinePoints[0].pos;
     const apronVertices = new Float32Array([
       apronPos0.x, this.splineRoad.getGroundElevation(apronPos0.x, apronPos0.z) + 0.10, apronPos0.z,
@@ -3063,7 +3063,7 @@ export class DesertSceneryBuilder {
 
     // Directional pavement arrows
     [-8, 0, 8].forEach(dz => {
-      const arrTrans = this.splineRoad.getRoadTransformAtZ(1010 + dz, -16, 0.13);
+      const arrTrans = this.splineRoad.getRoadTransformAtZ(2550 + dz, -16, 0.13);
       const arrGroup = new THREE.Group();
       arrGroup.position.copy(arrTrans.pos);
       arrGroup.rotation.y = arrTrans.heading - Math.PI * 0.5;
@@ -3717,8 +3717,8 @@ export class DesertSceneryBuilder {
     });
 
 
-    // Two-Tier Cougar Falls Canyon Cascade (Across gorge at lat: -200, z: 1290)
-    const wfTrans = this.splineRoad.getRoadTransformAtZ(1290.0, -200.0, 0);
+    // Two-Tier Cougar Falls Canyon Cascade (Across gorge at lat: -200, z: 2830)
+    const wfTrans = this.splineRoad.getRoadTransformAtZ(2830.0, -200.0, 0);
     const wfX = wfTrans.pos.x;
     const wfZ = wfTrans.pos.z;
     const wfPoolY = 25.0;
@@ -3960,7 +3960,7 @@ export class DesertSceneryBuilder {
     const thunderGroup = new THREE.Group();
     thunderGroup.name = 'ThunderFallsGrandCascade';
 
-    const tfTrans = this.splineRoad.getRoadTransformAtZ(1485.0, -275.0, 0);
+    const tfTrans = this.splineRoad.getRoadTransformAtZ(3025.0, -275.0, 0);
     const tfX = tfTrans.pos.x;
     const tfZ = tfTrans.pos.z;
     const tfPoolY = 35.0;
@@ -4268,9 +4268,9 @@ export class DesertSceneryBuilder {
     });
 
     // Connecting outflow river ribbon from Thunder Falls plunge pool down into the ford
-    const tcp1 = this.splineRoad.getRoadTransformAtZ(1430, -280, 0).pos;
-    const tcp3 = this.splineRoad.getRoadTransformAtZ(1340, -298, 0).pos;
-    const tcp4 = this.splineRoad.getRoadTransformAtZ(1290, -310, 0).pos;
+    const tcp1 = this.splineRoad.getRoadTransformAtZ(2970, -280, 0).pos;
+    const tcp3 = this.splineRoad.getRoadTransformAtZ(2880, -298, 0).pos;
+    const tcp4 = this.splineRoad.getRoadTransformAtZ(2830, -310, 0).pos;
     const tcRibbonPoints = [
       new THREE.Vector3(tfX + Math.sin(tfRotY) * 9.5, tfPoolY + 0.12, tfZ + Math.cos(tfRotY) * 9.5),
       new THREE.Vector3(tcp1.x, this.splineRoad.getGroundElevation(tcp1.x, tcp1.z) + 0.10, tcp1.z),
@@ -7838,11 +7838,11 @@ export class DesertSceneryBuilder {
   // 6. 5 Interactive Golden Route 66 Shield Collectibles
   buildRoute66Collectibles() {
     const shieldLocations = [
-      { id: 'shield_bottle_tree', z: 350, lat: -38, yOffset: 2.2, name: "Elmer's Bottle Tree Grove" },
-      { id: 'shield_natural_arch', z: 1420, lat: 0.0, yOffset: 5.6, name: 'Sandstone Natural Highway Arch' },
-      { id: 'shield_cabazon_dino', z: 1550, lat: -75, yOffset: 2.4, name: 'Dinny the Dinosaur Sanctuary' },
-      { id: 'shield_arroyo_jump', z: 1750, lat: -28, yOffset: 3.6, name: 'Mojave Arroyo Stunt Wash' },
-      { id: 'shield_coyote_summit', z: 1350, lat: -310, yOffset: 44.6, name: 'Coyote Ridge Summit Overlook' }
+      { id: 'shield_bottle_tree', z: 600, lat: -38, yOffset: 2.2, name: "Elmer's Bottle Tree Grove" },
+      { id: 'shield_natural_arch', z: 3850, lat: 0.0, yOffset: 5.6, name: 'Sandstone Natural Highway Arch' },
+      { id: 'shield_cabazon_dino', z: 4500, lat: -75, yOffset: 2.4, name: 'Dinny the Dinosaur Sanctuary' },
+      { id: 'shield_arroyo_jump', z: 4900, lat: -28, yOffset: 3.6, name: 'Mojave Arroyo Stunt Wash' },
+      { id: 'shield_coyote_summit', z: 2890, lat: -310, yOffset: 44.6, name: 'Coyote Ridge Summit Overlook' }
     ];
 
     shieldLocations.forEach((loc, idx) => {

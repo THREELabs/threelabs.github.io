@@ -2908,6 +2908,62 @@ export class SoundEngine {
   }
 
   /**
+   * 📻 Authentic Radio Frequency Dial Scan & Static Burst SFX
+   * Plays realistic FM band white noise, heterodyne whistle, and static burst when tuning stations
+   */
+  playRadioTuningStatic(duration = 1.3) {
+    if (!this.ctx || !this.isInitialized || this.ctx.state !== 'running' || gameState.isMuted) return;
+    const now = this.ctx.currentTime;
+
+    // 1. Noise source through a sweeping bandpass filter
+    if (this.noiseBuffer) {
+      const src = this.ctx.createBufferSource();
+      src.buffer = this.noiseBuffer;
+      src.loop = true;
+
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.Q.setValueAtTime(3.5, now);
+      bandpass.frequency.setValueAtTime(800, now);
+      bandpass.frequency.exponentialRampToValueAtTime(3200, now + duration * 0.4);
+      bandpass.frequency.exponentialRampToValueAtTime(1200, now + duration * 0.7);
+      bandpass.frequency.exponentialRampToValueAtTime(2400, now + duration);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.24, now + 0.08);
+      gain.gain.setValueAtTime(0.22, now + duration * 0.75);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      src.connect(bandpass);
+      bandpass.connect(gain);
+      gain.connect(this.compressor || this.masterGain);
+
+      src.start(now);
+      src.stop(now + duration + 0.05);
+    }
+
+    // 2. High-pitched heterodyne carrier whistle (simulating passing across adjacent stations)
+    const whistle = this.ctx.createOscillator();
+    const whistleGain = this.ctx.createGain();
+    whistle.type = 'sine';
+    whistle.frequency.setValueAtTime(1400, now);
+    whistle.frequency.exponentialRampToValueAtTime(450, now + duration * 0.35);
+    whistle.frequency.exponentialRampToValueAtTime(1800, now + duration * 0.65);
+    whistle.frequency.exponentialRampToValueAtTime(220, now + duration);
+
+    whistleGain.gain.setValueAtTime(0.001, now);
+    whistleGain.gain.linearRampToValueAtTime(0.06, now + 0.1);
+    whistleGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    whistle.connect(whistleGain);
+    whistleGain.connect(this.compressor || this.masterGain);
+
+    whistle.start(now);
+    whistle.stop(now + duration + 0.05);
+  }
+
+  /**
    * 🪙 Coin-Operated Scenic Binoculars: Coin Insertion & Optical Shutter Open
    * Metallic coin slide ping, internal mechanical ratchet latch, and aperture shutter snap
    */

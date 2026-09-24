@@ -1,18 +1,18 @@
 import * as THREE from 'three';
-import { ROAD } from '../constants.js';
+import { ROAD, TOTAL_HIGHWAY_LENGTH } from '../constants.js';
 import { gameState } from '../state.js';
 import { calculateTerrainHeight } from './TerrainHeight.js';
 import { ZONE_CLUES_CONFIG } from './MysteryCrimeScene.js';
 import { DownhillSpline } from './DownhillSpline.js';
 
 export const SCENIC_PARKING_LOTS = [
-  // ── Zone 0: Mojave Desert (0 - 2600m) ──────────────────────────────
+  // ── Zone 0: Mojave Desert (0 - 6500m) ──────────────────────────────
   {
     id: 'turnout_bottle_tree',
     zone: 0,
     name: "Elmer's Bottle Tree Ranch",
     sub: 'Folk Art & Welded Bottle Tree Forest',
-    z: 350,
+    z: 600,
     side: 'left',
     xOffset: -25.0,
     width: 22.0,
@@ -25,7 +25,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 0,
     name: 'Wigwam Village Motel',
     sub: 'Route 66 Historic Teepee Courtyard',
-    z: 420,
+    z: 1250,
     side: 'right',
     xOffset: 26.0,
     width: 22.0,
@@ -38,7 +38,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 0,
     name: 'Route 66 Neon Diner & Vintage Gas',
     sub: 'Streamline Moderne Roadside Cafe',
-    z: 750,
+    z: 1900,
     side: 'right',
     xOffset: 26.0,
     width: 24.0,
@@ -51,7 +51,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 0,
     name: 'Coyote Ridge 4x4 Trailhead',
     sub: 'Rocky Mountain Trail & Panoramic Desert Vista',
-    z: 1010,
+    z: 2550,
     side: 'left',
     xOffset: -18.0,
     width: 24.0,
@@ -64,7 +64,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 0,
     name: 'Mojave Mesas & Highway Stone Arch',
     sub: 'Natural Sandstone Arch Panorama',
-    z: 1420,
+    z: 3850,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -77,7 +77,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 0,
     name: 'Cabazon Dinosaurs Lookout',
     sub: 'Dinny the Bronto & Mr. Rex Vista',
-    z: 1550,
+    z: 4500,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -90,7 +90,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 0,
     name: 'Desert Hills Outlets Plaza',
     sub: 'Spanish Stucco Arcade & Palm Court',
-    z: 1615,
+    z: 5150,
     side: 'right',
     xOffset: 27.0,
     width: 24.0,
@@ -103,7 +103,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 0,
     name: 'Calico Ghost Town Historical Overlook',
     sub: 'Historic 1881 Silver Mining Ridge',
-    z: 1900,
+    z: 5700,
     side: 'right',
     xOffset: 25.0,
     width: 22.0,
@@ -116,7 +116,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 0,
     name: "Roy's Motel & Neon Starburst",
     sub: 'Iconic Route 66 Googie Signpost',
-    z: 2300,
+    z: 6300,
     side: 'right',
     xOffset: 27.0,
     width: 24.0,
@@ -125,13 +125,13 @@ export const SCENIC_PARKING_LOTS = [
     viewDir: 'right'
   },
 
-  // ── Zone 1: Malibu & PCH (2600 - 5200m) ────────────────────────────
+  // ── Zone 1: Malibu & PCH (6500 - 14500m) ────────────────────────────
   {
     id: 'turnout_muscle_beach',
     zone: 1,
     name: 'Santa Monica Muscle Beach',
     sub: 'Original Calisthenics Boardwalk',
-    z: 2700,
+    z: 7050,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -144,7 +144,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'Santa Monica Pier Yacht Harbor',
     sub: 'Historic 1909 Ocean Pier & Arch',
-    z: 2750,
+    z: 7600,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -157,7 +157,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'California Incline & Palisades Bluffs',
     sub: 'Coastal Palisades Ocean Bluffs',
-    z: 2820,
+    z: 8150,
     side: 'right',
     xOffset: 26.0,
     width: 22.0,
@@ -170,7 +170,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'Pacific Park Pier & Solar Wheel',
     sub: 'Pacific Park Coaster & Ferris Wheel',
-    z: 2900,
+    z: 8700,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -183,7 +183,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'Will Rogers State Beach & Baywatch HQ',
     sub: 'Lifeguard Headquarters & Surf Break',
-    z: 3200,
+    z: 9250,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -196,7 +196,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'The Getty Villa Roman Colonnade',
     sub: 'Roman Peristyle & Hillside Gardens',
-    z: 3500,
+    z: 9800,
     side: 'right',
     xOffset: 28.0,
     width: 24.0,
@@ -209,7 +209,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'Topanga Beach Surf Shack & VW Bus',
     sub: 'Bohemian Surfer Haven & Point Break',
-    z: 3800,
+    z: 10350,
     side: 'right',
     xOffset: 25.0,
     width: 22.0,
@@ -222,7 +222,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'Malibu Pier & Surfrider Beach',
     sub: 'Historic Twin White Pier Pavilions',
-    z: 4100,
+    z: 11200,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -235,7 +235,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'Carbon Beach Stilt Mansions',
     sub: "Modern Billionaires' Row Architecture",
-    z: 4400,
+    z: 11800,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -248,7 +248,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'Zuma Beach & Lifeguard Tower 26',
     sub: 'Pristine White Sands & Shorebreak',
-    z: 4650,
+    z: 12400,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -261,7 +261,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'Point Dume Marine Nature Reserve',
     sub: 'Coastal Headland & Whale Watching Bluff',
-    z: 4800,
+    z: 12950,
     side: 'left',
     xOffset: -27.0,
     width: 24.0,
@@ -274,7 +274,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'El Matador Sea Arches & Caves',
     sub: 'Cathedral Rock Natural Sea Portals',
-    z: 4950,
+    z: 13500,
     side: 'left',
     xOffset: -27.0,
     width: 24.0,
@@ -287,7 +287,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: "Neptune's Net Seafood Roadhouse",
     sub: 'Iconic Highway 1 Seafood Shack',
-    z: 5050,
+    z: 14000,
     side: 'right',
     xOffset: 25.0,
     width: 22.0,
@@ -300,7 +300,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 1,
     name: 'Point Mugu Rock Bluff Cut',
     sub: 'Mountain Sea Cliff Highway Gateway',
-    z: 5150,
+    z: 14400,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -309,13 +309,13 @@ export const SCENIC_PARKING_LOTS = [
     viewDir: 'left'
   },
 
-  // ── Zone 2: Big Sur (5200 - 7800m) ─────────────────────────────────
+  // ── Zone 2: Big Sur (14500 - 20500m) ─────────────────────────────────
   {
     id: 'turnout_big_sur_inn',
     zone: 2,
     name: 'Big Sur River Inn & Redwoods',
     sub: 'Rustic Mountain Lodge & River Deck',
-    z: 5550,
+    z: 15100,
     side: 'right',
     xOffset: 25.0,
     width: 22.0,
@@ -328,7 +328,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 2,
     name: 'Hurricane Point Ocean Vista',
     sub: 'High-Altitude Big Sur Precipice',
-    z: 5700,
+    z: 15800,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -341,7 +341,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 2,
     name: 'McWay Falls Waterfall Cove',
     sub: '80-Foot Tidefall & Turquoise Inlet',
-    z: 5950,
+    z: 16500,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -354,7 +354,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 2,
     name: 'Henry Miller Library in the Pines',
     sub: 'Bohemian Sculpture Garden in Redwoods',
-    z: 6150,
+    z: 17200,
     side: 'right',
     xOffset: 25.0,
     width: 22.0,
@@ -367,7 +367,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 2,
     name: 'Nepenthe Cliffside Vista Deck',
     sub: '800-Foot Ocean Panorama Dining',
-    z: 6300,
+    z: 17900,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -380,7 +380,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 2,
     name: 'Bixby Creek Bridge North Vista',
     sub: 'Iconic Concrete Open-Spandrel Arch',
-    z: 6650,
+    z: 18650,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -393,7 +393,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 2,
     name: 'Pfeiffer Beach Keyhole Arch Rock',
     sub: 'Natural Sea Arch & Purple Sand Beach',
-    z: 7100,
+    z: 19400,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -406,7 +406,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 2,
     name: 'Point Sur Historic Lightstation',
     sub: '1889 Volcanic Rock Lighthouse Crest',
-    z: 7550,
+    z: 20150,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -415,13 +415,13 @@ export const SCENIC_PARKING_LOTS = [
     viewDir: 'left'
   },
 
-  // ── Zone 3: Monterey & Carmel (7800 - 10400m) ──────────────────────
+  // ── Zone 3: Monterey & Carmel (20500 - 25500m) ──────────────────────
   {
     id: 'turnout_cannery_row',
     zone: 3,
     name: 'Cannery Row & Monterey Aquarium',
     sub: 'Steinbeck Historic Sardine Waterfront',
-    z: 8300,
+    z: 21300,
     side: 'left',
     xOffset: -27.0,
     width: 24.0,
@@ -434,7 +434,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 3,
     name: 'Pebble Beach 18th Hole Ocean Vista',
     sub: 'World-Famous Coastal Links Fairway',
-    z: 8800,
+    z: 22250,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -447,7 +447,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 3,
     name: 'The Lone Cypress 250-Year Landmark',
     sub: 'Granite Cliff Icon on 17-Mile Drive',
-    z: 9300,
+    z: 23200,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -460,7 +460,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 3,
     name: 'Carmel-by-the-Sea Fairytale Cottages',
     sub: 'Hugh Comstock Storybook Architecture',
-    z: 9750,
+    z: 24150,
     side: 'right',
     xOffset: 25.0,
     width: 22.0,
@@ -473,7 +473,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 3,
     name: 'Carmel Mission Basilica San Carlos',
     sub: 'Historic 1797 Adobe Bell Tower & Quad',
-    z: 10150,
+    z: 25100,
     side: 'right',
     xOffset: 26.0,
     width: 24.0,
@@ -482,13 +482,13 @@ export const SCENIC_PARKING_LOTS = [
     viewDir: 'right'
   },
 
-  // ── Zone 4: NorCal & Marin (10400 - 13000m) ────────────────────────
+  // ── Zone 4: NorCal & Marin (25500 - 31000m) ────────────────────────
   {
     id: 'turnout_painted_ladies',
     zone: 4,
     name: 'SF Painted Ladies Victorian Row',
     sub: 'Alamo Square Pastel Mansions',
-    z: 10800,
+    z: 26300,
     side: 'right',
     xOffset: 26.0,
     width: 24.0,
@@ -501,7 +501,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 4,
     name: 'San Francisco Historic Cable Car',
     sub: '1890s Powell-Mason Wooden Turntable',
-    z: 11100,
+    z: 27150,
     side: 'right',
     xOffset: 25.0,
     width: 22.0,
@@ -514,7 +514,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 4,
     name: 'Marin Headlands Coastal Bunkers',
     sub: 'WWII Coastal Battery & Pacific Straits',
-    z: 11400,
+    z: 28000,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -527,7 +527,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 4,
     name: 'Golden Gate Bridge Vista Plaza',
     sub: 'International Orange Suspension Towers',
-    z: 11750,
+    z: 28900,
     side: 'right',
     xOffset: 28.0,
     width: 26.0,
@@ -540,7 +540,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 4,
     name: 'Sonoma Mission Chateau & Vineyards',
     sub: 'Rolling Wine Country Hillside Terraces',
-    z: 12400,
+    z: 29800,
     side: 'right',
     xOffset: 26.0,
     width: 24.0,
@@ -553,7 +553,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 4,
     name: 'Bodega Bay & St. Teresa Church',
     sub: 'Historic 1859 White Steeple Parish',
-    z: 12800,
+    z: 30650,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -562,13 +562,13 @@ export const SCENIC_PARKING_LOTS = [
     viewDir: 'left'
   },
 
-  // ── Zone 5: Redwood Forest (13000 - 15600m) ────────────────────────
+  // ── Zone 5: Redwood Forest (31000 - 36000m) ────────────────────────
   {
     id: 'turnout_covered_bridge',
     zone: 5,
     name: 'Redwood Creek Covered Timber Bridge',
     sub: 'Cedar Shingle Historic Stream Crossing',
-    z: 13450,
+    z: 31850,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -581,7 +581,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 5,
     name: 'Chandelier Drive-Thru Redwood Tree',
     sub: '315-Foot Ancient Tunnel Tree',
-    z: 13900,
+    z: 32800,
     side: 'right',
     xOffset: 25.0,
     width: 22.0,
@@ -594,7 +594,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 5,
     name: 'Carson Mansion Eureka Victorian',
     sub: 'Historic Queen Anne Redwood Estate',
-    z: 14400,
+    z: 33750,
     side: 'right',
     xOffset: 27.0,
     width: 24.0,
@@ -607,7 +607,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 5,
     name: 'Legend of Bigfoot Forest Museum',
     sub: 'Sasquatch Carvings & Forest Lore',
-    z: 14950,
+    z: 34700,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -620,7 +620,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 5,
     name: 'Redwood Sawmill & Steam Donkey Camp',
     sub: 'Historic 19th Century Steam Logging',
-    z: 15400,
+    z: 35600,
     side: 'right',
     xOffset: 26.0,
     width: 24.0,
@@ -629,13 +629,13 @@ export const SCENIC_PARKING_LOTS = [
     viewDir: 'right'
   },
 
-  // ── Zone 6: Oregon Coast (15600 - 18200m) ──────────────────────────
+  // ── Zone 6: Oregon Coast (36000 - 40500m) ──────────────────────────
   {
     id: 'turnout_yaquina_light',
     zone: 6,
     name: 'Yaquina Head Lighthouse & Cobble Beach',
     sub: '93-Foot Coastal Beacon & Headlands',
-    z: 16100,
+    z: 36900,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -648,7 +648,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 6,
     name: 'Haystack Rock & The Needles Overlook',
     sub: '235-Foot Marine Monolith Sea Stack',
-    z: 16600,
+    z: 37950,
     side: 'left',
     xOffset: -29.0,
     width: 26.0,
@@ -661,7 +661,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 6,
     name: 'Oregon Driftwood Beach & Sea Caves',
     sub: 'Pacific Tide Pools & Weathered Logs',
-    z: 17200,
+    z: 39000,
     side: 'left',
     xOffset: -26.0,
     width: 22.0,
@@ -674,7 +674,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 6,
     name: 'Tillamook Creamery & Historic Barn',
     sub: 'Oregon Valley Dairy & Yellow Barn',
-    z: 17800,
+    z: 40050,
     side: 'right',
     xOffset: 27.0,
     width: 24.0,
@@ -683,13 +683,13 @@ export const SCENIC_PARKING_LOTS = [
     viewDir: 'right'
   },
 
-  // ── Zone 7: Columbia River Gorge (18200 - 20800m) ──────────────────
+  // ── Zone 7: Columbia River Gorge (40500 - 45000m) ──────────────────
   {
     id: 'turnout_bridge_of_gods',
     zone: 7,
     name: 'Bridge of the Gods Steel Cantilever',
     sub: 'PCT Columbia River Mountain Span',
-    z: 18650,
+    z: 41400,
     side: 'left',
     xOffset: -26.0,
     width: 24.0,
@@ -702,7 +702,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 7,
     name: 'Multnomah Falls 620-Foot Cascade',
     sub: 'Two-Tier Waterfall & Benson Stone Arch',
-    z: 19250,
+    z: 42450,
     side: 'right',
     xOffset: 28.0,
     width: 26.0,
@@ -715,7 +715,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 7,
     name: 'Bonneville Hydroelectric Dam Spillway',
     sub: 'Columbia River Spillway & Fish Ladders',
-    z: 19850,
+    z: 43500,
     side: 'left',
     xOffset: -27.0,
     width: 24.0,
@@ -728,7 +728,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 7,
     name: 'Vista House at Crown Point (1918)',
     sub: '733-Foot Clifftop Marble Rotunda',
-    z: 20450,
+    z: 44550,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -737,13 +737,13 @@ export const SCENIC_PARKING_LOTS = [
     viewDir: 'left'
   },
 
-  // ── Zone 8: Washington & Olympic (20800 - 23400m) ──────────────────
+  // ── Zone 8: Washington & Olympic (45000 - 49500m) ──────────────────
   {
     id: 'turnout_snoqualmie_falls',
     zone: 8,
     name: 'Snoqualmie Falls & Salish Mountain Lodge',
     sub: '268-Foot Roaring Cascade & River Gorge',
-    z: 21350,
+    z: 45900,
     side: 'right',
     xOffset: 27.0,
     width: 24.0,
@@ -756,7 +756,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 8,
     name: 'Puget Sound Jumbo Ferry Dock',
     sub: 'Washington State Jumbo Ferry Crossing',
-    z: 21950,
+    z: 46950,
     side: 'left',
     xOffset: -28.0,
     width: 24.0,
@@ -769,7 +769,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 8,
     name: 'Seattle Space Needle & Mount Rainier Plaza',
     sub: '605-Foot Observation Spire & Skyline',
-    z: 22550,
+    z: 48000,
     side: 'left',
     xOffset: -29.0,
     width: 26.0,
@@ -782,7 +782,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 8,
     name: 'Pike Place Market & Historic Neon Clock',
     sub: 'Historic Farmers Market & Waterfront Esplanade',
-    z: 23100,
+    z: 49050,
     side: 'right',
     xOffset: 26.0,
     width: 24.0,
@@ -790,13 +790,14 @@ export const SCENIC_PARKING_LOTS = [
     theme: 'urban_esplanade',
     viewDir: 'right'
   },
-  // ── Zone 9: Cascade Pass & Mount Rainier (23400 - 26000m) ─────────
+
+  // ── Zone 9: Cascade Pass & Mount Rainier (49500 - 53500m) ─────────
   {
     id: 'turnout_paradise_lodge',
     zone: 9,
     name: 'Paradise Historic Timber Lodge (1916)',
     sub: '5,420-Foot Subalpine Timber Landmark',
-    z: 24100,
+    z: 50700,
     side: 'right',
     xOffset: 26.0,
     width: 24.0,
@@ -809,7 +810,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 9,
     name: 'Narada Falls Basalt Chasm Overlook',
     sub: '176-Foot Columnar Basalt Glacial Cascade',
-    z: 24900,
+    z: 52300,
     side: 'left',
     xOffset: -27.0,
     width: 24.0,
@@ -817,13 +818,27 @@ export const SCENIC_PARKING_LOTS = [
     theme: 'timber_lodge',
     viewDir: 'left'
   },
-  // ── Zone 10: Idaho Panhandle & Lake Coeur d'Alene (26000 - 28600m) ──
+  {
+    id: 'turnout_rainier_summit',
+    zone: 9,
+    name: 'Mount Rainier Glacier Summit Overlook',
+    sub: '14,411-Foot Stratovolcano Icecap & Glacial Panorama',
+    z: 53100,
+    side: 'right',
+    xOffset: 26.0,
+    width: 26.0,
+    length: 54.0,
+    theme: 'timber_lodge',
+    viewDir: 'right'
+  },
+
+  // ── Zone 10: Idaho Panhandle & Lake Coeur d'Alene (53500 - 57500m) ──
   {
     id: 'turnout_coeur_dalene_boardwalk',
     zone: 10,
     name: "Lake Coeur d'Alene Floating Boardwalk",
     sub: "Sapphire Lake Marina & Resort Promenade",
-    z: 26800,
+    z: 54700,
     side: 'left',
     xOffset: -27.0,
     width: 26.0,
@@ -836,7 +851,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 10,
     name: "Cataldo Old Mission (1853)",
     sub: "Idaho's Oldest Standing Building — Jesuit Frontier Church",
-    z: 27600,
+    z: 56300,
     side: 'right',
     xOffset: 27.0,
     width: 24.0,
@@ -844,13 +859,40 @@ export const SCENIC_PARKING_LOTS = [
     theme: 'mission_adobe',
     viewDir: 'right'
   },
-  // ── Zone 11: Montana Big Sky & Glacier (28600 - 31200m) ──
+  {
+    id: 'turnout_silver_valley_mine',
+    zone: 10,
+    name: "Silver Valley Mine Headframe & Ore Chutes",
+    sub: "Historic Mining District Headframe & Timber Trestle",
+    z: 57100,
+    side: 'left',
+    xOffset: -27.0,
+    width: 24.0,
+    length: 52.0,
+    theme: 'mission_adobe',
+    viewDir: 'left'
+  },
+
+  // ── Zone 11: Montana Big Sky & Glacier (57500 - 62000m) ──
   {
     id: 'turnout_lake_mcdonald',
     zone: 11,
     name: "Lake McDonald Glacial Vista & Colored Pebble Shore",
     sub: "1913 Swiss Chalet Cedar Lodge & Glacial Fjord Overlook",
-    z: 29200,
+    z: 58800,
+    side: 'left',
+    xOffset: -28.0,
+    width: 26.0,
+    length: 56.0,
+    theme: 'timber_lodge',
+    viewDir: 'left'
+  },
+  {
+    id: 'turnout_weeping_wall',
+    zone: 11,
+    name: "The Weeping Wall & Triple Stone Arches",
+    sub: "Rimrock Shelf Waterfall & Garden Wall Crest",
+    z: 60000,
     side: 'left',
     xOffset: -28.0,
     width: 26.0,
@@ -863,7 +905,7 @@ export const SCENIC_PARKING_LOTS = [
     zone: 11,
     name: "Logan Pass Continental Divide (6,646 ft)",
     sub: "Crown of the Continent Alpine Visitor Center & Highline Trailhead",
-    z: 30800,
+    z: 61200,
     side: 'right',
     xOffset: 28.0,
     width: 28.0,
@@ -885,7 +927,7 @@ export const AUTO_REPAIR_SHOPS = [
     zone: 0,
     name: 'Mojave Desert 24HR Garage',
     sub: 'Route 66 Vintage Speed Shop',
-    z: 1200,
+    z: 3200,
     side: 'right',
     xOffset: 28.0,
     width: 48.0,
@@ -899,7 +941,7 @@ export const AUTO_REPAIR_SHOPS = [
     zone: 1,
     name: 'Malibu Coastal Speed & Tune',
     sub: 'Pacific Coast Highway Tuner Bay',
-    z: 3800,
+    z: 10750,
     side: 'right',
     xOffset: 28.0,
     width: 48.0,
@@ -913,7 +955,7 @@ export const AUTO_REPAIR_SHOPS = [
     zone: 2,
     name: 'Big Sur Cliffside Auto Care',
     sub: 'Bixby Canyon Performance Pitstop',
-    z: 6400,
+    z: 17550,
     side: 'right',
     xOffset: 28.0,
     width: 48.0,
@@ -927,7 +969,7 @@ export const AUTO_REPAIR_SHOPS = [
     zone: 3,
     name: 'Monterey Bay Performance Bay',
     sub: 'Laguna Seca Speed Works',
-    z: 9100,
+    z: 22700,
     side: 'right',
     xOffset: 28.0,
     width: 48.0,
@@ -941,7 +983,7 @@ export const AUTO_REPAIR_SHOPS = [
     zone: 4,
     name: 'Marin Headlands Service Depot',
     sub: 'Golden Gate Northbound Bay',
-    z: 11800,
+    z: 27600,
     side: 'right',
     xOffset: 28.0,
     width: 48.0,
@@ -955,7 +997,7 @@ export const AUTO_REPAIR_SHOPS = [
     zone: 5,
     name: 'Redwood Creek Auto Care',
     sub: 'Avenue of Giants Forest Bay',
-    z: 14200,
+    z: 33300,
     side: 'right',
     xOffset: 28.0,
     width: 48.0,
@@ -969,7 +1011,7 @@ export const AUTO_REPAIR_SHOPS = [
     zone: 6,
     name: 'Oregon Pacific Coastal Garage',
     sub: 'Haystack Rock Marine Speed Shop',
-    z: 16800,
+    z: 38500,
     side: 'right',
     xOffset: 28.0,
     width: 48.0,
@@ -983,7 +1025,7 @@ export const AUTO_REPAIR_SHOPS = [
     zone: 7,
     name: 'Columbia Gorge Speed Works',
     sub: 'Bridge of the Gods Mountain Bay',
-    z: 19600,
+    z: 42950,
     side: 'right',
     xOffset: 28.0,
     width: 48.0,
@@ -997,7 +1039,7 @@ export const AUTO_REPAIR_SHOPS = [
     zone: 8,
     name: 'Seattle Gateway Pitstop Garage',
     sub: 'Puget Sound Finish Line Auto Care',
-    z: 22200,
+    z: 47500,
     side: 'right',
     xOffset: 28.0,
     width: 48.0,
@@ -1005,6 +1047,48 @@ export const AUTO_REPAIR_SHOPS = [
     radius: 24.0,
     wallCol: 0x4338ca,
     neonCol: 0x818cf8
+  },
+  {
+    id: 'zone9_bay',
+    zone: 9,
+    name: 'Mount Rainier Alpine Depot',
+    sub: 'Paradise Glacier Mountain Bay',
+    z: 51500,
+    side: 'right',
+    xOffset: 28.0,
+    width: 48.0,
+    length: 84.0,
+    radius: 24.0,
+    wallCol: 0x334155,
+    neonCol: 0x38bdf8
+  },
+  {
+    id: 'zone10_bay',
+    zone: 10,
+    name: "Coeur d'Alene Lakeside Speed Bay",
+    sub: 'Silver Valley Performance Garage',
+    z: 55500,
+    side: 'right',
+    xOffset: 28.0,
+    width: 48.0,
+    length: 84.0,
+    radius: 24.0,
+    wallCol: 0x0f766e,
+    neonCol: 0x2dd4bf
+  },
+  {
+    id: 'zone11_bay',
+    zone: 11,
+    name: 'Glacier Pass Alpine Garage',
+    sub: 'Going-to-the-Sun Mountain Works',
+    z: 60000,
+    side: 'right',
+    xOffset: 28.0,
+    width: 48.0,
+    length: 84.0,
+    radius: 24.0,
+    wallCol: 0xb91c1c,
+    neonCol: 0xf87171
   }
 ];
 
@@ -1191,7 +1275,7 @@ export class SplineRoad {
     this.historicalPlaques = [];
     this.animatedPlaqueBeacons = [];
     this.scenicViewfinders = [];
-    
+
     // Delineator Post Materials
     this.matPostWhite = renderer.createToonMaterial({ color: 0xf8fafc, gradientBands: 2 });
     this.matReflectorAmber = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
@@ -1202,7 +1286,7 @@ export class SplineRoad {
     this.curve = null;
     this.roadMesh = null;
     this.collidables = [];
-    this.totalLength = 31200;
+    this.totalLength = TOTAL_HIGHWAY_LENGTH;
 
     // Spatial partitioning for highway markers (lines, studs, delineators, turnouts)
     this.chunkSize = 500;
@@ -1243,7 +1327,7 @@ export class SplineRoad {
     const amberTransforms = [];
     const whiteTransforms = [];
 
-    for (let z = 340; z < 23350; z += 18) {
+    for (let z = 340; z < this.totalLength - 100; z += 24) {
       amberTransforms.push(this.getRoadTransformAtZ(z, 0, 0.14));
 
       [-shoulderOffset, shoulderOffset].forEach(sx => {
@@ -1285,81 +1369,84 @@ export class SplineRoad {
   generateScenicHighwaySpline() {
     const points = [];
 
-    // 1. Mojave Desert (0 - 2600m)
+    // 1. Mojave Desert (0 - 6500m)
     points.push(new THREE.Vector3(0, 0, 0));
-    points.push(new THREE.Vector3(0, 0, 400));
-    points.push(new THREE.Vector3(30, 2, 900));
-    points.push(new THREE.Vector3(-25, 3, 1550));
-    points.push(new THREE.Vector3(35, 4, 2100));
-    points.push(new THREE.Vector3(0, 2, 2500));
+    points.push(new THREE.Vector3(0, 0, 800));
+    points.push(new THREE.Vector3(30, 2, 2200));
+    points.push(new THREE.Vector3(-25, 3, 3800));
+    points.push(new THREE.Vector3(35, 4, 5200));
+    points.push(new THREE.Vector3(0, 2, 6500));
 
-    // 2. Malibu & PCH (2600 - 5200m)
-    points.push(new THREE.Vector3(-15, 2, 2900)); // Santa Monica Pier
-    points.push(new THREE.Vector3(14, 3, 3400));  // Pacific Palisades
-    points.push(new THREE.Vector3(20, 3, 3800));  // Topanga Canyon
-    points.push(new THREE.Vector3(-22, 2, 4100)); // Malibu Pier
-    points.push(new THREE.Vector3(-14, 3, 4400)); // Carbon Beach
-    points.push(new THREE.Vector3(-26, 2, 4650)); // Zuma Beach
-    points.push(new THREE.Vector3(16, 4, 4950));  // El Matador
-    points.push(new THREE.Vector3(10, 3, 5050));  // Neptune's Net
-    points.push(new THREE.Vector3(0, 2, 5150));   // Point Mugu
+    // 2. Malibu & PCH (6500 - 14500m)
+    points.push(new THREE.Vector3(-15, 2, 7500));
+    points.push(new THREE.Vector3(14, 3, 8500));
+    points.push(new THREE.Vector3(20, 3, 9500));
+    points.push(new THREE.Vector3(-22, 2, 10500));
+    points.push(new THREE.Vector3(-14, 3, 11800));
+    points.push(new THREE.Vector3(-26, 2, 12600));
+    points.push(new THREE.Vector3(16, 4, 13500));
+    points.push(new THREE.Vector3(10, 3, 14000));
+    points.push(new THREE.Vector3(0, 2, 14500));
 
-    // 3. Big Sur (5200 - 7800m)
-    points.push(new THREE.Vector3(-30, 18, 5600));
-    points.push(new THREE.Vector3(0, 36, 6650));   // Bixby Arch Bridge
-    points.push(new THREE.Vector3(40, 22, 7300));  // Point Sur Lightstation
-    points.push(new THREE.Vector3(10, 12, 7700));
+    // 3. Big Sur (14500 - 20500m)
+    points.push(new THREE.Vector3(-30, 18, 15500));
+    points.push(new THREE.Vector3(0, 36, 18650));   // Bixby Arch Bridge
+    points.push(new THREE.Vector3(40, 22, 19800));
+    points.push(new THREE.Vector3(10, 12, 20500));
 
-    // 4. Monterey Bay & Carmel (7800 - 10400m)
-    points.push(new THREE.Vector3(-20, 8, 8400));  // Cannery Row
-    points.push(new THREE.Vector3(30, 6, 9300));   // Lone Cypress
-    points.push(new THREE.Vector3(10, 5, 10200));  // Carmel Mission
+    // 4. Monterey Bay & Carmel (20500 - 25500m)
+    points.push(new THREE.Vector3(-20, 8, 21500));  // Cannery Row
+    points.push(new THREE.Vector3(30, 6, 23200));   // Lone Cypress
+    points.push(new THREE.Vector3(10, 5, 25500));   // Carmel Mission
 
-    // 5. Golden Gate & Marin (10400 - 13000m)
-    points.push(new THREE.Vector3(40, 16, 11000));
-    points.push(new THREE.Vector3(0, 22, 11700));  // Golden Gate Bridge
-    points.push(new THREE.Vector3(-30, 14, 12600)); // Sonoma Valley
+    // 5. Golden Gate & Marin (25500 - 31000m)
+    points.push(new THREE.Vector3(40, 16, 27000));
+    points.push(new THREE.Vector3(0, 22, 28900));   // Golden Gate Bridge
+    points.push(new THREE.Vector3(-30, 14, 30500)); // Sonoma Valley
+    points.push(new THREE.Vector3(0, 10, 31000));
 
-    // 6. Redwood Forest (13000 - 15600m)
-    points.push(new THREE.Vector3(-15, 8, 13500));
-    points.push(new THREE.Vector3(20, 6, 14100));  // Chandelier Drive-Thru
-    points.push(new THREE.Vector3(-10, 5, 15100)); // Bigfoot Museum
+    // 6. Redwood Forest (31000 - 36000m)
+    points.push(new THREE.Vector3(-15, 8, 32000));
+    points.push(new THREE.Vector3(20, 6, 33500));   // Chandelier Drive-Thru
+    points.push(new THREE.Vector3(-10, 5, 35000));  // Bigfoot Museum
+    points.push(new THREE.Vector3(0, 6, 36000));
 
-    // 7. Oregon Coast (15600 - 18200m)
-    points.push(new THREE.Vector3(30, 4, 16400));  // Haystack Rock
-    points.push(new THREE.Vector3(50, 3, 17700));  // Tillamook Creamery
+    // 7. Oregon Coast (36000 - 40500m)
+    points.push(new THREE.Vector3(30, 4, 37500));   // Haystack Rock
+    points.push(new THREE.Vector3(50, 3, 39500));   // Tillamook Creamery
+    points.push(new THREE.Vector3(20, 6, 40500));
 
-    // 8. Columbia River Gorge (18200 - 20800m)
-    points.push(new THREE.Vector3(30, 18, 19100)); // Multnomah Falls
-    points.push(new THREE.Vector3(0, 12, 20300));  // Vista House
+    // 8. Columbia River Gorge (40500 - 45000m)
+    points.push(new THREE.Vector3(30, 18, 42000));  // Multnomah Falls
+    points.push(new THREE.Vector3(0, 12, 44000));   // Vista House
+    points.push(new THREE.Vector3(10, 10, 45000));
 
-    // 9. Washington Cascades & Puget Sound (20800 - 23400m)
-    points.push(new THREE.Vector3(0, 8, 21800));   // Seattle Space Needle
-    points.push(new THREE.Vector3(0, 4, 22800));   // Pike Place Market
-    points.push(new THREE.Vector3(15, 12, 23400)); // Cascade Gateway climb
+    // 9. Washington Cascades & Puget Sound (45000 - 49500m)
+    points.push(new THREE.Vector3(0, 8, 46500));
+    points.push(new THREE.Vector3(0, 4, 48000));    // Space Needle / Pike Place
+    points.push(new THREE.Vector3(15, 12, 49500));  // Cascade Gateway climb
 
-    // 10. Cascade Pass & Mount Rainier (23400 - 26000m)
-    points.push(new THREE.Vector3(45, 32, 24100));  // Hairpin climb to Paradise Lodge
-    points.push(new THREE.Vector3(-30, 48, 24900)); // Narada Falls switchback
-    points.push(new THREE.Vector3(0, 56, 25600));   // Rainier summit crest overlook
-    points.push(new THREE.Vector3(0, 42, 26000));   // Zone boundary / Continental terminus
+    // 10. Cascade Pass & Mount Rainier (49500 - 53500m)
+    points.push(new THREE.Vector3(45, 32, 50700));  // Hairpin climb to Paradise Lodge
+    points.push(new THREE.Vector3(-30, 48, 52300)); // Narada Falls switchback
+    points.push(new THREE.Vector3(0, 56, 53200));   // Rainier summit crest overlook
+    points.push(new THREE.Vector3(0, 42, 53500));   // Zone boundary
 
-    // 11. Idaho Panhandle & Lake Coeur d'Alene (26000 - 28600m)
-    points.push(new THREE.Vector3(-35, 22, 26400)); // Descent into pine valley
-    points.push(new THREE.Vector3(-55, 8, 26800));  // Lake Coeur d'Alene Floating Boardwalk
-    points.push(new THREE.Vector3(-20, 4, 27200));  // Shoreline sweeping curve
-    points.push(new THREE.Vector3(30, 6, 27600));   // Cataldo Old Mission valley floor
-    points.push(new THREE.Vector3(50, 18, 28000));  // Bitterroot grade climb
-    points.push(new THREE.Vector3(20, 24, 28300));  // Silver Valley Mine Headframe
-    points.push(new THREE.Vector3(0, 20, 28600));   // Zone boundary / Panhandle terminus
+    // 11. Idaho Panhandle & Lake Coeur d'Alene (53500 - 57500m)
+    points.push(new THREE.Vector3(-35, 22, 54200)); // Descent into pine valley
+    points.push(new THREE.Vector3(-55, 8, 54800));  // Lake Coeur d'Alene Floating Boardwalk
+    points.push(new THREE.Vector3(-20, 4, 55600));  // Shoreline sweeping curve
+    points.push(new THREE.Vector3(30, 6, 56400));   // Cataldo Old Mission valley floor
+    points.push(new THREE.Vector3(50, 18, 57000));  // Bitterroot grade climb
+    points.push(new THREE.Vector3(0, 20, 57500));   // Zone boundary / Panhandle terminus
 
-    // 12. Montana Big Sky & Glacier Going-to-the-Sun (28600 - 31200m)
-    points.push(new THREE.Vector3(-42, 14, 29200)); // Lake McDonald glacial fjord shore curve
-    points.push(new THREE.Vector3(28, 36, 29600));  // Avalanche Creek canyon gorge climb
-    points.push(new THREE.Vector3(58, 64, 30000));  // The Weeping Wall sheer cliff & rimrock shelf
-    points.push(new THREE.Vector3(-32, 92, 30400)); // Triple Stone Arches & Garden Wall hairpin curve
-    points.push(new THREE.Vector3(12, 114, 30800)); // Logan Pass Continental Divide summit crest (6,646 ft)
-    points.push(new THREE.Vector3(0, 98, 31200));   // Continental Divide East descent / Zone boundary
+    // 12. Montana Big Sky & Glacier Going-to-the-Sun (57500 - 62000m)
+    points.push(new THREE.Vector3(-42, 14, 58800)); // Lake McDonald glacial fjord shore curve
+    points.push(new THREE.Vector3(28, 36, 59500));  // Avalanche Creek canyon gorge climb
+    points.push(new THREE.Vector3(58, 64, 60200));  // The Weeping Wall sheer cliff & rimrock shelf
+    points.push(new THREE.Vector3(-32, 92, 60800)); // Triple Stone Arches & Garden Wall hairpin curve
+    points.push(new THREE.Vector3(12, 114, 61400)); // Logan Pass Continental Divide summit crest (6,646 ft)
+    points.push(new THREE.Vector3(0, 98, 62000));   // Continental Divide East descent / Zone boundary
 
     this.splinePoints = points;
     this.curve = new THREE.CatmullRomCurve3(points);

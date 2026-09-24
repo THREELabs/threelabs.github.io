@@ -190,7 +190,7 @@ export const ZONES = [
     roadColor: '#363430',
     rockColor: '#b45a32',
     plantType: 'cactus',
-    lengthMeters: 2600,
+    lengthMeters: 6500,
     cloudType: 'cirrus',
     cloudDensity: 0.20,
     cloudScale: 0.85,
@@ -228,7 +228,7 @@ export const ZONES = [
     roadColor: '#303236',
     rockColor: '#9c8a74',
     plantType: 'fan_palm',
-    lengthMeters: 2600,
+    lengthMeters: 8000,
     cloudType: 'marine_stratus',
     cloudDensity: 0.45,
     cloudScale: 1.20,
@@ -266,7 +266,7 @@ export const ZONES = [
     roadColor: '#484c52',
     rockColor: '#889098',
     plantType: 'cypress',
-    lengthMeters: 2600,
+    lengthMeters: 6000,
     cloudType: 'cliff_fog',
     cloudDensity: 0.65,
     cloudScale: 1.35,
@@ -304,7 +304,7 @@ export const ZONES = [
     roadColor: '#2e3033',
     rockColor: '#707880',
     plantType: 'monterey_pine',
-    lengthMeters: 2600,
+    lengthMeters: 5000,
     cloudType: 'altocumulus',
     cloudDensity: 0.52,
     cloudScale: 1.10,
@@ -342,7 +342,7 @@ export const ZONES = [
     roadColor: '#2d2f33',
     rockColor: '#607274',
     plantType: 'eucalyptus',
-    lengthMeters: 2600,
+    lengthMeters: 5500,
     cloudType: 'microclimate_fog',
     cloudDensity: 0.58,
     cloudScale: 1.25,
@@ -380,7 +380,7 @@ export const ZONES = [
     roadColor: '#28292b',
     rockColor: '#4a443e',
     plantType: 'redwood',
-    lengthMeters: 2600,
+    lengthMeters: 5000,
     cloudType: 'canopy_mist',
     cloudDensity: 0.38,
     cloudScale: 0.95,
@@ -418,7 +418,7 @@ export const ZONES = [
     roadColor: '#282b2e',
     rockColor: '#373b40',
     plantType: 'spruce',
-    lengthMeters: 2600,
+    lengthMeters: 4500,
     cloudType: 'storm_cumulus',
     cloudDensity: 0.80,
     cloudScale: 1.45,
@@ -456,7 +456,7 @@ export const ZONES = [
     roadColor: '#2b2d30',
     rockColor: '#2e3533',
     plantType: 'douglas_fir',
-    lengthMeters: 2600,
+    lengthMeters: 4500,
     cloudType: 'scud_gorge',
     cloudDensity: 0.65,
     cloudScale: 1.20,
@@ -494,7 +494,7 @@ export const ZONES = [
     roadColor: '#3a4048',
     rockColor: '#5a626c',
     plantType: 'snow_fir',
-    lengthMeters: 2600,
+    lengthMeters: 4500,
     cloudType: 'snow_overcast',
     cloudDensity: 0.85,
     cloudScale: 1.40,
@@ -532,7 +532,7 @@ export const ZONES = [
     roadColor: '#303438',
     rockColor: '#4a5056',
     plantType: 'alpine_larch',
-    lengthMeters: 2600,
+    lengthMeters: 4000,
     cloudType: 'alpine_stratus',
     cloudDensity: 0.75,
     cloudScale: 1.30,
@@ -570,7 +570,7 @@ export const ZONES = [
     roadColor: '#2c3030',      // Dark asphalt with timber trestle bridges
     rockColor: '#5a5248',      // Weathered quartzite and schist
     plantType: 'ponderosa_pine',
-    lengthMeters: 2600,
+    lengthMeters: 4000,
     cloudType: 'fair_weather_cumulus',
     cloudDensity: 0.35,
     cloudScale: 1.10,
@@ -608,7 +608,7 @@ export const ZONES = [
     roadColor: '#2b2d30',      // Going-to-the-Sun historic roadbed
     rockColor: '#6c584c',      // Grinnell red argillite & Siyeh limestone
     plantType: 'subalpine_fir',
-    lengthMeters: 2600,
+    lengthMeters: 4500,
     cloudType: 'swift_scud',
     cloudDensity: 0.50,
     cloudScale: 1.35,
@@ -628,86 +628,105 @@ export const ZONES = [
   }
 ];
 
+// Dynamically compute cumulative zMin and zMax for all zones
+let cumulativeZoneZ = 0;
+ZONES.forEach(z => {
+  z.zMin = cumulativeZoneZ;
+  cumulativeZoneZ += z.lengthMeters;
+  z.zMax = cumulativeZoneZ;
+});
+export const TOTAL_HIGHWAY_LENGTH = cumulativeZoneZ; // 62,000 meters
+
 export const LANDMARKS = [
-  // Zone 0: Desert (0 - 2600m)
-  { id: 'route66_diner', name: 'Route 66 Neon Diner', offsetMeters: 750 },
-  { id: 'cabazon_dinos', name: 'Cabazon Giant Dinosaurs', offsetMeters: 1550 },
-  { id: 'roys_motel', name: "Roy's Motel Neon Sign", offsetMeters: 2300 },
+  // Zone 0: Mojave Desert (0 - 6500m)
+  { id: 'bottle_tree', name: "Elmer's Bottle Tree Ranch", offsetMeters: 600 },
+  { id: 'wigwam_motel', name: 'Wigwam Village Motel', offsetMeters: 1250 },
+  { id: 'route66_diner', name: 'Route 66 Neon Diner', offsetMeters: 1900 },
+  { id: 'coyote_ridge', name: 'Coyote Ridge 4x4 Trailhead', offsetMeters: 2550 },
+  { id: 'mojave_mesas', name: 'Mojave Mesas & Stone Arch', offsetMeters: 3850 },
+  { id: 'cabazon_dinos', name: 'Cabazon Giant Dinosaurs', offsetMeters: 4500 },
+  { id: 'desert_outlets', name: 'Desert Hills Outlets Plaza', offsetMeters: 5150 },
+  { id: 'calico_ghost', name: 'Calico Ghost Town Overlook', offsetMeters: 5700 },
+  { id: 'roys_motel', name: "Roy's Motel Neon Sign", offsetMeters: 6300 },
 
-  // Zone 1: Malibu & PCH (2600 - 5200m)
-  { id: 'muscle_beach', name: 'Original Santa Monica Muscle Beach', offsetMeters: 2700 },
-  { id: 'santa_monica_pier', name: 'Santa Monica Pacific Wheel', offsetMeters: 2900 },
-  { id: 'will_rogers', name: 'Will Rogers State Beach & Baywatch HQ', offsetMeters: 3200 },
-  { id: 'getty_villa', name: 'The Getty Villa Roman Colonnade', offsetMeters: 3500 },
-  { id: 'topanga_canyon', name: 'Topanga Beach Surf Shack & VW Bus', offsetMeters: 3800 },
-  { id: 'malibu_pier', name: 'Malibu Pier & Surfrider Beach', offsetMeters: 4100 },
-  { id: 'carbon_beach', name: 'Carbon Beach Stilt Mansions', offsetMeters: 4400 },
-  { id: 'zuma_beach', name: 'Zuma Beach Lifeguard Tower 26', offsetMeters: 4650 },
-  { id: 'point_dume', name: 'Point Dume Marine Nature Reserve', offsetMeters: 4800 },
-  { id: 'el_matador', name: 'El Matador Sea Arches', offsetMeters: 4950 },
-  { id: 'neptunes_net', name: "Neptune's Net Seafood Roadhouse", offsetMeters: 5050 },
-  { id: 'point_mugu', name: 'Point Mugu Rock Bluff Cut', offsetMeters: 5150 },
+  // Zone 1: Malibu & PCH (6500 - 14500m)
+  { id: 'muscle_beach', name: 'Original Santa Monica Muscle Beach', offsetMeters: 7050 },
+  { id: 'santa_monica_pier', name: 'Santa Monica Pacific Wheel', offsetMeters: 7600 },
+  { id: 'california_incline', name: 'California Incline & Palisades Bluffs', offsetMeters: 8150 },
+  { id: 'pacific_park', name: 'Pacific Park Pier & Solar Wheel', offsetMeters: 8700 },
+  { id: 'will_rogers', name: 'Will Rogers State Beach & Baywatch HQ', offsetMeters: 9250 },
+  { id: 'getty_villa', name: 'The Getty Villa Roman Colonnade', offsetMeters: 9800 },
+  { id: 'topanga_canyon', name: 'Topanga Beach Surf Shack & VW Bus', offsetMeters: 10350 },
+  { id: 'malibu_pier', name: 'Malibu Pier & Surfrider Beach', offsetMeters: 11200 },
+  { id: 'carbon_beach', name: 'Carbon Beach Stilt Mansions', offsetMeters: 11800 },
+  { id: 'zuma_beach', name: 'Zuma Beach Lifeguard Tower 26', offsetMeters: 12400 },
+  { id: 'point_dume', name: 'Point Dume Marine Nature Reserve', offsetMeters: 12950 },
+  { id: 'el_matador', name: 'El Matador Sea Arches', offsetMeters: 13500 },
+  { id: 'neptunes_net', name: "Neptune's Net Seafood Roadhouse", offsetMeters: 14000 },
+  { id: 'point_mugu', name: 'Point Mugu Rock Bluff Cut', offsetMeters: 14400 },
 
-  // Zone 2: Big Sur (5200 - 7800m)
-  { id: 'big_sur_inn', name: 'Big Sur River Inn', offsetMeters: 5550 },
-  { id: 'mcway_falls', name: 'McWay Falls Waterfall Cove', offsetMeters: 5950 },
-  { id: 'nepenthe', name: 'Nepenthe Cliffside Restaurant', offsetMeters: 6300 },
-  { id: 'bixby_bridge', name: 'Bixby Creek Arch Bridge', offsetMeters: 6650 },
-  { id: 'pfeiffer_arch', name: 'Pfeiffer Beach Keyhole Arch', offsetMeters: 7100 },
-  { id: 'point_sur_light', name: 'Point Sur Historic Lightstation', offsetMeters: 7550 },
+  // Zone 2: Big Sur (14500 - 20500m)
+  { id: 'big_sur_inn', name: 'Big Sur River Inn', offsetMeters: 15100 },
+  { id: 'hurricane_point', name: 'Hurricane Point Ocean Vista', offsetMeters: 15800 },
+  { id: 'mcway_falls', name: 'McWay Falls Waterfall Cove', offsetMeters: 16500 },
+  { id: 'henry_miller', name: 'Henry Miller Library in the Pines', offsetMeters: 17200 },
+  { id: 'nepenthe', name: 'Nepenthe Cliffside Restaurant', offsetMeters: 17900 },
+  { id: 'bixby_bridge', name: 'Bixby Creek Arch Bridge', offsetMeters: 18650 },
+  { id: 'pfeiffer_arch', name: 'Pfeiffer Beach Keyhole Arch', offsetMeters: 19400 },
+  { id: 'point_sur_light', name: 'Point Sur Historic Lightstation', offsetMeters: 20150 },
 
-  // Zone 3: Monterey & Carmel (7800 - 10400m)
-  { id: 'cannery_row', name: 'Cannery Row & Monterey Bay Aquarium', offsetMeters: 8300 },
-  { id: 'pebble_beach', name: 'Pebble Beach Golf Links', offsetMeters: 8800 },
-  { id: 'lone_cypress', name: '17-Mile Drive The Lone Cypress', offsetMeters: 9300 },
-  { id: 'carmel_cottages', name: 'Carmel Storybook Thatched Cottages', offsetMeters: 9750 },
-  { id: 'carmel_mission', name: 'Carmel Mission Basilica (1797)', offsetMeters: 10150 },
+  // Zone 3: Monterey & Carmel (20500 - 25500m)
+  { id: 'cannery_row', name: 'Cannery Row & Monterey Bay Aquarium', offsetMeters: 21300 },
+  { id: 'pebble_beach', name: 'Pebble Beach Golf Links', offsetMeters: 22250 },
+  { id: 'lone_cypress', name: '17-Mile Drive The Lone Cypress', offsetMeters: 23200 },
+  { id: 'carmel_cottages', name: 'Carmel Storybook Thatched Cottages', offsetMeters: 24150 },
+  { id: 'carmel_mission', name: 'Carmel Mission Basilica (1797)', offsetMeters: 25100 },
 
-  // Zone 4: NorCal & Marin (10400 - 13000m)
-  { id: 'painted_ladies', name: 'SF Painted Ladies Victorian Row', offsetMeters: 10800 },
-  { id: 'cable_car', name: 'San Francisco Historic Cable Car', offsetMeters: 11100 },
-  { id: 'marin_headlands', name: 'Marin Headlands Artillery Bunkers', offsetMeters: 11400 },
-  { id: 'golden_gate', name: 'Golden Gate Suspension Bridge', offsetMeters: 11700 },
-  { id: 'sonoma_vineyard', name: 'Sonoma Valley Mission Chateau & Vineyards', offsetMeters: 12400 },
-  { id: 'bodega_church', name: 'Bodega Bay St. Teresa Church', offsetMeters: 12800 },
+  // Zone 4: NorCal & Marin (25500 - 31000m)
+  { id: 'painted_ladies', name: 'SF Painted Ladies Victorian Row', offsetMeters: 26300 },
+  { id: 'cable_car', name: 'San Francisco Historic Cable Car', offsetMeters: 27150 },
+  { id: 'marin_headlands', name: 'Marin Headlands Artillery Bunkers', offsetMeters: 28000 },
+  { id: 'golden_gate', name: 'Golden Gate Suspension Bridge', offsetMeters: 28900 },
+  { id: 'sonoma_vineyard', name: 'Sonoma Valley Mission Chateau & Vineyards', offsetMeters: 29800 },
+  { id: 'bodega_church', name: 'Bodega Bay St. Teresa Church', offsetMeters: 30650 },
 
-  // Zone 5: Redwood Forest (13000 - 15600m)
-  { id: 'covered_bridge', name: 'Redwood Creek Covered Timber Bridge', offsetMeters: 13450 },
-  { id: 'chandelier_tree', name: 'Chandelier Drive-Thru Redwood', offsetMeters: 13900 },
-  { id: 'carson_mansion', name: 'Carson Mansion Eureka Victorian', offsetMeters: 14400 },
-  { id: 'bigfoot_museum', name: 'Legend of Bigfoot Curiosity Museum', offsetMeters: 14950 },
-  { id: 'sawmill_camp', name: 'Redwood Logging Sawmill & Steam Donkey', offsetMeters: 15400 },
+  // Zone 5: Redwood Forest (31000 - 36000m)
+  { id: 'covered_bridge', name: 'Redwood Creek Covered Timber Bridge', offsetMeters: 31850 },
+  { id: 'chandelier_tree', name: 'Chandelier Drive-Thru Redwood', offsetMeters: 32800 },
+  { id: 'carson_mansion', name: 'Carson Mansion Eureka Victorian', offsetMeters: 33750 },
+  { id: 'bigfoot_museum', name: 'Legend of Bigfoot Curiosity Museum', offsetMeters: 34700 },
+  { id: 'sawmill_camp', name: 'Redwood Logging Sawmill & Steam Donkey', offsetMeters: 35600 },
 
-  // Zone 6: Oregon Coast (15600 - 18200m)
-  { id: 'yaquina_light', name: 'Yaquina Head Lighthouse', offsetMeters: 16100 },
-  { id: 'haystack_rock', name: 'Haystack Rock & The Needles', offsetMeters: 16600 },
-  { id: 'driftwood_caves', name: 'Oregon Driftwood Beach & Sea Caves', offsetMeters: 17200 },
-  { id: 'tillamook_barn', name: 'Tillamook Cheese Creamery & Giant Barn', offsetMeters: 17800 },
+  // Zone 6: Oregon Coast (36000 - 40500m)
+  { id: 'yaquina_light', name: 'Yaquina Head Lighthouse', offsetMeters: 36900 },
+  { id: 'haystack_rock', name: 'Haystack Rock & The Needles', offsetMeters: 37950 },
+  { id: 'driftwood_caves', name: 'Oregon Driftwood Beach & Sea Caves', offsetMeters: 39000 },
+  { id: 'tillamook_barn', name: 'Tillamook Cheese Creamery & Giant Barn', offsetMeters: 40050 },
 
-  // Zone 7: Columbia River Gorge (18200 - 20800m)
-  { id: 'bridge_of_gods', name: 'Bridge of the Gods Steel Cantilever Span', offsetMeters: 18650 },
-  { id: 'multnomah_falls', name: 'Multnomah Falls & Benson Stone Bridge', offsetMeters: 19250 },
-  { id: 'bonneville_dam', name: 'Bonneville Hydroelectric Dam Spillway', offsetMeters: 19850 },
-  { id: 'vista_house', name: 'Vista House at Crown Point', offsetMeters: 20450 },
+  // Zone 7: Columbia River Gorge (40500 - 45000m)
+  { id: 'bridge_of_gods', name: 'Bridge of the Gods Steel Cantilever Span', offsetMeters: 41400 },
+  { id: 'multnomah_falls', name: 'Multnomah Falls & Benson Stone Bridge', offsetMeters: 42450 },
+  { id: 'bonneville_dam', name: 'Bonneville Hydroelectric Dam Spillway', offsetMeters: 43500 },
+  { id: 'vista_house', name: 'Vista House at Crown Point', offsetMeters: 44550 },
 
-  // Zone 8: Washington & Olympic (20800 - 23400m)
-  { id: 'snoqualmie_falls', name: 'Snoqualmie Falls & Great Northern Lodge', offsetMeters: 21350 },
-  { id: 'puget_ferry', name: 'Washington State Jumbo Puget Sound Ferry', offsetMeters: 21950 },
-  { id: 'space_needle', name: 'Seattle Space Needle & Mount Rainier', offsetMeters: 22550 },
-  { id: 'pike_place', name: 'Pike Place Public Market & Neon Clock', offsetMeters: 23100 },
+  // Zone 8: Washington & Olympic (45000 - 49500m)
+  { id: 'snoqualmie_falls', name: 'Snoqualmie Falls & Great Northern Lodge', offsetMeters: 45900 },
+  { id: 'puget_ferry', name: 'Washington State Jumbo Puget Sound Ferry', offsetMeters: 46950 },
+  { id: 'space_needle', name: 'Seattle Space Needle & Mount Rainier', offsetMeters: 48000 },
+  { id: 'pike_place', name: 'Pike Place Public Market & Neon Clock', offsetMeters: 49050 },
 
-  // Zone 9: Cascade Pass & Mount Rainier (23400 - 26000m)
-  { id: 'paradise_lodge', name: 'Paradise Historic Timber Lodge (1916)', offsetMeters: 24100 },
-  { id: 'narada_falls', name: 'Narada Falls Basalt Chasm', offsetMeters: 24900 },
-  { id: 'rainier_summit', name: 'Mount Rainier Glacier Summit Overlook', offsetMeters: 25600 },
+  // Zone 9: Cascade Pass & Mount Rainier (49500 - 53500m)
+  { id: 'paradise_lodge', name: 'Paradise Historic Timber Lodge (1916)', offsetMeters: 50700 },
+  { id: 'narada_falls', name: 'Narada Falls Basalt Chasm', offsetMeters: 52300 },
+  { id: 'rainier_summit', name: 'Mount Rainier Glacier Summit Overlook', offsetMeters: 53100 },
 
-  // Zone 10: Idaho Panhandle & Lake Coeur d'Alene (26000 - 28600m)
-  { id: 'coeur_dalene_boardwalk', name: "Lake Coeur d'Alene Floating Boardwalk & Marina", offsetMeters: 26800 },
-  { id: 'cataldo_mission', name: "Cataldo Old Mission — Idaho's Oldest Building (1853)", offsetMeters: 27600 },
-  { id: 'silver_valley_mine', name: "Silver Valley Mine Headframe & Ore Chutes", offsetMeters: 28300 },
+  // Zone 10: Idaho Panhandle & Lake Coeur d'Alene (53500 - 57500m)
+  { id: 'coeur_dalene_boardwalk', name: "Lake Coeur d'Alene Floating Boardwalk & Marina", offsetMeters: 54700 },
+  { id: 'cataldo_mission', name: "Cataldo Old Mission — Idaho's Oldest Building (1853)", offsetMeters: 56300 },
+  { id: 'silver_valley_mine', name: "Silver Valley Mine Headframe & Ore Chutes", offsetMeters: 57100 },
 
-  // Zone 11: Montana Big Sky & Glacier (28600 - 31200m)
-  { id: 'lake_mcdonald', name: "Lake McDonald Cedar Chalets & Colored Pebbles", offsetMeters: 29200 },
-  { id: 'weeping_wall', name: "The Weeping Wall & Triple Stone Arches", offsetMeters: 30000 },
-  { id: 'logan_pass', name: "Logan Pass Continental Divide (6,646 ft)", offsetMeters: 30800 }
+  // Zone 11: Montana Big Sky & Glacier (57500 - 62000m)
+  { id: 'lake_mcdonald', name: "Lake McDonald Cedar Chalets & Colored Pebbles", offsetMeters: 58800 },
+  { id: 'weeping_wall', name: "The Weeping Wall & Triple Stone Arches", offsetMeters: 60000 },
+  { id: 'logan_pass', name: "Logan Pass Continental Divide (6,646 ft)", offsetMeters: 61200 }
 ];
