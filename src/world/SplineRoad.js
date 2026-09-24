@@ -2354,8 +2354,8 @@ export class SplineRoad {
       // 4. Perimeter Scenic Viewpoint Railings & Balustrades
       // For turnout_coyote_ridge, the outer back edge connects directly to the off-road trail and downhill merge.
       // Leave the outer back edge open so vehicles can drive freely onto the mountain trail.
+      const outerRailX = isRightSide ? (lot.width * 0.5 + 0.2) : -(lot.width * 0.5 + 0.2);
       if (lot.id !== 'turnout_coyote_ridge') {
-        const outerRailX = isRightSide ? (lot.width * 0.5 + 0.2) : -(lot.width * 0.5 + 0.2);
         const railSteps = Math.floor(lot.length / 3.0);
 
         for (let r = 0; r <= railSteps; r++) {
