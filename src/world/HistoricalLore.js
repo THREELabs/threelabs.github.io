@@ -1245,6 +1245,41 @@ The columnar rock formation was formed by lava cooling against ancient glacial i
     historyText: `Logan Pass marks the highest point on the legendary Going-to-the-Sun Road, cresting the spine of the Continental Divide at 6,646 feet between the towering pyramids of Clements Mountain and Mount Reynolds. Precipitation falling to the west of the divide flows into the Pacific Ocean via the Columbia River basin, while runoff to the east travels across the Great Plains to Hudson Bay and the Gulf of Mexico.\n\nEngineered between 1921 and 1932 under Bureau of Public Roads civil engineer Frank A. Kittredge, the 50-mile Going-to-the-Sun Road is celebrated as one of the world's most daring civil engineering masterpieces. Road crews suspended in bosun's chairs drilled explosive blast holes into the sheer 3,000-foot vertical cliff face of the Garden Wall using compressed air lines. The road is famously navigated by Glacier's iconic fleet of 1936 White Motor Company Model 706 'Red Bus Jammers', whose roll-back canvas tops provide panoramic views of hanging glaciers, cascading snowmelt waterfalls, and resident herds of white mountain goats.`,
     fastFact: "Glacier's Red Buses earned the nickname 'Jammers' because early drivers had to vigorously 'jam' the unsynchronized manual transmissions between gears while climbing the brutal grades of the Garden Wall.",
     sceneryHighlight: "Sweeping 360-degree panorama of jagged glacial horn peaks, alpine tundra wildflower meadows, and historic stone arches overlooking the Continental Divide abyss."
+  },
+
+  // ── Zone 12: Las Vegas Strip & Red Rock Canyon (31200 - 33800m) ──
+  turnout_vegas_sign: {
+    id: 'turnout_vegas_sign',
+    zone: 12,
+    zoneName: "Las Vegas Strip & Red Rock",
+    milepost: 'MP 318.0',
+    name: "Welcome to Fabulous Las Vegas Neon Sign",
+    sub: "1959 Betty Willis Googie Neon Masterpiece & Turf Median Plaza",
+    yearEst: 'ERECTED MAY 1959',
+    elevation: '2,180 FT ELEVATION',
+    coords: '36.0820° N, 115.1728° W',
+    category: "HISTORIC NEON ROADSIDE MONUMENT",
+    era: 'Mid-Century Googie & Atomic Vegas Golden Age',
+    historyText: `The 25-foot-tall 'Welcome to Fabulous Las Vegas' sign is universally recognized as the world's most famous roadside neon welcome beacon. Designed in May 1959 by pioneering commercial artist Betty Willis for Western Neon, the sign was commissioned by Clark County commissioners eager to greet tourists driving north up Highway 91 (the Los Angeles Highway) into the burgeoning casino strip.\n\nWillis intentionally declined to copyright the design, declaring it a public gift to the city she loved — enabling its imagery to proliferate worldwide as an emblem of American glamour, optimism, and desert nocturnal neon art. The design exemplifies Googie architecture: an elongated 8-pointed yellow starburst crown, seven blue circles framing white silver-dollar discs that spell out 'W-E-L-C-O-M-E' in homage to Nevada's Silver State heritage, cursive ruby-red neon lettering reading 'to Fabulous', and double-faced yellow incandescent running chaser bulbs framing a 50-degree tilted stretched diamond.\n\nIn 2008, Clark County constructed a dedicated median parking lot and landscaped turf island so travelers could safely photograph the historic monument on foot without darting across eight lanes of Las Vegas Boulevard traffic.`,
+    fastFact: "Designer Betty Willis never copyrighted the sign: she considered it her personal gift to Las Vegas. The reverse side warmly bids travelers goodbye with: 'Drive Carefully • Come Back Soon'.",
+    sceneryHighlight: "Iconic 1959 Googie diamond neon sign glowing radiant blue, ruby red, and amber gold above palm trees and turf median at twilight."
+  },
+
+  turnout_red_rock_canyon: {
+    id: 'turnout_red_rock_canyon',
+    zone: 12,
+    zoneName: "Las Vegas Strip & Red Rock",
+    milepost: 'MP 332.0',
+    name: "Red Rock Canyon National Conservation Area",
+    sub: "Keystone Thrust Fault & Aztec Sandstone Calico Hills Overlook",
+    yearEst: 'EST. 1967 (Recreation Area) / 1990 (NCA)',
+    elevation: '3,780 FT ELEVATION',
+    coords: '36.1353° N, 115.4272° W',
+    category: "NATIONAL CONSERVATION AREA & GEOLOGIC ESCARPMENT",
+    era: 'Mesozoic Aztec Sandstone & Laramide Orogeny',
+    historyText: `Just 15 miles west of the dazzling neon casino towers of Las Vegas lies Red Rock Canyon National Conservation Area — a breathtaking geological sanctuary dominated by the sheer 3,000-foot sandstone escarpment of the Spring Mountain Range. The vivid crimson, terracotta, salmon, and bleached ivory rock layers of the Calico Hills are remnants of an immense 180-million-year-old Jurassic sand sea (the Aztec Sandstone formation) whose petrified dunes were fossilized and later sculpted by millions of years of water, flash floods, and wind.\n\nThe canyon's most dramatic structural wonder is the Keystone Thrust Fault. During the late Mesozoic era approximately 65 million years ago, enormous tectonic compressional forces during the Sevier/Laramide mountain-building event shoved an ancient, 500-million-year-old grey Cambrian limestone plate eastward directly over the much younger 180-million-year-old red Jurassic sandstone — creating a striking, razor-sharp visual boundary where ancient dark grey crags sit directly atop blazing red cliffs.\n\nFor millennia, Southern Paiute peoples utilized the canyon's tinajas (natural sandstone water basins), leaving petroglyphs and agave roasting pits throughout the canyons, while today the conservation area protects critical habitat for desert tortoises, bighorn sheep, and soaring golden eagles.`,
+    fastFact: "The Keystone Thrust Fault is one of the most vividly exposed geological thrust contacts on Earth: dark 500-million-year-old Cambrian limestone was thrust over younger 180-million-year-old red sandstone for miles.",
+    sceneryHighlight: "Towering 3,000-ft banded crimson Aztec sandstone walls and desert tortoises under the towering silhouette of Mount Wilson and the Spring Mountains."
   }
 };
 

@@ -371,7 +371,7 @@ export function calculateTerrainHeight(x, z, roadInfo) {
     }
   }
   // Zone 11: Montana Big Sky & Glacier Going-to-the-Sun (Z: 57500m - 62000m)
-  else {
+  else if (z >= 57500 && z < 62000) {
     const isLakeMcDonaldTurnout = (z >= 58740 && z <= 58860 && latDist < -14 && latDist > -60);
     const isLoganPassTurnout = (z >= 61140 && z <= 61260 && latDist > 14 && latDist < 65);
     if (isLakeMcDonaldTurnout || isLoganPassTurnout) {
@@ -400,6 +400,27 @@ export function calculateTerrainHeight(x, z, roadInfo) {
       } else {
         // Clements Mountain and Hidden Lake alpine hanging saddle
         terrainOffset = Math.min(50.0, (absDist - roadHalfW) * 0.52);
+      }
+    }
+  }
+  // Zone 12: Las Vegas Strip & Red Rock Canyon (Z: 62000m - 66500m)
+  else {
+    const isVegasSignTurnout = (z >= 63040 && z <= 63160 && latDist < -14 && latDist > -60);
+    const isStripPlaza = (z >= 64150 && z <= 64450 && latDist > 14 && latDist < 85);
+    const isRedRockTurnout = (z >= 65440 && z <= 65560 && latDist > 14 && latDist < 65);
+    if (isVegasSignTurnout || isStripPlaza || isRedRockTurnout) {
+      terrainOffset = 0;
+    } else if (z < 64700) {
+      // Las Vegas Valley Basin: flat desert floor with gentle rolling caliche banks
+      terrainOffset = Math.sin(x * 0.05 + z * 0.02) * 1.5;
+    } else {
+      // Red Rock Canyon Escarpment & Calico Hills
+      if (!isRightSide) {
+        // Massive Aztec red sandstone sheer bluffs and escarpment rising on the left
+        terrainOffset = Math.min(80.0, (absDist - roadHalfW) * 0.95);
+      } else {
+        // Red rock alluvial fan slopes and wash on the right
+        terrainOffset = (absDist - roadHalfW) * 0.35 + Math.sin(x * 0.08) * 3.0;
       }
     }
   }

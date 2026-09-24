@@ -912,6 +912,33 @@ export const SCENIC_PARKING_LOTS = [
     length: 58.0,
     theme: 'timber_lodge',
     viewDir: 'right'
+  },
+  // ── Zone 12: Las Vegas Strip & Red Rock Canyon (62000 - 66500m) ──
+  {
+    id: 'turnout_vegas_sign',
+    zone: 12,
+    name: "Welcome to Fabulous Las Vegas Neon Sign",
+    sub: "1959 Betty Willis Googie Neon Landmark & Turf Plaza",
+    z: 63100,
+    side: 'left',
+    xOffset: -28.0,
+    width: 26.0,
+    length: 56.0,
+    theme: 'desert_oasis',
+    viewDir: 'left'
+  },
+  {
+    id: 'turnout_red_rock_canyon',
+    zone: 12,
+    name: "Red Rock Canyon Sandstone Escarpment",
+    sub: "Keystone Thrust & Aztec Sandstone Calico Hills Overlook",
+    z: 65500,
+    side: 'right',
+    xOffset: 28.0,
+    width: 28.0,
+    length: 58.0,
+    theme: 'stone_canyon',
+    viewDir: 'right'
   }
 ];
 
@@ -1448,6 +1475,16 @@ export class SplineRoad {
     points.push(new THREE.Vector3(12, 114, 61400)); // Logan Pass Continental Divide summit crest (6,646 ft)
     points.push(new THREE.Vector3(0, 98, 62000));   // Continental Divide East descent / Zone boundary
 
+    // 13. Las Vegas Strip & Red Rock Canyon (62000 - 66500m)
+    points.push(new THREE.Vector3(25, 42, 62600));  // Sweeping descent into Las Vegas desert valley basin
+    points.push(new THREE.Vector3(-15, 12, 63100)); // Welcome to Fabulous Las Vegas Sign & Googie median plaza
+    points.push(new THREE.Vector3(35, 10, 63700));  // Entering the Strip neon corridor, casino pylon towers
+    points.push(new THREE.Vector3(10, 10, 64300));  // The Strip: Luxor Pyramid & Bellagio Grand Fountains oasis
+    points.push(new THREE.Vector3(-40, 24, 64900)); // Transition west onto Red Rock Scenic Byway & Calico trail
+    points.push(new THREE.Vector3(30, 48, 65500));  // Red Rock Canyon Sandstone Escarpment & Calico Hills hairpin bend
+    points.push(new THREE.Vector3(-15, 62, 66100)); // Climbing through Aztec sandstone bluffs and Keystone Thrust
+    points.push(new THREE.Vector3(0, 54, 66500));   // Zone 12 boundary / Southwest Red Rock Corridor terminus
+
     this.splinePoints = points;
     this.curve = new THREE.CatmullRomCurve3(points);
     this.curve.curveType = 'centripetal';
@@ -1526,7 +1563,8 @@ export class SplineRoad {
     }
 
     const heading = Math.atan2(tangent.x, tangent.z);
-    return { pos, tangent, normal, heading, pt };
+    const quaternion = new THREE.Quaternion().setFromAxisAngle(up, heading);
+    return { pos, tangent, normal, heading, quaternion, pt };
   }
 
   getRoadInfo(x, z) {

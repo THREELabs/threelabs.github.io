@@ -625,6 +625,44 @@ export const ZONES = [
     heatRateMult: 0.85,
     coolRateMult: 1.30,
     weatherBadge: '🏔️ 48°F • CONTINENTAL DIVIDE • GRIP 92%',
+  },
+  {
+    id: 12,
+    name: 'LAS VEGAS STRIP & RED ROCK',
+    sub: 'Neon Boulevard & Aztec Sandstone Canyons',
+    temperature: '88°F',
+    tempC: '31°C',
+    tempLabel: '88°F • NEON DESERT NIGHT',
+    skyTop: '#080614',         // Deep desert night sky with violet-indigo tint
+    skyMid: '#1a102c',         // Atmospheric twilight neon glow
+    skyHorizon: '#4a1e42',     // Vibrant magenta-amber city glow horizon
+    hazeColor: '#6b325c',      // Neon haze over the valley
+    fogColor: '#421a38',       // Distant Spring Mountain silhouettes
+    fogNear: 350,
+    fogFar: 2800,
+    sunColor: '#ffddaa',       // Warm desert dusk illumination
+    ambientColor: '#c8a4d4',   // Neon ambient fill
+    groundColor: '#785642',    // Mojave desert sand & caliche clay
+    roadColor: '#242426',      // Smooth dark asphalt boulevard
+    rockColor: '#9e3a2b',      // Crimson & cream banded Aztec sandstone
+    plantType: 'joshua_tree',
+    lengthMeters: 4500,
+    cloudType: 'desert_cirrus',
+    cloudDensity: 0.20,
+    cloudScale: 1.10,
+    cloudSpeed: 0.6,
+    heatShimmer: 0.28,
+    mieG: 0.82,
+    sunGlow: 1.40,
+    starVisibility: 0.85,
+    alpenglowColor: '#e07a5f',
+    roadGrip: 1.00,
+    windForce: 6.0,
+    windAngle: 1.57,
+    precipitation: 'none',
+    heatRateMult: 1.15,
+    coolRateMult: 0.85,
+    weatherBadge: '🎰 88°F • NEON DESERT NIGHT • GRIP 100%',
   }
 ];
 
@@ -635,7 +673,7 @@ ZONES.forEach(z => {
   cumulativeZoneZ += z.lengthMeters;
   z.zMax = cumulativeZoneZ;
 });
-export const TOTAL_HIGHWAY_LENGTH = cumulativeZoneZ; // 62,000 meters
+export const TOTAL_HIGHWAY_LENGTH = cumulativeZoneZ; // 66,500 meters
 
 /**
  * Piecewise linear control points mapping each zone builder's authored Z coordinates
@@ -732,6 +770,13 @@ export const ZONE_CONTROL_POINTS = {
     [30000, 60000],
     [30800, 61200],
     [31200, 62000]
+  ],
+  12: [ // Las Vegas & Red Rock (authored: 31200..33800 -> world: 62000..66500)
+    [31200, 62000],
+    [31800, 63100],
+    [32500, 64300],
+    [33200, 65500],
+    [33800, 66500]
   ]
 };
 
@@ -864,5 +909,10 @@ export const LANDMARKS = [
   // Zone 11: Montana Big Sky & Glacier (57500 - 62000m)
   { id: 'lake_mcdonald', name: "Lake McDonald Cedar Chalets & Colored Pebbles", offsetMeters: 58800 },
   { id: 'weeping_wall', name: "The Weeping Wall & Triple Stone Arches", offsetMeters: 60000 },
-  { id: 'logan_pass', name: "Logan Pass Continental Divide (6,646 ft)", offsetMeters: 61200 }
+  { id: 'logan_pass', name: "Logan Pass Continental Divide (6,646 ft)", offsetMeters: 61200 },
+
+  // Zone 12: Las Vegas Strip & Red Rock Canyon (62000 - 66500m)
+  { id: 'vegas_sign', name: "Welcome to Fabulous Las Vegas Sign", offsetMeters: 63100 },
+  { id: 'strip_pyramid_fountains', name: "The Strip: Luxor Pyramid & Bellagio Dancing Fountains", offsetMeters: 64300 },
+  { id: 'red_rock_escarpment', name: "Red Rock Canyon Aztec Sandstone Escarpment", offsetMeters: 65500 }
 ];

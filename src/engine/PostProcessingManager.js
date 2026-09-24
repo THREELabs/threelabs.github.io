@@ -215,6 +215,54 @@ export const ZONE_COLOR_PROFILES = [
     shadowTint: new THREE.Color(0.76, 0.82, 0.96),
     highlightTint: new THREE.Color(1.02, 1.00, 1.08),
     vignette: 0.25
+  },
+  // 9: Cascade Alpine Pass & Rainier - Cold alpine flurries, crisp subzero blues
+  {
+    exposure: 1.02,
+    contrast: 1.10,
+    saturation: 1.05,
+    vibrance: 0.18,
+    temperature: -0.12,
+    tint: 0.01,
+    shadowTint: new THREE.Color(0.72, 0.82, 0.95),
+    highlightTint: new THREE.Color(1.04, 1.02, 1.06),
+    vignette: 0.22
+  },
+  // 10: Idaho Panhandle & Coeur d'Alene - Sapphire lake water, deep pine forest greens
+  {
+    exposure: 1.04,
+    contrast: 1.06,
+    saturation: 1.12,
+    vibrance: 0.20,
+    temperature: -0.04,
+    tint: -0.03,
+    shadowTint: new THREE.Color(0.78, 0.88, 0.92),
+    highlightTint: new THREE.Color(1.02, 1.04, 0.98),
+    vignette: 0.18
+  },
+  // 11: Montana Big Sky & Glacier - High-altitude alpine divide, cobalt skies & limestone
+  {
+    exposure: 1.06,
+    contrast: 1.12,
+    saturation: 1.14,
+    vibrance: 0.22,
+    temperature: -0.06,
+    tint: 0.0,
+    shadowTint: new THREE.Color(0.80, 0.85, 0.95),
+    highlightTint: new THREE.Color(1.05, 1.02, 1.00),
+    vignette: 0.20
+  },
+  // 12: Las Vegas Strip & Red Rock Canyon - Electrifying desert twilight, neon magenta glow & rich amber
+  {
+    exposure: 1.08,
+    contrast: 1.15,
+    saturation: 1.25,
+    vibrance: 0.30,
+    temperature: 0.08,
+    tint: 0.06,
+    shadowTint: new THREE.Color(0.68, 0.52, 0.82),
+    highlightTint: new THREE.Color(1.10, 0.96, 0.82),
+    vignette: 0.24
   }
 ];
 

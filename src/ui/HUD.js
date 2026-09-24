@@ -245,12 +245,59 @@ export class HUD {
             right: max(14px, env(safe-area-inset-right, 0px) + 8px) !important;
             gap: 6px !important;
           }
+          #youtube-car-stereo {
+            top: max(12px, env(safe-area-inset-top, 0px) + 6px) !important;
+            left: max(10px, env(safe-area-inset-left, 0px) + 6px) !important;
+            right: auto !important;
+            max-width: calc(100vw - 115px) !important;
+          }
+          .yt-stereo-body {
+            padding: 4px 8px !important;
+            gap: 6px !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          .yt-stereo-badge {
+            padding: 2px 6px !important;
+            font-size: 9px !important;
+            flex-shrink: 0 !important;
+          }
+          .yt-stereo-display {
+            flex: 1 1 auto !important;
+            min-width: 50px !important;
+            width: auto !important;
+            max-width: none !important;
+          }
+          .yt-stereo-actions {
+            gap: 4px !important;
+            flex-shrink: 0 !important;
+          }
+          .yt-stereo-btn {
+            width: 26px !important;
+            height: 26px !important;
+            font-size: 11px !important;
+          }
+          .yt-stereo-tab-btn {
+            padding: 0 5px !important;
+            font-size: 9px !important;
+          }
           .hud-btn-tablet {
             padding: 6px 12px !important;
             font-size: 11px !important;
             gap: 5px !important;
           }
           .tablet-key-hint {
+            display: none !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .yt-stereo-badge-full {
+            display: none !important;
+          }
+          .yt-stereo-badge-short {
+            display: inline !important;
+          }
+          .yt-stereo-tab-text {
             display: none !important;
           }
         }
@@ -3327,6 +3374,15 @@ export class HUD {
           box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
           cursor: pointer;
         }
+        .yt-stereo-badge-short {
+          display: none;
+        }
+        .yt-stereo-badge-full {
+          display: inline;
+        }
+        .yt-stereo-tab-text {
+          display: inline;
+        }
         .yt-stereo-display {
           display: flex;
           flex-direction: column;
@@ -3339,18 +3395,37 @@ export class HUD {
           width: 100%;
           overflow: hidden;
           white-space: nowrap;
+          position: relative;
+          mask-image: linear-gradient(to right, transparent 0%, black 6px, black calc(100% - 6px), transparent 100%);
+          -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6px, black calc(100% - 6px), transparent 100%);
         }
-        .yt-stereo-marquee {
+        .yt-stereo-marquee-track {
+          display: inline-flex;
+          align-items: center;
+          white-space: nowrap;
+          will-change: transform;
+        }
+        .yt-stereo-marquee-track.is-scrolling {
+          animation: ytMarqueeContinuous 12s linear infinite;
+        }
+        .yt-stereo-marquee-track.is-paused {
+          animation-play-state: paused !important;
+        }
+        .yt-stereo-marquee-text {
           font-size: 12px;
           font-weight: 800;
           color: #ffffff;
           display: inline-block;
-          animation: ytMarquee 10s linear infinite;
+          white-space: nowrap;
+          padding-right: 32px;
+          flex-shrink: 0;
         }
-        @keyframes ytMarquee {
+        .yt-stereo-clone {
+          display: inline-block;
+        }
+        @keyframes ytMarqueeContinuous {
           0% { transform: translateX(0%); }
-          50% { transform: translateX(-40%); }
-          100% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
         }
         .yt-stereo-bars {
           display: flex;
@@ -3426,11 +3501,14 @@ export class HUD {
       <div id="youtube-car-stereo" class="yt-stereo-widget" style="display: none;">
         <div class="yt-stereo-body">
           <div class="yt-stereo-badge">
-            <span>▶</span> YT MUSIC
+            <span>▶</span> <span class="yt-stereo-badge-full">YT MUSIC</span><span class="yt-stereo-badge-short">YT</span>
           </div>
-          <div class="yt-stereo-display">
+          <div class="yt-stereo-display" id="yt-stereo-display">
             <div class="yt-stereo-marquee-wrap">
-              <div class="yt-stereo-marquee" id="yt-stereo-text">Kavinsky - Nightcall</div>
+              <div class="yt-stereo-marquee-track is-scrolling" id="yt-stereo-track">
+                <span class="yt-stereo-marquee-text yt-stereo-marquee" id="yt-stereo-text">Kavinsky - Nightcall</span>
+                <span class="yt-stereo-marquee-text yt-stereo-marquee yt-stereo-clone" id="yt-stereo-text-clone" aria-hidden="true">Kavinsky - Nightcall</span>
+              </div>
             </div>
             <div class="yt-stereo-bars" id="yt-stereo-bars">
               <i></i><i></i><i></i><i></i><i></i>
@@ -3439,7 +3517,7 @@ export class HUD {
           <div class="yt-stereo-actions">
             <button class="yt-stereo-btn" id="yt-stereo-play-btn" title="Play / Pause">▶</button>
             <button class="yt-stereo-btn" id="yt-stereo-mute-btn" title="Mute">🔊</button>
-            <button class="yt-stereo-btn yt-stereo-tab-btn" id="yt-stereo-tablet-btn" title="Open In-Car Digital Tablet OS [TAB]">📱 TABLET</button>
+            <button class="yt-stereo-btn yt-stereo-tab-btn" id="yt-stereo-tablet-btn" title="Open In-Car Digital Tablet OS [TAB]">📱 <span class="yt-stereo-tab-text">TABLET</span></button>
             <button class="yt-stereo-btn-mini" id="yt-stereo-close-btn" title="Hide Stereo Widget">✕</button>
           </div>
         </div>
@@ -3798,6 +3876,22 @@ export class HUD {
                       <div class="milestone-checkpoint-item" data-chk-zone="8">
                         <div class="checkpoint-left"><span class="checkpoint-icon">🗼</span><div><div class="checkpoint-name">ZONE 8: Washington & Seattle Gateway</div><div class="checkpoint-km">20.8 - 23.4 km</div></div></div>
                         <span class="checkpoint-status-badge badge-ahead" id="chk-badge-8">AHEAD</span>
+                      </div>
+                      <div class="milestone-checkpoint-item" data-chk-zone="9">
+                        <div class="checkpoint-left"><span class="checkpoint-icon">🏔️</span><div><div class="checkpoint-name">ZONE 9: Cascade Pass & Rainier</div><div class="checkpoint-km">23.4 - 26.0 km</div></div></div>
+                        <span class="checkpoint-status-badge badge-ahead" id="chk-badge-9">AHEAD</span>
+                      </div>
+                      <div class="milestone-checkpoint-item" data-chk-zone="10">
+                        <div class="checkpoint-left"><span class="checkpoint-icon">🌲</span><div><div class="checkpoint-name">ZONE 10: Idaho Panhandle & Coeur d'Alene</div><div class="checkpoint-km">26.0 - 28.6 km</div></div></div>
+                        <span class="checkpoint-status-badge badge-ahead" id="chk-badge-10">AHEAD</span>
+                      </div>
+                      <div class="milestone-checkpoint-item" data-chk-zone="11">
+                        <div class="checkpoint-left"><span class="checkpoint-icon">🏔️</span><div><div class="checkpoint-name">ZONE 11: Montana Big Sky & Glacier</div><div class="checkpoint-km">28.6 - 31.2 km</div></div></div>
+                        <span class="checkpoint-status-badge badge-ahead" id="chk-badge-11">AHEAD</span>
+                      </div>
+                      <div class="milestone-checkpoint-item" data-chk-zone="12">
+                        <div class="checkpoint-left"><span class="checkpoint-icon">🎰</span><div><div class="checkpoint-name">ZONE 12: Las Vegas Strip & Red Rock</div><div class="checkpoint-km">31.2 - 33.8 km</div></div></div>
+                        <span class="checkpoint-status-badge badge-ahead" id="chk-badge-12">AHEAD</span>
                       </div>
                     </div>
                   </div>
@@ -5270,10 +5364,13 @@ export class HUD {
       });
     }
 
-    // Window resize tracking for docked YouTube player in tablet
+    // Window resize tracking for docked YouTube player in tablet & mobile stereo widget
     window.addEventListener('resize', () => {
       if (gameState.isTabletOpen && gameState.activeTabletApp === 'youtube') {
         this.dockYouTubeInTablet();
+      }
+      if (!gameState.isTabletOpen && gameState.youtubeApp && gameState.youtubeApp.isStereoWidgetVisible) {
+        this.updateCarStereoWidget();
       }
     });
 
@@ -5540,12 +5637,22 @@ export class HUD {
     stereo.style.display = 'flex';
 
     const text = this.container.querySelector('#yt-stereo-text');
+    const clone = this.container.querySelector('#yt-stereo-text-clone');
+    const track = this.container.querySelector('#yt-stereo-track');
+    const wrap = this.container.querySelector('.yt-stereo-marquee-wrap');
     const playBtn = this.container.querySelector('#yt-stereo-play-btn');
     const muteBtn = this.container.querySelector('#yt-stereo-mute-btn');
     const bars = this.container.querySelector('#yt-stereo-bars');
 
+    const songTitle = ytState.currentTitle || 'YouTube';
+    const artist = ytState.currentArtist || 'Highway Radio';
+    const fullText = `${songTitle} • ${artist}`;
+
     if (text) {
-      text.textContent = `${ytState.currentTitle || 'YouTube'} • ${ytState.currentArtist || 'Highway Radio'}`;
+      if (text.textContent !== fullText) {
+        text.textContent = fullText;
+        if (clone) clone.textContent = fullText;
+      }
     }
     if (playBtn) {
       playBtn.textContent = ytState.isPlaying ? '⏸' : '▶';
@@ -5555,6 +5662,26 @@ export class HUD {
     }
     if (bars) {
       bars.style.opacity = ytState.isPlaying ? '1' : '0.2';
+    }
+
+    if (track && text && wrap) {
+      const textWidth = text.scrollWidth;
+      const wrapWidth = wrap.clientWidth || 120;
+      if (textWidth > wrapWidth) {
+        track.classList.add('is-scrolling');
+        if (clone) clone.style.display = 'inline-block';
+        const duration = Math.max(8, Math.round((textWidth + 32) / 26));
+        track.style.animationDuration = `${duration}s`;
+        if (ytState.isPlaying) {
+          track.classList.remove('is-paused');
+        } else {
+          track.classList.add('is-paused');
+        }
+      } else {
+        track.classList.remove('is-scrolling');
+        track.classList.remove('is-paused');
+        if (clone) clone.style.display = 'none';
+      }
     }
   }
 

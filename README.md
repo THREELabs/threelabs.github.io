@@ -11,19 +11,19 @@
 > 🤝 **A Community-Driven Game — Open to All to Expand On!**  
 > Dreamstate Highway is a 100% open, community-driven game built by and for the developer and gaming community. **All developers, 3D artists, and enthusiasts of any skill level are welcome!** Whether you want to pave a brand-new zone, build custom vehicle models, tweak physics, compose generative audio, or polish the engine — this project is open to all to expand on.
 
-**Dreamstate Highway** (formerly *Baja Racer*) is an open-world, 3D stylized WebGL road-trip simulator and arcade driving game built with **Three.js**, **Rapier 3D**, and the **Web Audio API**. Cruise an expansive, cel-shaded West Coast highway corridor spanning **31.2 continuous kilometers** — from the sun-baked Mojave Desert through the soaring peaks and historic Going-to-the-Sun Road of Montana's Glacier National Park.
+**Dreamstate Highway** (formerly *Baja Racer*) is an open-world, 3D stylized WebGL road-trip simulator and arcade driving game built with **Three.js**, **Rapier 3D**, and the **Web Audio API**. Cruise an expansive, cel-shaded West Coast & Southwest highway corridor spanning **33.8 continuous kilometers** — from the sun-baked Mojave Desert through the soaring peaks of Montana's Glacier National Park and the electrifying neon oasis of the Las Vegas Strip to the dramatic sandstone canyons of Red Rock.
 
 Soak in scenic vistas, pull over into roadside turnouts, view landmarks through coin-operated binoculars, and read historical lore plaques. Or drop the hammer: unleash nitro, power-slide around coastal switchbacks, dodge civilian highway traffic, and outrun Highway Patrol radar speed traps.
 
 ---
 
-> 🌟 **v2.0 Overhaul:** Rebuilt from the ground up in true 3D (Three.js + Rapier physics), replacing the retro pseudo-3D engine. Now featuring a **12-zone continuous highway corridor (31,200 meters)**, dynamic day/night cycles, interactive narrative vignettes, weather-affected tire grip, procedural engine audio synthesis, photo mode, and responsive multi-touch mobile controls.
+> 🌟 **v2.0 Overhaul:** Rebuilt from the ground up in true 3D (Three.js + Rapier physics), replacing the retro pseudo-3D engine. Now featuring a **13-zone continuous highway corridor (33,800 meters)**, dynamic day/night cycles, interactive narrative vignettes, weather-affected tire grip, procedural engine audio synthesis, photo mode, and responsive multi-touch mobile controls.
 
 ---
 
-## 🗺️ The 12 Zones (Pacific Coast → Northern Rockies Corridor)
+## 🗺️ The 13 Zones (Pacific Coast → Northern Rockies → Southwest Red Rock Corridor)
 
-Drive north through 12 distinct, fully realized biomes covering **31,200 meters** of continuous highway, each with unique color grading, atmospheric haze, custom flora, dynamic weather, and iconic landmarks:
+Drive through 13 distinct, fully realized biomes covering **33,800 meters** of continuous highway, each with unique color grading, atmospheric haze, custom flora, dynamic weather, and iconic landmarks:
 
 | # | Distance | Zone | Environment & Weather | Iconic Landmarks & Highlights |
 |---|:---:|------|----------------------|-------------------------------|
@@ -39,6 +39,7 @@ Drive north through 12 distinct, fully realized biomes covering **31,200 meters*
 | **9** | `23,400 – 26,000m` | **Cascade Alpine Pass & Mount Rainier** | ❄️ 34°F • Alpine flurries • 82% grip | Mount Rainier summit, Paradise Valley, concrete avalanche snow sheds |
 | **10** | `26,000 – 28,600m` | **Idaho Panhandle & Lake Coeur d'Alene** | 🌲 62°F • Clear mountain air • 95% grip | Lake Coeur d'Alene Floating Boardwalk, Cataldo Old Mission (1853), Silver Valley Mine Headframe |
 | **11** | `28,600 – 31,200m` | **Montana Big Sky & Glacier** | 🏔️ 48°F • Continental Divide • 92% grip | Lake McDonald Historic Cedar Lodge & Colored Pebbles, The Weeping Wall & Triple Stone Arches, Logan Pass Continental Divide (6,646 ft) |
+| **12** | `31,200 – 33,800m` | **Las Vegas Strip & Red Rock Canyon** | 🎰 88°F • Neon desert twilight • 100% grip | Welcome to Fabulous Las Vegas Googie Neon Sign, The Strip: Luxor Obsidian Glass Pyramid & Bellagio Dancing Fountains, Red Rock Canyon Aztec Sandstone Escarpment & Calico Hills Overlook |
 
 ---
 

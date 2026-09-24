@@ -539,6 +539,23 @@ export const LANDMARK_PHOTOS = {
       credit: "Freely available via Wikimedia Commons (CC BY-SA 4.0 by Ken Thomas)",
       alt: "Logan Pass Continental Divide Going-to-the-Sun Road Glacier National Park"
     }
+  ],
+  // ── Zone 12: Las Vegas Strip & Red Rock Canyon ──────────────────────────────────
+  turnout_vegas_sign: [
+    {
+      url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Welcome_to_Fabulous_Las_Vegas_sign.jpg/960px-Welcome_to_Fabulous_Las_Vegas_sign.jpg",
+      caption: "Welcome to Fabulous Las Vegas Neon Sign — 1959 Betty Willis Googie neon masterpiece welcoming travelers to the Strip with its 8-point yellow starburst and silver-dollar circles.",
+      credit: "Freely available via Wikimedia Commons (CC BY 2.0 by Matthew Straubmuller)",
+      alt: "Welcome to Fabulous Las Vegas neon sign at dusk with palm trees"
+    }
+  ],
+  turnout_red_rock_canyon: [
+    {
+      url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Red_Rock_Canyon_sign.jpg/960px-Red_Rock_Canyon_sign.jpg",
+      caption: "Red Rock Canyon National Conservation Area — dramatic Jurassic Aztec sandstone escarpment rising 3,000 feet above the Mojave Desert near the Keystone Thrust Fault.",
+      credit: "Freely available via Wikimedia Commons (CC BY-SA 3.0 by Stan Shebs)",
+      alt: "Red Rock Canyon National Conservation Area entrance sign and sandstone mountains"
+    }
   ]
 };
 

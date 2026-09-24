@@ -112,7 +112,12 @@ export class LandmarkLoader {
       // Zone 11: Montana Big Sky & Glacier (57500 - 62000m)
       { id: 'lake_mcdonald', pos: getPos(58800, -45, 16), name: "Lake McDonald Cedar Chalets & Colored Pebbles", radius: 90 },
       { id: 'weeping_wall', pos: getPos(60000, 25, 24), name: "The Weeping Wall & Triple Stone Arches", radius: 90 },
-      { id: 'logan_pass', pos: getPos(61200, 0, 30), name: "Logan Pass Continental Divide (6,646 ft)", radius: 100 }
+      { id: 'logan_pass', pos: getPos(61200, 0, 30), name: "Logan Pass Continental Divide (6,646 ft)", radius: 100 },
+
+      // Zone 12: Las Vegas Strip & Red Rock Canyon (62000 - 66500m)
+      { id: 'vegas_sign', pos: getPos(63100, -28, 0), name: "Welcome to Fabulous Las Vegas Sign", radius: 90 },
+      { id: 'strip_pyramid_fountains', pos: getPos(64300, 45, 0), name: "The Strip: Luxor Pyramid & Bellagio Dancing Fountains", radius: 100 },
+      { id: 'red_rock_escarpment', pos: getPos(65500, -45, 12), name: "Red Rock Canyon Aztec Sandstone Escarpment", radius: 95 }
     ];
   }
 

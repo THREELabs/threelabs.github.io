@@ -186,7 +186,8 @@ To enforce steady forward momentum across the continental highway:
 | **9** | Cascade Pass & Mount Rainier | Northern Rockies | `🏅 GOLD CERTIFIED` | None (All 6 Passed) | **FROZEN** — Do Not Modify |
 | **10** | Idaho Panhandle & Coeur d'Alene | Northern Rockies | `🏅 GOLD CERTIFIED` | None (All 6 Passed) | **FROZEN** — Do Not Modify |
 | **11** | Montana Big Sky & Glacier | Northern Rockies | `🏅 GOLD CERTIFIED` | None (All 6 Passed) | **FROZEN** — Do Not Modify |
-| **12** | Las Vegas Strip & Red Rock Canyon | Southwest Red Rock | `🏗️ NEXT UP` | Gates 1–6 Pending | Corridor B: Welcome to Vegas Sign & Red Rock Scenic Loop |
+| **12** | Las Vegas Strip & Red Rock Canyon | Southwest Red Rock | `🏅 GOLD CERTIFIED` | None (All 6 Passed) | **FROZEN** — Do Not Modify |
+| **13** | Zion Canyon & Checkerboard Mesa | Southwest Red Rock | `🏗️ NEXT UP` | Gates 1–6 Pending | Corridor B: Soaring Navajo Sandstone Monoliths & Pine-Fringed Slickrock |
 
 *(Note: When an agent completes a zone's remaining gates, it must update this matrix in the MD file to mark it `🏅 GOLD CERTIFIED`, commit, and begin work on the next zone!)*
 

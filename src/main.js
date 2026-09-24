@@ -24,6 +24,7 @@ import { WashingtonSceneryBuilder } from './world/WashingtonScenery.js';
 import { CascadeSceneryBuilder } from './world/CascadeScenery.js';
 import { IdahoPanhandleSceneryBuilder } from './world/IdahoPanhandleScenery.js';
 import { MontanaGlacierSceneryBuilder } from './world/MontanaGlacierScenery.js';
+import { LasVegasSceneryBuilder } from './world/LasVegasScenery.js';
 import { EnvironmentManager } from './world/Environment.js';
 import { ZoneManager } from './world/ZoneManager.js';
 import { WorldBoundaries } from './world/WorldBoundaries.js';
@@ -78,9 +79,9 @@ function createZoneSplineRoadAdapter(road, zoneIdx) {
   return new Proxy(road, {
     get(target, prop, receiver) {
       if (prop === 'getRoadTransformAtZ') {
-        return (authoredZ, latOffset = 0, yOffset = 0) => {
+        return (authoredZ, latOffset = 0, yOffset = 0, matchTerrain = true) => {
           const worldZ = interpolateZoneZ(authoredZ, controlPoints);
-          return target.getRoadTransformAtZ(worldZ, latOffset, yOffset);
+          return target.getRoadTransformAtZ(worldZ, latOffset, yOffset, matchTerrain);
         };
       }
       if (prop === 'getGroundElevation') {
@@ -133,7 +134,8 @@ const zoneBuilders = [
   { builder: new WashingtonSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 8)), zMin: ZONES[8].zMin, zMax: ZONES[8].zMax },
   { builder: new CascadeSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 9)), zMin: ZONES[9].zMin, zMax: ZONES[9].zMax },
   { builder: new IdahoPanhandleSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 10)), zMin: ZONES[10].zMin, zMax: ZONES[10].zMax },
-  { builder: new MontanaGlacierSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 11)), zMin: ZONES[11].zMin, zMax: ZONES[11].zMax }
+  { builder: new MontanaGlacierSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 11)), zMin: ZONES[11].zMin, zMax: ZONES[11].zMax },
+  { builder: new LasVegasSceneryBuilder(renderer, createZoneSplineRoadAdapter(splineRoad, 12)), zMin: ZONES[12].zMin, zMax: ZONES[12].zMax }
 ];
 
 // Performance Optimization: Batch static meshes sharing identical materials inside spatial chunks
