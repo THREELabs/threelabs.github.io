@@ -465,6 +465,20 @@ export class SceneRenderer {
       }
     });
 
+    // 1b. Safety pass: Ensure every mesh has a valid material (prevents compile/render pipeline crash)
+    const fallbackMat = new THREE.MeshBasicMaterial({ color: 0x888888 });
+    this.scene.traverse((obj) => {
+      if (obj.isMesh || obj.isLine || obj.isPoints) {
+        if (!obj.material) {
+          obj.material = fallbackMat;
+        } else if (Array.isArray(obj.material)) {
+          for (let i = 0; i < obj.material.length; i++) {
+            if (!obj.material[i]) obj.material[i] = fallbackMat;
+          }
+        }
+      }
+    });
+
     // 2. Pre-compile all WebGL shader programs across the entire scene graph
     try {
       this.renderer.compile(this.scene, this.camera);

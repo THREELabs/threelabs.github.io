@@ -94,6 +94,13 @@ export class MalibuSceneryBuilder {
     this.matNeonRed = new THREE.MeshBasicMaterial({ color: 0xff3b30 });
     this.matWindowGlow = new THREE.MeshBasicMaterial({ color: 0xfff3cc });
 
+    this.matSurfboardCyan = renderer.createToonMaterial({ color: 0x06b6d4, gradientBands: 2 });
+    this.matGuardrail = renderer.createToonMaterial({ color: 0x8a929e, gradientBands: 3 });
+    this.matHwySignGreen = renderer.createToonMaterial({ color: 0x065f46, gradientBands: 2 });
+    this.matSailWhite = renderer.createToonMaterial({ color: 0xf8fafc, gradientBands: 2 });
+    this.matPelican = renderer.createToonMaterial({ color: 0x94a3b8, gradientBands: 2 });
+    this.matPelicanBeak = renderer.createToonMaterial({ color: 0xf59e0b, gradientBands: 2 });
+
     this.buildMalibuEnvironment();
   }
 

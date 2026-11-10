@@ -213,6 +213,8 @@ export class DesertSceneryBuilder {
     this.matUtilityWire = new THREE.LineBasicMaterial({ color: 0x1f2429, linewidth: 1.5 });
     this.matRustWreck = renderer.createToonMaterial({ color: 0x9e4428, gradientBands: 3, map: rustDiff, normalMap: rustNorm });
     this.matTinRoof = renderer.createToonMaterial({ color: 0x7a8694, gradientBands: 2, map: tinDiff, normalMap: tinNorm });
+    this.matDarkTrim = renderer.createToonMaterial({ color: 0x22252a, gradientBands: 2 });
+    this.matTire = renderer.createToonMaterial({ color: 0x1a1a1a, gradientBands: 2 });
     this.matChrome = renderer.createToonMaterial({ color: 0xecf0f3, gradientBands: 4 });
     this.matDinerRed = renderer.createToonMaterial({ color: 0xd92d3a, gradientBands: 3 });
     this.matDinerWhite = renderer.createToonMaterial({ color: 0xffffff, gradientBands: 2 });

@@ -72,6 +72,7 @@ export class WashingtonSceneryBuilder {
     this.matStarbucksGreen = renderer.createToonMaterial({ color: 0x00704a, gradientBands: 2 });
     this.matWheelWhite = renderer.createToonMaterial({ color: 0xf0f0f0, gradientBands: 2 });
     this.matSteelDark = renderer.createToonMaterial({ color: 0x2a2e32, gradientBands: 2 });
+    this.matDarkTrim = renderer.createToonMaterial({ color: 0x22252a, gradientBands: 2 });
 
     this.buildWashingtonEnvironment();
   }
