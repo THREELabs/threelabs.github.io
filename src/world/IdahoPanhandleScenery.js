@@ -464,15 +464,17 @@ export class IdahoPanhandleSceneryBuilder {
         const sc = 0.7 + (i % 5) * 0.2;
 
         const roadInfo = this.splineRoad.getRoadTransformAtZ(tz, tx, 0);
+        const wx = roadInfo ? roadInfo.pos.x : tx;
         const gy = roadInfo ? roadInfo.pos.y : 0;
+        const wz = roadInfo ? roadInfo.pos.z : tz;
 
-        dummy.position.set(tx, gy - 1.5, tz);
+        dummy.position.set(wx, gy - 1.5, wz);
         dummy.scale.set(sc, sc, sc);
         dummy.rotation.y = angle * 1.3;
         dummy.updateMatrix();
         trunkMats.push(dummy.matrix.clone());
 
-        dummy.position.set(tx, gy + 10 * sc, tz);
+        dummy.position.set(wx, gy + 10 * sc, wz);
         dummy.updateMatrix();
         canopyMats.push(dummy.matrix.clone());
       }
@@ -496,22 +498,41 @@ export class IdahoPanhandleSceneryBuilder {
   // ─── HIGHWAY SIGNAGE ──────────────────────────────────────────────────────
   buildIdahoHighwaySignage() {
     const signs = [
-      { z: 26050, x: -22, label: 'IDAHO PANHANDLE', color: 0x1a4d2e },
-      { z: 26600, x:  22, label: "LAKE COEUR D'ALENE", color: 0x154a6b },
-      { z: 27400, x: -20, label: 'CATALDO MISSION', color: 0x3d2510 },
-      { z: 28000, x:  22, label: 'SILVER VALLEY', color: 0x3a2c1c },
+      { z: 26050, side: 'left',  label: 'IDAHO PANHANDLE TIMBERLANDS', sub: 'COEUR D\'ALENE NATIONAL FOREST', hex: '#1a4d2e' },
+      { z: 26600, side: 'right', label: "LAKE COEUR D'ALENE MARINA",   sub: 'FLOATING BOARDWALK • NEXT LEFT', hex: '#154a6b' },
+      { z: 27400, side: 'left',  label: 'CATALDO OLD MISSION (1853)',  sub: 'HISTORIC LANDMARK • NEXT RIGHT', hex: '#3d2510' },
+      { z: 28000, side: 'right', label: 'WALLACE SILVER VALLEY',       sub: 'HISTORIC MINING DISTRICT • 1/2 MI', hex: '#3a2c1c' },
     ];
 
     signs.forEach(sign => {
-      const t = this.splineRoad.getRoadTransformAtZ(sign.z, sign.x, 0);
+      const isRight = sign.side === 'right';
+      const lat = isRight ? 18.5 : -18.5;
+      const t = this.splineRoad.getRoadTransformAtZ(sign.z, lat, 0);
       const sg = new THREE.Group();
+      sg.name = `RoadSign_Idaho_${sign.z}`;
       sg.position.copy(t.pos);
-      sg.rotation.y = t.heading;
+      sg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), t.tangent);
+      sg.rotateY(Math.PI); // Face oncoming traffic
+      sg.rotateY(isRight ? -0.55 : 0.55);
 
-      sg.add(this._mesh(new THREE.CylinderGeometry(0.1, 0.12, 6, 6), this.matAsphalt, -1.5, 3, 0));
-      sg.add(this._mesh(new THREE.CylinderGeometry(0.1, 0.12, 6, 6), this.matAsphalt,  1.5, 3, 0));
-      sg.add(this._mesh(new THREE.BoxGeometry(7.5, 1.8, 0.2), new THREE.MeshBasicMaterial({ color: sign.color }), 0, 5.8, 0));
-      sg.add(this._mesh(new THREE.BoxGeometry(7.3, 1.6, 0.26), this.matSignWhite, 0, 5.8, 0.04));
+      // Support posts sunk Y <= -1.5m into shoulder
+      sg.add(this._mesh(new THREE.CylinderGeometry(0.12, 0.14, 5.2, 6), this.matMineTimber, -1.8, 1.4, -0.12));
+      sg.add(this._mesh(new THREE.CylinderGeometry(0.12, 0.14, 5.2, 6), this.matMineTimber,  1.8, 1.4, -0.12));
+
+      const signTex = this.renderer.textures && this.renderer.textures.highwaySign
+        ? this.renderer.textures.highwaySign(sign.label, sign.sub, sign.hex)
+        : null;
+      const frontMat = signTex
+        ? new THREE.MeshBasicMaterial({ map: signTex })
+        : this.matSignWhite;
+      const boardMats = [
+        this.matSignBrown, this.matSignBrown,
+        this.matSignBrown, this.matSignBrown,
+        frontMat,          this.matSignBrown
+      ];
+      const board = new THREE.Mesh(new THREE.BoxGeometry(5.6, 2.2, 0.16), boardMats);
+      board.position.set(0, 3.0, 0);
+      sg.add(board);
 
       this.group.add(sg);
     });

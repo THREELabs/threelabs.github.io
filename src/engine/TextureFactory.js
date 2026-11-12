@@ -624,7 +624,7 @@ export class TextureFactory {
     return tex;
   }
 
-  /** Radiant Sun Corona Texture with multi-stage glow rings & solar rays. */
+  /** Physically-Motivated Optical Sun Corona & Mie Circumsolar Aureole Texture */
   sunCorona(size = 256) {
     const key = 'sun_corona_' + size;
     if (this._cache.has(key)) return this._cache.get(key);
@@ -633,45 +633,49 @@ export class TextureFactory {
     const ctx = c.getContext('2d');
     const center = size * 0.5;
 
-    // 1. Soft Outer Atmospheric Halo
+    // 1. Smooth Inverse-Power Mie Atmospheric Circumsolar Aureole (Zero hard edges or cartoon wedges)
     const outerGrad = ctx.createRadialGradient(center, center, 0, center, center, center);
-    outerGrad.addColorStop(0.0, 'rgba(255, 250, 220, 0.9)');
-    outerGrad.addColorStop(0.18, 'rgba(255, 235, 170, 0.65)');
-    outerGrad.addColorStop(0.42, 'rgba(255, 205, 110, 0.28)');
-    outerGrad.addColorStop(0.75, 'rgba(255, 170, 70, 0.08)');
-    outerGrad.addColorStop(1.0, 'rgba(255, 140, 40, 0.0)');
+    outerGrad.addColorStop(0.00, 'rgba(255, 254, 245, 0.95)');
+    outerGrad.addColorStop(0.08, 'rgba(255, 248, 225, 0.78)');
+    outerGrad.addColorStop(0.20, 'rgba(255, 236, 190, 0.44)');
+    outerGrad.addColorStop(0.38, 'rgba(255, 218, 145, 0.18)');
+    outerGrad.addColorStop(0.62, 'rgba(255, 195, 105, 0.06)');
+    outerGrad.addColorStop(0.84, 'rgba(255, 175, 80, 0.015)');
+    outerGrad.addColorStop(1.00, 'rgba(255, 160, 60, 0.0)');
     ctx.fillStyle = outerGrad;
     ctx.fillRect(0, 0, size, size);
 
-    // 2. Solar Flare Light Rays
+    // 2. Subtle Micro-Ciliary Optical Glare Needles (Fine photographic lens diffraction)
     ctx.save();
     ctx.translate(center, center);
-    const RAY_COUNT = 16;
-    for (let i = 0; i < RAY_COUNT; i++) {
-      const angle = (i / RAY_COUNT) * Math.PI * 2;
-      const rayLen = (i % 2 === 0 ? center * 0.95 : center * 0.65);
-      const rayWidth = (i % 2 === 0 ? 0.09 : 0.05);
+    const NEEDLE_COUNT = 64;
+    for (let i = 0; i < NEEDLE_COUNT; i++) {
+      const seed = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
+      const frac = seed - Math.floor(seed);
+      const angle = (i / NEEDLE_COUNT) * Math.PI * 2 + (frac - 0.5) * 0.04;
+      const rayLen = center * (0.32 + frac * 0.48);
+      const alpha = 0.025 + frac * 0.035;
 
-      const rayGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, rayLen);
-      rayGrad.addColorStop(0.0, 'rgba(255, 255, 245, 0.6)');
-      rayGrad.addColorStop(0.3, 'rgba(255, 230, 150, 0.25)');
-      rayGrad.addColorStop(1.0, 'rgba(255, 200, 100, 0.0)');
+      const rayGrad = ctx.createRadialGradient(0, 0, center * 0.04, 0, 0, rayLen);
+      rayGrad.addColorStop(0.0, `rgba(255, 252, 238, ${alpha})`);
+      rayGrad.addColorStop(0.45, `rgba(255, 232, 175, ${alpha * 0.4})`);
+      rayGrad.addColorStop(1.0, 'rgba(255, 210, 130, 0.0)');
 
-      ctx.fillStyle = rayGrad;
+      ctx.strokeStyle = rayGrad;
+      ctx.lineWidth = 1.0 + (i % 3) * 0.4;
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.arc(0, 0, rayLen, angle - rayWidth, angle + rayWidth);
-      ctx.closePath();
-      ctx.fill();
+      ctx.lineTo(Math.cos(angle) * rayLen, Math.sin(angle) * rayLen);
+      ctx.stroke();
     }
     ctx.restore();
 
-    // 3. Ultra-Bright White-Hot Core Bloom
-    const coreGrad = ctx.createRadialGradient(center, center, 0, center, center, center * 0.28);
+    // 3. Hot Solar Photosphere Limb-Darkened Core
+    const coreGrad = ctx.createRadialGradient(center, center, 0, center, center, center * 0.22);
     coreGrad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
-    coreGrad.addColorStop(0.4, 'rgba(255, 255, 240, 0.95)');
-    coreGrad.addColorStop(0.8, 'rgba(255, 245, 200, 0.5)');
-    coreGrad.addColorStop(1.0, 'rgba(255, 230, 160, 0.0)');
+    coreGrad.addColorStop(0.45, 'rgba(255, 253, 242, 0.92)');
+    coreGrad.addColorStop(0.75, 'rgba(255, 242, 205, 0.42)');
+    coreGrad.addColorStop(1.0, 'rgba(255, 228, 170, 0.0)');
     ctx.fillStyle = coreGrad;
     ctx.fillRect(0, 0, size, size);
 
@@ -787,7 +791,7 @@ export class TextureFactory {
     return tex;
   }
 
-  /** Anamorphic Solar Starburst Flare Texture */
+  /** Photographic 6-Blade Aperture Diffraction & Circumsolar Veil Texture */
   sunStarburst(size = 256) {
     const key = 'sun_starburst_' + size;
     if (this._cache.has(key)) return this._cache.get(key);
@@ -799,18 +803,30 @@ export class TextureFactory {
     ctx.save();
     ctx.translate(center, center);
 
-    // 4 major anamorphic rays
-    for (let r = 0; r < 4; r++) {
-      const angle = (r * Math.PI * 0.5) + (Math.PI * 0.25);
-      const rayGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, center * 0.95);
-      rayGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0.9)');
-      rayGrad.addColorStop(0.15, 'rgba(255, 235, 170, 0.5)');
-      rayGrad.addColorStop(0.6, 'rgba(255, 200, 100, 0.12)');
-      rayGrad.addColorStop(1.0, 'rgba(255, 180, 80, 0.0)');
+    // Soft radial veil base
+    const veilGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, center * 0.92);
+    veilGrad.addColorStop(0.0, 'rgba(255, 252, 238, 0.45)');
+    veilGrad.addColorStop(0.22, 'rgba(255, 236, 185, 0.18)');
+    veilGrad.addColorStop(0.55, 'rgba(255, 210, 130, 0.05)');
+    veilGrad.addColorStop(1.0, 'rgba(255, 190, 95, 0.0)');
+    ctx.fillStyle = veilGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, center * 0.92, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Subtle 6-axis photographic aperture diffraction spikes (slender, natural taper)
+    for (let r = 0; r < 6; r++) {
+      const angle = (r * Math.PI / 3.0) + (Math.PI / 12.0);
+      const spikeLen = (r % 2 === 0) ? center * 0.88 : center * 0.62;
+      const rayGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, spikeLen);
+      rayGrad.addColorStop(0.0, 'rgba(255, 255, 250, 0.55)');
+      rayGrad.addColorStop(0.14, 'rgba(255, 240, 195, 0.24)');
+      rayGrad.addColorStop(0.48, 'rgba(255, 215, 135, 0.06)');
+      rayGrad.addColorStop(1.0, 'rgba(255, 190, 90, 0.0)');
 
       ctx.fillStyle = rayGrad;
       ctx.beginPath();
-      ctx.ellipse(0, 0, center * 0.95, 3.5, angle, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, spikeLen, 1.4, angle, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();

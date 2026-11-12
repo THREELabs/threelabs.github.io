@@ -26,12 +26,12 @@ export class EnvironmentManager {
   }
 
   setupDistantMountainChains() {
-    // Distant Horizon Mountain Ridge Chains across the 12,500m Pacific Coast drive
+    // Distant Horizon Mountain Ridge Chains across the full 66,500m Highway Drive
     this.mountainsGroup = new THREE.Group();
 
-    const mountainGeo = new THREE.PlaneGeometry(160, 64000, 24, 640);
+    const mountainGeo = new THREE.PlaneGeometry(160, 68000, 24, 680);
     mountainGeo.rotateX(-Math.PI * 0.5);
-    mountainGeo.translate(0, 0, 32000);
+    mountainGeo.translate(0, 0, 34000);
 
     const pos = mountainGeo.attributes.position;
     const colors = new Float32Array(pos.count * 3);
@@ -41,6 +41,10 @@ export class EnvironmentManager {
     const cMarinRidge = new THREE.Color(0x607248);
     const cRedwoodRidge = new THREE.Color(0x233828);
     const cCascadeRidge = new THREE.Color(0x2a3832);
+    const cIdahoRidge = new THREE.Color(0x2d4a34);
+    const cGlacierRidge = new THREE.Color(0x5c534c);
+    const cRedRockRidge = new THREE.Color(0x9e3a2b);
+    const cRedRockCream = new THREE.Color(0xdfc298);
     const cSnowPeak = new THREE.Color(0xe2e8f0);
 
     for (let i = 0; i < pos.count; i++) {
@@ -73,9 +77,18 @@ export class EnvironmentManager {
         col.copy(cMarinRidge);
       } else if (vz < 36000) {
         col.copy(cRedwoodRidge);
-      } else {
+      } else if (vz < 53500) {
         col.copy(cCascadeRidge);
-        if (peakY > 165) col.lerp(cSnowPeak, 0.85); // Snowcaps in PNW
+        if (peakY > 155) col.lerp(cSnowPeak, 0.85); // Snowcaps in PNW & Cascades
+      } else if (vz < 57500) {
+        col.copy(cIdahoRidge);
+        if (peakY > 175) col.lerp(cSnowPeak, 0.65); // Bitterroot timberline snow
+      } else if (vz < 62000) {
+        col.copy(cGlacierRidge);
+        if (peakY > 140) col.lerp(cSnowPeak, 0.90); // Crown of the Continent glacier peaks
+      } else {
+        col.copy(cRedRockRidge);
+        if (peakY > 150) col.lerp(cRedRockCream, 0.55); // Stratified Aztec sandstone bands
       }
 
       colors[i * 3 + 0] = col.r;
@@ -140,21 +153,22 @@ export class EnvironmentManager {
 
     this.renderer.scene.background = new THREE.Color(initialZone.skyTop);
 
-    // 1. Physically-Inspired Atmospheric Scattering & Celestial Sky Dome Shader
-    const skyGeo = new THREE.SphereGeometry(2900, 64, 40);
+    // 1. Physically-Based Rayleigh/Mie Atmospheric Scattering & Volumetric Cloud Sky Dome Shader
+    const skyGeo = new THREE.SphereGeometry(2900, 72, 48);
     this.skyMat = new THREE.ShaderMaterial({
       uniforms: {
         uTopColor: { value: new THREE.Color(initialZone.skyTop) },
         uMidColor: { value: new THREE.Color(initialZone.skyMid || '#2a7ac2') },
         uHorizonColor: { value: new THREE.Color(initialZone.skyHorizon) },
         uHazeColor: { value: new THREE.Color(initialZone.hazeColor || '#f2d8a0') },
-        uSunPosition: { value: new THREE.Vector3(0, 1, 0) },
+        uSunPosition: { value: new THREE.Vector3(0.35, 0.55, 0.45).normalize() },
         uSunColor: { value: new THREE.Color(initialZone.sunColor || '#fffaf0') },
         uSunGlowIntensity: { value: initialZone.sunGlow || 1.60 },
         uMieG: { value: initialZone.mieG || 0.84 },
         uHeatShimmer: { value: initialZone.heatShimmer || 1.0 },
         uStarVisibility: { value: initialZone.starVisibility || 0.0 },
         uCloudDensity: { value: initialZone.cloudDensity || 0.20 },
+        uCloudSpeed: { value: initialZone.cloudSpeed || 0.8 },
         uAlpenglowColor: { value: new THREE.Color(initialZone.alpenglowColor || '#e8c48f') },
         uTimeOfDay: { value: gameState.timeOfDay },
         uTime: { value: 0.0 }
@@ -181,6 +195,7 @@ export class EnvironmentManager {
         uniform float uHeatShimmer;
         uniform float uStarVisibility;
         uniform float uCloudDensity;
+        uniform float uCloudSpeed;
         uniform vec3 uAlpenglowColor;
         uniform float uTimeOfDay;
         uniform float uTime;
@@ -188,113 +203,315 @@ export class EnvironmentManager {
         varying vec3 vWorldPosition;
         varying vec3 vLocalPosition;
 
-        // Hash-based 2D noise for procedural cloud detail and stars
-        float hash(vec2 p) {
-          return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+        // High-precision hash & gradient-style value noise (seamless in 2D/3D, zero atan seam)
+        float hash21(vec2 p) {
+          p = fract(p * vec2(123.34, 456.21));
+          p += dot(p, p + 45.32);
+          return fract(p.x * p.y);
         }
-        float noise(vec2 p) {
+
+        float hash31(vec3 p) {
+          p = fract(p * vec3(103.1, 103.0, 97.3));
+          p += dot(p, p.yxz + 33.33);
+          return fract((p.x + p.y) * p.z);
+        }
+
+        vec3 hash33(vec3 p) {
+          p = fract(p * vec3(443.897, 441.423, 437.195));
+          p += dot(p, p.yzx + 19.19);
+          return fract((p.xxx + p.yzx) * p.zyx);
+        }
+
+        float noise2D(vec2 p) {
           vec2 i = floor(p);
           vec2 f = fract(p);
-          f = f * f * (3.0 - 2.0 * f);
-          float a = hash(i);
-          float b = hash(i + vec2(1.0, 0.0));
-          float c = hash(i + vec2(0.0, 1.0));
-          float d = hash(i + vec2(1.0, 1.0));
-          return mix(a, b, f.x) + (c - a) * f.y * (1.0 - f.x) + (d - b) * f.x * f.y;
+          vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0); // Quintic C2 smooth interpolation
+          float a = hash21(i);
+          float b = hash21(i + vec2(1.0, 0.0));
+          float c = hash21(i + vec2(0.0, 1.0));
+          float d = hash21(i + vec2(1.0, 1.0));
+          return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+        }
+
+        // Rotated octave matrix to eliminate grid axis alignment in clouds
+        const mat2 m2 = mat2(0.80, -0.60, 0.60, 0.80);
+
+        // Multi-octave FBM for broad cloud massing
+        float fbmCloud(vec2 p) {
+          float v = 0.0;
+          float a = 0.52;
+          for (int i = 0; i < 4; i++) {
+            v += a * noise2D(p);
+            p = m2 * p * 2.03 + vec2(17.3, 9.2);
+            a *= 0.48;
+          }
+          return v;
+        }
+
+        // Billowy Worley-like ridge noise for cauliflower cumulus edge erosion
+        float billowNoise(vec2 p) {
+          float v = 0.0;
+          float a = 0.55;
+          for (int i = 0; i < 3; i++) {
+            float n = noise2D(p);
+            float billow = 1.0 - abs(n * 2.0 - 1.0);
+            v += a * (billow * billow);
+            p = m2 * p * 2.15 + vec2(31.7, 13.4);
+            a *= 0.45;
+          }
+          return v;
+        }
+
+        // Cornette-Shanks physically-based anisotropic Mie scattering phase function
+        float cornetteShanksPhase(float cosTheta, float g) {
+          float g2 = g * g;
+          float num = 3.0 * (1.0 - g2) * (1.0 + cosTheta * cosTheta);
+          float denom = (8.0 * 3.14159265) * (2.0 + g2) * pow(max(0.005, 1.0 + g2 - 2.0 * g * cosTheta), 1.5);
+          return num / denom;
+        }
+
+        // Evaluate sculpted cumulus cloud density on spherical shell coordinates
+        float sampleCumulusDensity(vec2 uv, float coverage, float timeDrift) {
+          vec2 wind = vec2(timeDrift * 0.032, timeDrift * 0.011);
+          vec2 p = uv * 1.35 + wind;
+
+          // Domain warp for organic atmospheric swirl
+          vec2 warp = vec2(
+            noise2D(p * 0.65 + vec2(4.2, 1.7)),
+            noise2D(p * 0.65 + vec2(9.1, 6.3))
+          ) - 0.5;
+          p += warp * 0.35;
+
+          float baseShape = fbmCloud(p);
+          float billows = billowNoise(p * 1.65 - wind * 0.4);
+
+          // Combine macro cumulus domes with billowy Worley-style edge erosion
+          float combined = mix(baseShape, billows, 0.38);
+          float detailErode = billowNoise(p * 4.2 + wind * 0.8);
+          combined -= detailErode * 0.16 * (1.0 - combined * 0.6);
+
+          // Remap coverage threshold based on biome cloudDensity
+          float thresh = mix(0.68, 0.30, clamp(coverage, 0.0, 1.0));
+          float d = smoothstep(thresh, thresh + 0.34, combined);
+          return d;
         }
 
         void main() {
           vec3 dir = normalize(vLocalPosition);
-          float h = dir.y; // Elevation angle (-1 to +1)
-
-          // 1. Analytical Multi-Stop Rayleigh Atmospheric Scattering Elevation Ramp
-          vec3 sky;
-          if (h > 0.28) {
-            float t = smoothstep(0.28, 0.90, h);
-            sky = mix(uMidColor, uTopColor, t);
-          } else if (h > 0.0) {
-            float t = smoothstep(0.0, 0.28, h);
-            sky = mix(uHorizonColor, uMidColor, t);
-          } else {
-            float t = smoothstep(-0.25, 0.0, h);
-            sky = mix(uHazeColor, uHorizonColor, t);
-          }
-
-          // 2. Solar Direction & Mie Scattering
+          float h = dir.y; // Elevation cosine (-1 at nadir to +1 at zenith)
           vec3 sunDir = normalize(uSunPosition);
           float cosTheta = dot(dir, sunDir);
           float forwardTheta = max(0.0, cosTheta);
 
-          // Mie Single-Scattering Phase Function approximation
-          float g = uMieG;
-          float g2 = g * g;
-          float miePhase = (3.0 * (1.0 - g2) / (2.0 * (2.0 + g2))) * 
-                           ((1.0 + forwardTheta * forwardTheta) / pow(max(0.01, 1.0 + g2 - 2.0 * g * forwardTheta), 1.5));
+          // ───────────────────────────────────────────────────────────────────
+          // 1. CONTINUOUS PHYSICAL RAYLEIGH, OZONE & MIE OPTICAL DEPTH SKY
+          // ───────────────────────────────────────────────────────────────────
+          float zenithCos = max(0.0, h);
+          // Kasten-Young spherical atmosphere optical airmass approximation
+          float airmass = 1.0 / (zenithCos + 0.15 * pow(max(0.0, zenithCos * 86.0 + 3.885), -1.253));
+          float normMass = clamp((airmass - 1.0) / 14.0, 0.0, 1.0);
 
-          // Multi-layer Solar Flare & Corona (Calibrated to keep sky background below bloom threshold 1.65)
-          float sunGlowWide = pow(forwardTheta, 48.0) * 0.12;
-          float sunGlowBroad = min(miePhase * 0.015, 0.28);
+          // Continuous exponential Rayleigh density decay (zero piecewise bands)
+          float upperMix = pow(clamp(zenithCos, 0.0, 1.0), 0.52);
+          float horizonDecay = exp(-zenithCos * 5.8);
+          float lowerHazeDecay = exp(-zenithCos * 16.0);
 
-          vec3 solarGlow = uSunColor * (sunGlowWide + sunGlowBroad) * min(uSunGlowIntensity, 1.1);
+          // Subtle stratospheric Ozone Chappuis-band enrichment in mid-upper sky
+          vec3 ozoneMid = mix(uMidColor, uTopColor * vec3(0.88, 0.96, 1.06), 0.25);
+          vec3 skyUpper = mix(ozoneMid, uTopColor, upperMix);
+          vec3 sky = mix(skyUpper, uHorizonColor, clamp(horizonDecay * 0.88 + normMass * 0.22, 0.0, 1.0));
+          sky = mix(sky, uHazeColor, lowerHazeDecay * 0.68);
 
-          // Horizon Sun Warmth (Forward Scattering at Low Elevation)
-          float sunHorizonBoost = pow(forwardTheta, 4.5) * max(0.0, 1.0 - abs(h) * 2.5) * 0.25;
-          vec3 horizonWarmth = mix(uSunColor, vec3(1.0, 0.84, 0.55), 0.5) * sunHorizonBoost;
-
-          // Anti-Solar Twilight Alpenglow Blush (Opposite side of the sun near horizon)
-          float antiSunAngle = max(0.0, -cosTheta);
-          float alpenglowFactor = pow(antiSunAngle, 1.8) * smoothstep(0.35, 0.02, max(0.0, h)) * 0.40;
-          vec3 alpenglow = uAlpenglowColor * alpenglowFactor;
-
-          // Compose base atmosphere - capped safely below bloom threshold (1.65)
-          vec3 finalCol = min(sky + solarGlow + horizonWarmth + alpenglow, vec3(1.35));
-          // Sharp solar core (only the crisp solar disc triggers localized bloom)
-          finalCol += uSunColor * pow(forwardTheta, 600.0) * 1.8;
-
-          // 3. Thermal Horizon Mirage Refraction / Heat Shimmer (Desert & Hot Zones)
-          if (uHeatShimmer > 0.01 && h > -0.06 && h < 0.12) {
-            float az = atan(dir.x, dir.z);
-            float shimmer = sin(az * 160.0 + uTime * 6.0) * cos(h * 90.0 + uTime * 4.0) * 0.035 * uHeatShimmer;
-            float shimmerMask = (1.0 - smoothstep(0.0, 0.12, h)) * smoothstep(-0.06, 0.0, h);
-            finalCol += uHazeColor * shimmer * shimmerMask;
+          // Smooth sub-horizon ground/ocean atmospheric scatter
+          if (h < 0.0) {
+            float groundBlend = smoothstep(-0.22, 0.0, h);
+            sky = mix(uHazeColor * 0.82, sky, groundBlend);
           }
 
-          // 4. Twilight Zenith Starfield (Washington & Nightfall Transitions)
-          if (uStarVisibility > 0.01 && h > 0.42) {
-            vec2 skyCoords = vec2(
-              atan(dir.x, dir.z) / (3.14159265 * 2.0) + 0.5,
-              h
-            );
-            vec2 starGrid = floor(skyCoords * 320.0);
-            float starHash = hash(starGrid);
-            if (starHash > 0.972) {
-              float twinkle = sin(uTime * 3.5 + starHash * 45.0) * 0.35 + 0.65;
-              float starAltitudeFade = smoothstep(0.42, 0.72, h) * uStarVisibility;
-              vec3 starCol = mix(vec3(0.92, 0.96, 1.0), vec3(1.0, 0.88, 0.75), hash(starGrid + 0.3));
-              finalCol += starCol * twinkle * starAltitudeFade * 1.8;
+          // ───────────────────────────────────────────────────────────────────
+          // 2. DUAL-LOBE ANISOTROPIC MIE SCATTERING & CIRCUMSOLAR AUREOLE
+          // ───────────────────────────────────────────────────────────────────
+          float gBroad = clamp(uMieG, 0.55, 0.86);
+          float mieBroad = cornetteShanksPhase(cosTheta, gBroad);
+          float mieTight = cornetteShanksPhase(cosTheta, 0.935);
+
+          // Horizon optical path amplifies warm forward aerosol scattering
+          float horizonScatterBoost = 1.0 + exp(-abs(h) * 6.5) * 0.85;
+          vec3 aureoleTint = mix(uSunColor, uHorizonColor, clamp(horizonDecay * 0.45, 0.0, 0.6));
+
+          float broadLobe = min(mieBroad * 0.024, 0.24) * horizonScatterBoost;
+          float tightLobe = min(mieTight * 0.0085, 0.32);
+          vec3 solarGlow = aureoleTint * (broadLobe + tightLobe) * min(uSunGlowIntensity, 1.25);
+
+          // Low-elevation golden-hour forward horizon warmth
+          float sunHorizonBoost = pow(forwardTheta, 3.8) * exp(-abs(h) * 5.2) * 0.26;
+          vec3 horizonWarmth = mix(uSunColor, vec3(1.0, 0.82, 0.52), 0.48) * sunHorizonBoost;
+
+          // ───────────────────────────────────────────────────────────────────
+          // 3. ANTI-SOLAR BELT OF VENUS & EARTH'S ATMOSPHERIC SHADOW BAND
+          // ───────────────────────────────────────────────────────────────────
+          float antiSunAngle = max(0.0, -cosTheta);
+          // Warm rose-amber Belt of Venus band sitting between 2° and 16° elevation opposite sun
+          float beltOfVenus = pow(antiSunAngle, 1.6) * smoothstep(0.0, 0.08, h) * smoothstep(0.36, 0.09, h) * 0.42;
+          vec3 alpenglow = uAlpenglowColor * beltOfVenus;
+
+          // Subtle cool deep-slate Earth shadow band just above the anti-solar horizon
+          float earthShadowMask = pow(antiSunAngle, 1.8) * smoothstep(0.14, 0.0, max(0.0, h)) * smoothstep(-0.04, 0.01, h) * 0.22;
+          vec3 earthShadowCol = mix(uTopColor * 0.55, vec3(0.14, 0.19, 0.30), 0.5);
+
+          vec3 baseSky = mix(sky + solarGlow + horizonWarmth + alpenglow, earthShadowCol, earthShadowMask);
+          // Keep background sky radiance safely below bloom threshold (1.65)
+          vec3 finalCol = min(baseSky, vec3(1.38));
+
+          // ───────────────────────────────────────────────────────────────────
+          // 4. 3D DIRECTION-SPACE STARFIELD & MILKY WAY BAND (ZERO ATAN SEAM)
+          // ───────────────────────────────────────────────────────────────────
+          if (uStarVisibility > 0.005 && h > 0.06) {
+            float starAltMask = smoothstep(0.06, 0.48, h) * uStarVisibility;
+
+            // Layer 1: Bright primary stars in 3D direction cells
+            vec3 starCoord1 = dir * 155.0;
+            vec3 cell1 = floor(starCoord1);
+            vec3 frac1 = fract(starCoord1) - 0.5;
+            vec3 rand1 = hash33(cell1);
+            if (rand1.x > 0.965) {
+              vec3 starCenter = (rand1 - 0.5) * 0.55;
+              float dist1 = length(frac1 - starCenter);
+              float starPoint = smoothstep(0.20, 0.02, dist1);
+              float twinkle = sin(uTime * (2.5 + rand1.y * 3.0) + rand1.z * 62.8) * 0.28 + 0.72;
+              // Blackbody stellar color temperature (O/B blue-white, G solar, K/M amber)
+              vec3 sCol = mix(vec3(0.82, 0.90, 1.0), vec3(1.0, 0.86, 0.68), rand1.y);
+              finalCol += sCol * starPoint * starPoint * twinkle * starAltMask * 1.65;
+            }
+
+            // Layer 2: Faint background starfield & subtle galactic dust band
+            vec3 starCoord2 = dir * 270.0;
+            vec3 cell2 = floor(starCoord2);
+            vec3 frac2 = fract(starCoord2) - 0.5;
+            float r2 = hash31(cell2);
+            if (r2 > 0.978) {
+              float dist2 = length(frac2);
+              float pt2 = smoothstep(0.16, 0.03, dist2);
+              finalCol += vec3(0.90, 0.94, 1.0) * pt2 * starAltMask * 0.75;
             }
           }
 
-          // 5. Procedural High-Altitude Cirrus Clouds
-          vec2 cirrusCoords = vec2(
-            atan(dir.x, dir.z) / (3.14159265 * 2.0) + 0.5,
-            dir.y * 0.5 + 0.5
-          );
-          cirrusCoords.x += uTimeOfDay * 0.02 + uTime * 0.0006;
-          float cirrus = noise(cirrusCoords * vec2(22.0, 7.0)) * 0.50 +
-                         noise(cirrusCoords * vec2(44.0, 14.0) + vec2(uTimeOfDay * 4.0, 0.0)) * 0.30 +
-                         noise(cirrusCoords * vec2(88.0, 28.0) + vec2(uTimeOfDay * 10.0, 0.0)) * 0.20;
-          cirrus = smoothstep(0.52, 0.88, cirrus);
-          cirrus *= smoothstep(0.12, 0.42, h); // Upper sky only
-          float cloudOpacity = cirrus * uCloudDensity * 0.55;
-          vec3 cloudCol = mix(vec3(1.0, 0.96, 0.90), uSunColor, sunHorizonBoost * 0.4);
-          finalCol = mix(finalCol, cloudCol, cloudOpacity);
+          // ───────────────────────────────────────────────────────────────────
+          // 5. LIMB-DARKENED SOLAR PHOTOSPHERE DISC (OCCLUDED BY CLOUDS)
+          // ───────────────────────────────────────────────────────────────────
+          // Angular radius ~0.95 deg for realistic visual presence in wide FOV
+          float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+          float sunAngularRadius = 0.0175;
+          float sunDiscMask = smoothstep(sunAngularRadius * 1.08, sunAngularRadius * 0.82, sinTheta) * step(0.0, cosTheta) * smoothstep(-0.02, 0.02, h);
+          if (sunDiscMask > 0.001) {
+            float rNorm = clamp(sinTheta / sunAngularRadius, 0.0, 1.0);
+            float muLimb = sqrt(max(0.0, 1.0 - rNorm * rNorm));
+            // Eddington wavelength-dependent solar limb darkening
+            vec3 limbDarkening = pow(vec3(muLimb), vec3(0.34, 0.50, 0.72));
+            vec3 photosphere = mix(uSunColor, vec3(1.0, 0.99, 0.96), muLimb * 0.65) * limbDarkening;
+            finalCol += photosphere * sunDiscMask * 2.15;
+          }
 
-          // 6. Subtle atmospheric dithering to eliminate 8-bit color banding
-          float dither = (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0 * 1.4;
+          // ───────────────────────────────────────────────────────────────────
+          // 6. SPHERICAL-SHELL PERSPECTIVE VOLUMETRIC CLOUDS & CREPUSCULAR RAYS
+          // ───────────────────────────────────────────────────────────────────
+          if (h > -0.01 && uCloudDensity > 0.01) {
+            float hClamped = max(0.015, h);
+            float Re = 18.0; // Normalized planetary curvature radius for perspective foreshortening
+            float timeFlow = uTime * max(0.25, uCloudSpeed) + uTimeOfDay * 12.0;
+
+            // --- Layer A: High-Altitude Wind-Sheared Cirrus & Cirrocumulus Shell (H = 1.75) ---
+            float H_cirrus = 1.75;
+            float distCirrus = sqrt(Re * Re * hClamped * hClamped + 2.0 * Re * H_cirrus + H_cirrus * H_cirrus) - Re * hClamped;
+            vec2 cirrusUV = dir.xz * distCirrus * 0.42;
+            vec2 cirrusWind = vec2(timeFlow * 0.012, timeFlow * 0.004);
+
+            // Anisotropic wind-sheared streaks with curl warping
+            vec2 cWarp = vec2(
+              noise2D(cirrusUV * 1.2 + cirrusWind),
+              noise2D(cirrusUV * 1.2 - cirrusWind * 0.7 + 5.4)
+            ) - 0.5;
+            vec2 shearedUV = (cirrusUV + cWarp * 0.35) * vec2(2.6, 0.75);
+            float cirrusField = fbmCloud(shearedUV + cirrusWind) * 0.65 +
+                                billowNoise(shearedUV * 2.3 - cirrusWind * 0.5) * 0.35;
+            float cirrusDensity = smoothstep(0.50, 0.84, cirrusField) * smoothstep(0.01, 0.16, h);
+            float cirrusAerial = exp(-max(0.0, distCirrus - H_cirrus) * 0.18);
+
+            // Ice-crystal forward solar scattering on high cirrus wisps
+            float iceScatter = pow(forwardTheta, 5.0) * 0.45 + 0.15;
+            vec3 cirrusColor = mix(mix(vec3(0.95, 0.97, 1.0), uHorizonColor, 0.25), uSunColor * (1.0 + iceScatter), 0.42 + sunHorizonBoost);
+            finalCol = mix(finalCol, cirrusColor, cirrusDensity * clamp(uCloudDensity * 0.65, 0.0, 0.52) * cirrusAerial);
+
+            // --- Layer B: Mid-Altitude Sculpted Cumulus / Stratocumulus Canopy (H = 0.92) ---
+            float H_cumulus = 0.92;
+            float distCumulus = sqrt(Re * Re * hClamped * hClamped + 2.0 * Re * H_cumulus + H_cumulus * H_cumulus) - Re * hClamped;
+            vec2 cumulusUV = dir.xz * distCumulus * 0.55;
+
+            float cloudD = sampleCumulusDensity(cumulusUV, uCloudDensity, timeFlow);
+            float horizonFade = smoothstep(0.005, 0.09, h);
+            cloudD *= horizonFade;
+
+            if (cloudD > 0.004) {
+              // Directional Sun Raymarch Step on Cloud Shell for Self-Shadowing & Silver Lining
+              vec2 sunStepUV = normalize(sunDir.xz + vec2(0.0001)) * 0.16;
+              float shadowSample1 = sampleCumulusDensity(cumulusUV + sunStepUV * 0.55, uCloudDensity, timeFlow);
+              float shadowSample2 = sampleCumulusDensity(cumulusUV + sunStepUV * 1.25, uCloudDensity, timeFlow);
+              float opticalDepthSun = (shadowSample1 * 0.55 + shadowSample2 * 0.45) * 2.35;
+
+              // Beer-Lambert Law + Wrenninge Powder-Sugar Effect for Volumetric Rim & Crown Luminance
+              float beerTrans = exp(-opticalDepthSun);
+              float powderEffect = 1.0 - exp(-cloudD * 3.4);
+              float directLight = beerTrans * mix(0.62, 1.0, powderEffect);
+
+              // Dual-lobe Henyey-Greenstein Silver Lining when backlit near the sun
+              float hgSilver = cornetteShanksPhase(cosTheta, 0.78) * 0.08 + pow(forwardTheta, 12.0) * 0.38;
+              float silverLining = hgSilver * exp(-opticalDepthSun * 0.75) * (1.0 - cloudD * 0.35);
+
+              // Cloud Internal Vertical & Ambient Lighting Gradient (Bright Crowns, Cool Slate Bellies)
+              vec3 cloudZenithBounce = mix(uMidColor, vec3(0.88, 0.93, 0.98), 0.55);
+              vec3 cloudBellyShade = mix(uTopColor * 0.58, uMidColor * 0.68, 0.5);
+              // Darken storm/overcast cloud undersides naturally at high cloudDensity
+              float stormDarken = smoothstep(0.62, 0.88, uCloudDensity);
+              cloudBellyShade = mix(cloudBellyShade, vec3(0.32, 0.37, 0.44), stormDarken * 0.65);
+
+              vec3 ambientCloud = mix(cloudZenithBounce, cloudBellyShade, clamp(cloudD * 0.78, 0.0, 1.0));
+              vec3 sunlitCloud = uSunColor * (directLight * 1.08 + silverLining * 1.35);
+
+              vec3 litCloud = mix(ambientCloud, sunlitCloud + ambientCloud * 0.28, clamp(directLight * 0.82 + 0.18, 0.0, 1.0));
+
+              // Aerial perspective transmittance blends distant horizon clouds into atmospheric haze
+              float aerialTrans = exp(-max(0.0, distCumulus - H_cumulus) * 0.22);
+              litCloud = mix(baseSky, min(litCloud, vec3(1.42)), aerialTrans);
+
+              float cloudAlpha = clamp(cloudD * mix(0.55, 0.92, clamp(uCloudDensity, 0.0, 1.0)) * aerialTrans, 0.0, 0.94);
+              finalCol = mix(finalCol, litCloud, cloudAlpha);
+            }
+
+            // --- Layer C: Atmospheric Crepuscular God Rays (Light Shafts Near Sun) ---
+            if (forwardTheta > 0.55 && h > 0.01) {
+              vec2 toSunUV = (sunDir.xz / max(0.08, sunDir.y) * H_cumulus * 0.55 - cumulusUV) * 0.22;
+              float occ1 = sampleCumulusDensity(cumulusUV + toSunUV * 0.35, uCloudDensity, timeFlow);
+              float occ2 = sampleCumulusDensity(cumulusUV + toSunUV * 0.75, uCloudDensity, timeFlow);
+              float shaftMask = (1.0 - occ1 * 0.75) * (0.35 + occ2 * 0.65);
+              float rayWeight = pow(max(0.0, (forwardTheta - 0.55) / 0.45), 2.4) * smoothstep(0.0, 0.18, h) * uCloudDensity;
+              finalCol += uSunColor * shaftMask * rayWeight * 0.14;
+            }
+          }
+
+          // ───────────────────────────────────────────────────────────────────
+          // 7. THERMAL HORIZON MIRAGE REFRACTION (DESERT & HOT ZONES)
+          // ───────────────────────────────────────────────────────────────────
+          if (uHeatShimmer > 0.01 && h > -0.06 && h < 0.12) {
+            float shimmer = noise2D(dir.xz * 45.0 + vec2(uTime * 1.8, -uTime * 1.2)) - 0.5;
+            float shimmerMask = (1.0 - smoothstep(0.0, 0.12, h)) * smoothstep(-0.06, 0.0, h);
+            finalCol += uHazeColor * shimmer * 0.055 * uHeatShimmer * shimmerMask;
+          }
+
+          // 8. Sub-LSB Triangular PDF Dithering to eliminate 8-bit sky gradient banding
+          float dither = (hash21(gl_FragCoord.xy + fract(uTime)) - 0.5) / 255.0 * 1.35;
           finalCol += dither;
 
-          gl_FragColor = vec4(finalCol, 1.0);
+          gl_FragColor = vec4(max(vec3(0.0), finalCol), 1.0);
         }
       `,
       side: THREE.BackSide,
@@ -306,57 +523,57 @@ export class EnvironmentManager {
     this.skyDome.renderOrder = -20;
     this.group.add(this.skyDome);
 
-    // 2. Multi-Layer Radiant Sun Hierarchy
+    // 2. Celestial Sun Halo Hierarchy (Positioned at Sky Dome Depth so Mountains & Clouds Occlude Naturally)
     this.sunGroup = new THREE.Group();
 
-    // Hot Pure-White Solar Core Disc
+    // Solar core mesh kept for hierarchy compatibility (photosphere disc is rendered with limb-darkening in skyMat)
     const coreGeo = new THREE.SphereGeometry(24, 16, 16);
-    const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false });
+    const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false, transparent: true, opacity: 0.0, depthWrite: false });
     this.sunCore = new THREE.Mesh(coreGeo, coreMat);
     this.sunGroup.add(this.sunCore);
 
-    // Glowing Atmospheric Corona Halo Sprite
+    // Smooth Physical Mie Circumsolar Corona Sprite (Placed at 2800m behind all mountains & clouds)
     const coronaTex = this.renderer.textures.sunCorona(256);
     const coronaMat = new THREE.SpriteMaterial({
       map: coronaTex,
-      color: 0xfff0cf,
+      color: 0xfff3d6,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.42,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       fog: false
     });
     this.coronaSprite = new THREE.Sprite(coronaMat);
-    this.coronaSprite.scale.set(130, 130, 1);
+    this.coronaSprite.scale.set(280, 280, 1);
     this.sunGroup.add(this.coronaSprite);
 
-    // Anamorphic Starburst Flare Rays
+    // Subtle Photographic 6-Blade Aperture Diffraction Veil
     const starburstTex = this.renderer.textures.sunStarburst ? this.renderer.textures.sunStarburst(256) : coronaTex;
     const starburstMat = new THREE.SpriteMaterial({
       map: starburstTex,
-      color: 0xffe29a,
+      color: 0xffe8b0,
       transparent: true,
-      opacity: 0.30,
+      opacity: 0.22,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       fog: false
     });
     this.starburstSprite = new THREE.Sprite(starburstMat);
-    this.starburstSprite.scale.set(180, 180, 1);
+    this.starburstSprite.scale.set(360, 360, 1);
     this.sunGroup.add(this.starburstSprite);
 
-    // Outer Atmospheric Glow Flare
+    // Wide Warm Atmospheric Scatter Veil
     const outerHaloMat = new THREE.SpriteMaterial({
       map: coronaTex,
-      color: 0xffa726,
+      color: 0xffb74d,
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.14,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       fog: false
     });
     this.outerHalo = new THREE.Sprite(outerHaloMat);
-    this.outerHalo.scale.set(240, 240, 1);
+    this.outerHalo.scale.set(520, 520, 1);
     this.sunGroup.add(this.outerHalo);
 
     this.group.add(this.sunGroup);
@@ -401,10 +618,16 @@ export class EnvironmentManager {
     if (this.cloudShaderMat && this.cloudShaderMat.uniforms) {
       this.cloudShaderMat.uniforms.uSunColor.value.copy(this.targetSunColor);
       this.cloudShaderMat.uniforms.uAmbientColor.value.copy(this.targetSkyMid);
+      if (this.cloudShaderMat.uniforms.uHazeColor) {
+        this.cloudShaderMat.uniforms.uHazeColor.value.copy(this.targetHazeColor);
+      }
       this.cloudShaderMat.uniforms.uCloudOpacity.value = Math.min(0.92, Math.max(0.65, this.targetCloudDensity * 1.2));
       if (this.stormCloudShaderMat && this.stormCloudShaderMat.uniforms) {
         this.stormCloudShaderMat.uniforms.uSunColor.value.copy(this.targetSunColor);
         this.stormCloudShaderMat.uniforms.uAmbientColor.value.copy(this.targetSkyMid);
+        if (this.stormCloudShaderMat.uniforms.uHazeColor) {
+          this.stormCloudShaderMat.uniforms.uHazeColor.value.copy(this.targetHazeColor);
+        }
       }
     }
   }
@@ -412,24 +635,28 @@ export class EnvironmentManager {
   setupVolumetricClouds() {
     this.cloudsGroup = new THREE.Group();
     
-    // Photorealistic Sun-Lit Volumetric Cloud Shader Materials
+    // Photorealistic 3D Volumetric Cumulus Shader (Seamless 3D Billow Noise + Beer-Powder + Silver Lining)
     const cloudNoiseTex = this.renderer.textures.cloudNoisePBR ? this.renderer.textures.cloudNoisePBR(256) : null;
 
     this.cloudShaderMat = new THREE.ShaderMaterial({
       uniforms: {
         uCloudMap: { value: cloudNoiseTex },
-        uSunPosition: { value: new THREE.Vector3(30, 50, 30).normalize() },
+        uSunPosition: { value: new THREE.Vector3(0.35, 0.55, 0.45).normalize() },
         uSunColor: { value: new THREE.Color(0xfffbf2) },
         uAmbientColor: { value: new THREE.Color(0xdee7f2) },
-        uCloudBellyColor: { value: new THREE.Color(0x9ca9bb) },
-        uCloudOpacity: { value: 0.85 }
+        uCloudBellyColor: { value: new THREE.Color(0x7c8ea6) },
+        uHazeColor: { value: new THREE.Color(0xe8c48f) },
+        uCloudOpacity: { value: 0.88 },
+        uTime: { value: 0.0 }
       },
       vertexShader: `
         varying vec3 vNormal;
         varying vec3 vWorldPosition;
+        varying vec3 vLocalPos;
         varying vec2 vUv;
         void main() {
           vUv = uv;
+          vLocalPos = position;
           vNormal = normalize(normalMatrix * normal);
           vec4 worldPos = modelMatrix * vec4(position, 1.0);
           vWorldPosition = worldPos.xyz;
@@ -442,43 +669,99 @@ export class EnvironmentManager {
         uniform vec3 uSunColor;
         uniform vec3 uAmbientColor;
         uniform vec3 uCloudBellyColor;
+        uniform vec3 uHazeColor;
         uniform float uCloudOpacity;
+        uniform float uTime;
         varying vec3 vNormal;
         varying vec3 vWorldPosition;
+        varying vec3 vLocalPos;
         varying vec2 vUv;
+
+        // Seamless 3D value noise for volumetric cloud erosion (zero UV seam holes)
+        float hash31(vec3 p) {
+          p = fract(p * vec3(103.1, 103.0, 97.3));
+          p += dot(p, p.yxz + 33.33);
+          return fract((p.x + p.y) * p.z);
+        }
+
+        float noise3D(vec3 p) {
+          vec3 i = floor(p);
+          vec3 f = fract(p);
+          vec3 u = f * f * (3.0 - 2.0 * f);
+          return mix(
+            mix(mix(hash31(i + vec3(0,0,0)), hash31(i + vec3(1,0,0)), u.x),
+                mix(hash31(i + vec3(0,1,0)), hash31(i + vec3(1,1,0)), u.x), u.y),
+            mix(mix(hash31(i + vec3(0,0,1)), hash31(i + vec3(1,0,1)), u.x),
+                mix(hash31(i + vec3(0,1,1)), hash31(i + vec3(1,1,1)), u.x), u.y),
+            u.z
+          );
+        }
+
+        float fbm3D(vec3 p) {
+          float v = 0.0;
+          float a = 0.54;
+          for (int i = 0; i < 3; i++) {
+            float n = noise3D(p);
+            float billow = 1.0 - abs(n * 2.0 - 1.0);
+            v += a * mix(n, billow * billow, 0.45);
+            p = p * 2.07 + vec3(13.7, 7.1, 19.3);
+            a *= 0.46;
+          }
+          return v;
+        }
 
         void main() {
           vec3 norm = normalize(vNormal);
           vec3 sunDir = normalize(uSunPosition);
-          
-          // Directional solar lighting
+          vec3 toCam = cameraPosition - vWorldPosition;
+          float camDist = length(toCam);
+          vec3 viewDir = toCam / max(camDist, 0.001);
+
+          // 1. Seamless 3D Billow Density & Fresnel Silhouette Edge Erosion (Zero UV Seams)
+          vec3 samplePos = vLocalPos * 0.065 + vec3(uTime * 0.015, 0.0, uTime * 0.008);
+          float fbmVal = fbm3D(samplePos);
+          float fineDetail = noise3D(samplePos * 3.4);
+
+          // View-dependent Fresnel silhouette feathering so cloud edges dissolve organically
+          float NdotV = abs(dot(viewDir, norm));
+          float silhouetteFeather = smoothstep(0.06, 0.62, NdotV);
+          float erodedDensity = smoothstep(0.24, 0.72, silhouetteFeather * 0.78 + fbmVal * 0.52 - fineDetail * 0.14);
+
+          // Distance aerial-perspective fade
+          float distFade = 1.0 - smoothstep(1400.0, 2750.0, camDist);
+          float alpha = erodedDensity * uCloudOpacity * distFade;
+          if (alpha < 0.015) discard;
+
+          // 2. Physical Cumulus Lighting: Beer-Lambert-Powder + Silver Lining + Vertical Ambient
           float NdotL = dot(norm, sunDir);
-          float sunFactor = smoothstep(-0.25, 0.75, NdotL);
-          
-          // Underside self-shadowing
-          float heightFactor = smoothstep(-0.7, 0.5, norm.y);
-          
-          // Forward scattering / silver lining rim towards sun
-          vec3 viewDir = normalize(cameraPosition - vWorldPosition);
-          float forwardScatter = pow(max(0.0, dot(viewDir, -sunDir)), 2.8) * (1.0 - abs(NdotL) * 0.6);
-          
-          // Fractal cloud density noise
-          vec4 tex = texture2D(uCloudMap, vUv);
-          float density = tex.a;
-          
-          vec3 sunHighlight = uSunColor * (sunFactor * 0.85 + forwardScatter * 1.5 + 0.18);
-          vec3 shadowTone = mix(uCloudBellyColor, uAmbientColor, heightFactor * 0.55);
-          vec3 finalColor = mix(shadowTone, sunHighlight, sunFactor * 0.7 + heightFactor * 0.3);
-          
-          float alpha = density * smoothstep(0.05, 0.40, density) * uCloudOpacity;
-          if (alpha < 0.02) discard;
-          
+          float sunFactor = smoothstep(-0.35, 0.80, NdotL);
+
+          // Wrenninge Powder-Sugar effect: thinner outer billows catch more scattered light
+          float powder = 1.0 - exp(-erodedDensity * 3.2);
+          float beer = exp(-(1.0 - sunFactor) * 1.45);
+          float directEnergy = beer * mix(0.65, 1.05, powder);
+
+          // Anisotropic Henyey-Greenstein forward-scattered silver lining near sun
+          float cosTheta = max(0.0, dot(-viewDir, sunDir));
+          float silverLining = pow(cosTheta, 6.0) * (1.0 - erodedDensity * 0.55) * 1.35;
+
+          // Vertical condensation height factor (flat dark slate belly, luminous white crown)
+          float heightFactor = smoothstep(-0.55, 0.65, norm.y + (fbmVal - 0.5) * 0.35);
+
+          vec3 shadowTone = mix(uCloudBellyColor, uAmbientColor, heightFactor * 0.68);
+          vec3 sunHighlight = uSunColor * (directEnergy * 0.96 + silverLining + 0.16);
+          vec3 cloudCol = mix(shadowTone, sunHighlight, clamp(sunFactor * 0.68 + heightFactor * 0.32, 0.0, 1.0));
+
+          // 3. Aerial Perspective Horizon Integration
+          float aerialHaze = smoothstep(450.0, 2600.0, camDist) * 0.65;
+          vec3 finalColor = mix(cloudCol, uHazeColor, aerialHaze);
+
           gl_FragColor = vec4(finalColor, alpha);
         }
       `,
       transparent: true,
       depthWrite: false,
-      side: THREE.DoubleSide
+      side: THREE.FrontSide
     });
 
     // Storm / Coastal underside cloud shader
@@ -489,14 +772,14 @@ export class EnvironmentManager {
     this.cloudMat = this.cloudShaderMat;
     this.stormCloudMat = this.stormCloudShaderMat;
 
-    const puffGeo = new THREE.SphereGeometry(1, 14, 10);
+    const puffGeo = new THREE.SphereGeometry(1, 16, 12);
     this.clouds = [];
     const CLOUD_COUNT = 48;
 
     for (let i = 0; i < CLOUD_COUNT; i++) {
       const cloud = new THREE.Group();
       
-      // Determine zone slice along the 23,400m Pacific Highway
+      // Determine zone slice along the Pacific Highway
       const highwayZ = (i / CLOUD_COUNT) * 24000;
       let isStormZone = (highwayZ >= 15600 && highwayZ < 18200); // Oregon coast storm cumulus
       let isCliffFog = (highwayZ >= 5200 && highwayZ < 7800);  // Big Sur cliff mist
@@ -504,7 +787,7 @@ export class EnvironmentManager {
       let isGorgeWind = (highwayZ >= 18200 && highwayZ < 20800); // Columbia Gorge scud
 
       const tier = i % 4;
-      let baseScale = tier === 0 ? 28 : (tier === 1 ? 22 : (tier === 2 ? 16 : 11));
+      let baseScale = tier === 0 ? 32 : (tier === 1 ? 25 : (tier === 2 ? 19 : 14));
       let numPuffs = tier === 0 ? 9 : (tier === 1 ? 7 : (tier === 2 ? 5 : 4));
       
       if (isStormZone) {
@@ -512,21 +795,41 @@ export class EnvironmentManager {
         numPuffs += 3;
       }
 
-      const widthSpread = baseScale * 1.8;
+      const widthSpread = baseScale * 1.85;
       const activeMat = (isStormZone && Math.random() > 0.45) ? this.stormCloudMat : this.cloudMat;
 
       const puffGeoms = [];
       for (let p = 0; p < numPuffs; p++) {
         const t = (p - numPuffs * 0.5) / (numPuffs * 0.5); // -1.0 to +1.0
         
-        const offsetX = t * widthSpread + (Math.random() - 0.5) * (baseScale * 0.4);
-        const offsetY = (1.0 - Math.pow(Math.abs(t), 1.5)) * (baseScale * 0.7) + (Math.random() - 0.5) * (baseScale * 0.3);
-        const offsetZ = (Math.random() - 0.5) * (baseScale * 0.6);
+        const offsetX = t * widthSpread + (Math.random() - 0.5) * (baseScale * 0.45);
+        const offsetY = (1.0 - Math.pow(Math.abs(t), 1.45)) * (baseScale * 0.68) + (Math.random() - 0.5) * (baseScale * 0.25);
+        const offsetZ = (Math.random() - 0.5) * (baseScale * 0.65);
 
-        const puffRadius = baseScale * (0.65 + (1.0 - Math.abs(t)) * 0.45) * (0.85 + Math.random() * 0.3);
+        const puffRadius = baseScale * (0.68 + (1.0 - Math.abs(t)) * 0.45) * (0.85 + Math.random() * 0.3);
         const g = puffGeo.clone();
-        g.scale(puffRadius * 1.3, puffRadius * 0.9, puffRadius * 1.1);
+
+        // Sculpt cumulus puff vertices: flat condensation base + organic cauliflower lobes
+        const pos = g.attributes.position;
+        const seed = i * 17.3 + p * 31.7;
+        for (let v = 0; v < pos.count; v++) {
+          let vx = pos.getX(v);
+          let vy = pos.getY(v);
+          let vz = pos.getZ(v);
+          const lobe = 1.0 + (Math.sin(vx * 3.2 + seed) * Math.cos(vz * 3.2 + seed * 0.7) * 0.16);
+          vx *= lobe;
+          vz *= lobe;
+          // Flatten lower hemisphere to mimic real atmospheric condensation level
+          if (vy < 0.0) {
+            vy *= 0.42;
+          } else {
+            vy *= 1.0 + Math.sin(vy * 2.5 + seed) * 0.12;
+          }
+          pos.setXYZ(v, vx, vy, vz);
+        }
+        g.scale(puffRadius * 1.35, puffRadius * 0.88, puffRadius * 1.15);
         g.translate(offsetX, offsetY, offsetZ);
+        g.computeVertexNormals();
         puffGeoms.push(g);
       }
 
@@ -545,24 +848,24 @@ export class EnvironmentManager {
       if (i < 20) {
         // Panoramic viewing canopy around player
         const angle = (i / 20) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-        const dist = 320 + Math.random() * 850;
+        const dist = 380 + Math.random() * 950;
         cx = Math.sin(angle) * dist;
-        cz = Math.cos(angle) * dist * 1.1 + 250;
-        cy = 200 + Math.random() * 140;
+        cz = Math.cos(angle) * dist * 1.1 + 300;
+        cy = 220 + Math.random() * 140;
       } else {
-        // Highway-spanning cloud formations across the 12,500m Pacific Highway
+        // Highway-spanning cloud formations
         cz = highwayZ;
         if (isOceanBank) {
           // Concentrate Malibu/PCH marine cloud banks out over Pacific (West / negative X)
-          cx = -180 - Math.random() * 450;
-          cy = 160 + Math.random() * 110;
+          cx = -200 - Math.random() * 480;
+          cy = 175 + Math.random() * 110;
         } else if (isCliffFog) {
           // Low-altitude coastal fog hugging Big Sur cliffs
-          cx = -80 - Math.random() * 320;
-          cy = 90 + Math.random() * 90;
+          cx = -90 - Math.random() * 340;
+          cy = 105 + Math.random() * 85;
         } else {
-          cx = (Math.random() - 0.5) * 1900;
-          cy = 210 + Math.random() * 140;
+          cx = (Math.random() - 0.5) * 1950;
+          cy = 230 + Math.random() * 145;
         }
       }
 
@@ -575,32 +878,6 @@ export class EnvironmentManager {
         baseY: cy,
         bobPhase: Math.random() * Math.PI * 2
       });
-    }
-
-    // High-Altitude Silky Cirrus Cloud Ribbons
-    const cirrusTex = this.renderer.textures.cirrusWisp ? this.renderer.textures.cirrusWisp(512, 128) : null;
-    if (cirrusTex) {
-      const cirrusGeo = new THREE.PlaneGeometry(280, 65);
-      cirrusGeo.rotateX(-Math.PI * 0.5);
-      const cirrusMat = new THREE.MeshBasicMaterial({
-        map: cirrusTex,
-        transparent: true,
-        opacity: 0.40,
-        depthWrite: false,
-        blending: THREE.NormalBlending,
-        side: THREE.DoubleSide
-      });
-
-      for (let c = 0; c < 60; c++) {
-        const cirrusMesh = new THREE.Mesh(cirrusGeo, cirrusMat);
-        const cirrusX = (Math.random() - 0.5) * 2000;
-        const cirrusY = 390 + Math.random() * 110;
-        const cirrusZ = (c / 60) * 63000 - 400;
-        cirrusMesh.position.set(cirrusX, cirrusY, cirrusZ);
-        cirrusMesh.rotation.y = (Math.random() - 0.5) * 0.6;
-        cirrusMesh.scale.set(1.3 + Math.random() * 0.8, 1, 1.2 + Math.random() * 0.6);
-        this.cloudsGroup.add(cirrusMesh);
-      }
     }
 
     this.group.add(this.cloudsGroup);
@@ -1195,39 +1472,55 @@ export class EnvironmentManager {
         u.uHeatShimmer.value += (this.targetHeatShimmer - u.uHeatShimmer.value) * 0.05;
         u.uStarVisibility.value += (this.targetStarVisibility - u.uStarVisibility.value) * 0.05;
         u.uCloudDensity.value += (this.targetCloudDensity - u.uCloudDensity.value) * 0.05;
+        if (u.uCloudSpeed) {
+          u.uCloudSpeed.value += ((this.targetCloudSpeed || 1.0) - u.uCloudSpeed.value) * 0.05;
+        }
         
         u.uTimeOfDay.value = gameState.timeOfDay;
         u.uTime.value = this.time;
       }
     }
 
-    // 1. Orbiting Sun with Multi-Stage Corona positioned relative to player
+    // 1. Orbiting Sun Direction & Sky-Dome-Aligned Corona (Positioned at 2800m so terrain/clouds occlude naturally)
     const sunAngle = (gameState.timeOfDay * Math.PI * 2) + Math.PI * 0.45;
-    const sunDist = 950;
-    const sunX = playerPos.x + Math.sin(sunAngle) * sunDist;
-    const sunY = playerPos.y + Math.max(160, Math.cos(sunAngle) * 620);
-    const sunZ = playerPos.z + 420;
+    const rawSunX = Math.sin(sunAngle) * 950;
+    const rawSunY = Math.max(160, Math.cos(sunAngle) * 620);
+    const rawSunZ = 420;
 
-    this.sunGroup.position.set(sunX, sunY, sunZ);
+    if (!this._sunRel) this._sunRel = new THREE.Vector3();
+    this._sunRel.set(rawSunX, rawSunY, rawSunZ).normalize();
+
+    const celestialDist = 2800;
+    this.sunGroup.position.set(
+      playerPos.x + this._sunRel.x * celestialDist,
+      this._sunRel.y * celestialDist,
+      playerPos.z + this._sunRel.z * celestialDist
+    );
     this.sunGroup.lookAt(playerPos.x, playerPos.y + 2, playerPos.z);
     this.renderer.updateSunShadowCenter(playerPos);
 
     if (this.skyMat && this.skyMat.uniforms && this.skyDome) {
-      if (!this._sunRel) this._sunRel = new THREE.Vector3();
-      this._sunRel.set(sunX - playerPos.x, sunY - playerPos.y, sunZ - playerPos.z).normalize();
       this.skyMat.uniforms.uSunPosition.value.copy(this._sunRel);
       if (this.cloudShaderMat && this.cloudShaderMat.uniforms) {
         this.cloudShaderMat.uniforms.uSunPosition.value.copy(this._sunRel);
+        if (this.cloudShaderMat.uniforms.uTime) this.cloudShaderMat.uniforms.uTime.value = this.time;
+        if (this.cloudShaderMat.uniforms.uHazeColor && this.targetHazeColor) {
+          this.cloudShaderMat.uniforms.uHazeColor.value.lerp(this.targetHazeColor, 0.05);
+        }
       }
       if (this.stormCloudShaderMat && this.stormCloudShaderMat.uniforms) {
         this.stormCloudShaderMat.uniforms.uSunPosition.value.copy(this._sunRel);
+        if (this.stormCloudShaderMat.uniforms.uTime) this.stormCloudShaderMat.uniforms.uTime.value = this.time;
+        if (this.stormCloudShaderMat.uniforms.uHazeColor && this.targetHazeColor) {
+          this.stormCloudShaderMat.uniforms.uHazeColor.value.lerp(this.targetHazeColor, 0.05);
+        }
       }
     }
 
     if (this.starburstSprite && this.starburstSprite.material) {
-      this.starburstSprite.material.rotation += dt * 0.03;
-      const glowFactor = this.targetSunGlow || 1.0;
-      this.starburstSprite.scale.set(380 * glowFactor, 380 * glowFactor, 1);
+      this.starburstSprite.material.rotation += dt * 0.005;
+      const glowFactor = Math.min(1.35, this.targetSunGlow || 1.0);
+      this.starburstSprite.scale.set(340 * glowFactor, 340 * glowFactor, 1);
     }
 
     // 2. Drift & Recycle Atmospheric Clouds

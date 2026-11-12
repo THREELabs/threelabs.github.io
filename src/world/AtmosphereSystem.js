@@ -43,10 +43,12 @@ export const RayleighMieAtmosphereShader = {
     varying vec3 vWorldPosition;
     varying vec3 vRayDir;
 
-    // Henyey-Greenstein phase function for forward Mie aerosol scattering
-    float henyeyGreenstein(float cosTheta, float g) {
+    // Cornette-Shanks physical anisotropic Mie phase function
+    float cornetteShanks(float cosTheta, float g) {
       float g2 = g * g;
-      return (1.0 - g2) / (4.0 * 3.14159265 * pow(1.0 + g2 - 2.0 * g * cosTheta, 1.5));
+      float num = 3.0 * (1.0 - g2) * (1.0 + cosTheta * cosTheta);
+      float denom = (8.0 * 3.14159265) * (2.0 + g2) * pow(max(0.005, 1.0 + g2 - 2.0 * g * cosTheta), 1.5);
+      return num / denom;
     }
 
     void main() {
@@ -55,27 +57,35 @@ export const RayleighMieAtmosphereShader = {
 
       // Height angle above horizon: 0 at horizon, 1 at zenith
       float cosZenith = max(0.0, ray.y);
-      float horizonFactor = pow(1.0 - cosZenith, 2.8);
+      // Kasten-Young spherical atmosphere optical airmass
+      float airmass = 1.0 / (cosZenith + 0.15 * pow(max(0.0, cosZenith * 86.0 + 3.885), -1.253));
+      float horizonFactor = clamp(exp(-cosZenith * 5.2) * 0.85 + clamp((airmass - 1.0) / 14.0, 0.0, 1.0) * 0.25, 0.0, 1.0);
 
       // 1. Rayleigh Molecular Scattering Color Gradient
-      // Higher wavelengths (blue) dominate at zenith; red/amber inscatter near horizon
       vec3 rayleighColor = mix(uSkyZenithColor, uSkyHorizonColor, horizonFactor);
 
       // 2. Solar Angular Alignment (Cos theta)
-      float cosTheta = max(0.0, dot(ray, sunDir));
+      float cosTheta = dot(ray, sunDir);
+      float forwardTheta = max(0.0, cosTheta);
 
-      // 3. Mie Aerosol Scattering Corona around Sun (bounded to prevent bloom bleaching)
-      float miePhase = henyeyGreenstein(cosTheta, uMieG);
-      float boundedMie = min(miePhase * 0.12, 1.6);
-      vec3 mieColor = uSunColor * boundedMie * uSunGlowIntensity * 0.35;
+      // 3. Dual-Lobe Mie Aerosol Scattering Corona around Sun
+      float mieBroad = cornetteShanks(cosTheta, clamp(uMieG, 0.55, 0.86));
+      float mieTight = cornetteShanks(cosTheta, 0.935);
+      float boundedMie = min(mieBroad * 0.03 + mieTight * 0.01, 0.55);
+      vec3 mieColor = uSunColor * boundedMie * uSunGlowIntensity * 0.65;
 
-      // 4. Sharp Solar Disc (crisp, defined solar sphere)
-      float sunDisc = smoothstep(0.9988, 0.9998, cosTheta);
-      vec3 sunDiscLobe = uSunColor * sunDisc * 2.2;
+      // 4. Limb-Darkened Solar Photosphere Disc
+      float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+      float sunRadius = 0.0175;
+      float sunDisc = smoothstep(sunRadius * 1.08, sunRadius * 0.82, sinTheta) * step(0.0, cosTheta);
+      float rNorm = clamp(sinTheta / sunRadius, 0.0, 1.0);
+      float muLimb = sqrt(max(0.0, 1.0 - rNorm * rNorm));
+      vec3 limbDarkening = pow(vec3(muLimb), vec3(0.34, 0.50, 0.72));
+      vec3 sunDiscLobe = uSunColor * limbDarkening * sunDisc * 2.15;
 
       // 5. Atmospheric Ground Haze
-      float hazeBlend = smoothstep(0.35, -0.05, ray.y);
-      vec3 finalSky = mix(rayleighColor + mieColor, uHazeColor, hazeBlend * 0.65);
+      float hazeBlend = exp(-cosZenith * 14.0);
+      vec3 finalSky = mix(rayleighColor + mieColor, uHazeColor, hazeBlend * 0.68);
       finalSky += sunDiscLobe;
 
       gl_FragColor = vec4(finalSky * uExposure, 1.0);

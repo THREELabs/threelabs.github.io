@@ -163,37 +163,55 @@ export class OceanWaterManager {
   }
 
   buildOceanSurfaces() {
-    // A. Main Pacific Coast High-Resolution Shore Water (22,000m length, dense vertex grid for Gerstner waves)
-    const oceanGeo = new THREE.PlaneGeometry(1200, 22000, 64, 280);
+    // A. Main California Pacific Coast Shore Water (Zones 1-3: Malibu, Big Sur, Monterey, Z: 6,500m - 25,500m)
+    const oceanGeo = new THREE.PlaneGeometry(1200, 19000, 64, 260);
     oceanGeo.rotateX(-Math.PI * 0.5);
-    oceanGeo.translate(-580, -0.05, 12500);
+    oceanGeo.translate(-650, -0.05, 16000);
 
     this.oceanMesh = new THREE.Mesh(oceanGeo, this.oceanMat);
     this.oceanMesh.receiveShadow = true;
     this.group.add(this.oceanMesh);
 
-    // B. San Francisco Bay & Golden Gate Strait Channel Water (Z: 11,350m - 12,050m)
-    const sfBayGeo = new THREE.PlaneGeometry(900, 700, 36, 36);
+    // B. San Francisco Bay & Golden Gate Strait Channel Water (Zone 4, Z: 28,450m - 29,350m)
+    const sfBayGeo = new THREE.PlaneGeometry(1400, 900, 36, 36);
     sfBayGeo.rotateX(-Math.PI * 0.5);
-    sfBayGeo.translate(200, -0.05, 11700);
+    sfBayGeo.translate(0, -0.05, 28900);
 
     const sfBayMesh = new THREE.Mesh(sfBayGeo, this.oceanMat);
     sfBayMesh.receiveShadow = true;
     this.group.add(sfBayMesh);
 
-    // C. Columbia River Gorge Water Body (Z: 18,200m - 20,800m)
-    const riverGeo = new THREE.PlaneGeometry(450, 2600, 24, 72);
+    // C. Oregon Coast Pacific Surf Water (Zone 6, Z: 36,000m - 40,500m)
+    const oregonOceanGeo = new THREE.PlaneGeometry(1200, 4500, 36, 90);
+    oregonOceanGeo.rotateX(-Math.PI * 0.5);
+    oregonOceanGeo.translate(-640, -0.05, 38250);
+
+    const oregonOceanMesh = new THREE.Mesh(oregonOceanGeo, this.oceanMat);
+    oregonOceanMesh.receiveShadow = true;
+    this.group.add(oregonOceanMesh);
+
+    // D. Columbia River Gorge Water Body (Zone 7, Z: 40,500m - 45,000m)
+    const riverGeo = new THREE.PlaneGeometry(600, 4500, 24, 90);
     riverGeo.rotateX(-Math.PI * 0.5);
-    riverGeo.translate(-220, -0.05, 19500);
+    riverGeo.translate(-330, -0.05, 42750);
 
     const riverMesh = new THREE.Mesh(riverGeo, this.oceanMat);
     riverMesh.receiveShadow = true;
     this.group.add(riverMesh);
 
-    // D. Dynamic Coastal Shoreline Surf Foam Ribbon
-    const surfGeo = new THREE.PlaneGeometry(28, 22000, 2, 200);
+    // E. Puget Sound & Elliott Bay Water Body (Zone 8, Z: 46,200m - 49,300m)
+    const soundGeo = new THREE.PlaneGeometry(800, 3100, 24, 64);
+    soundGeo.rotateX(-Math.PI * 0.5);
+    soundGeo.translate(-440, -0.05, 47750);
+
+    const soundMesh = new THREE.Mesh(soundGeo, this.oceanMat);
+    soundMesh.receiveShadow = true;
+    this.group.add(soundMesh);
+
+    // F. Dynamic Coastal Shoreline Surf Foam Ribbon (Malibu & Monterey Coast)
+    const surfGeo = new THREE.PlaneGeometry(24, 19000, 2, 190);
     surfGeo.rotateX(-Math.PI * 0.5);
-    surfGeo.translate(-38, 0.08, 12500);
+    surfGeo.translate(-52, 0.08, 16000);
 
     this.matSurfFoam = new THREE.MeshBasicMaterial({
       color: 0xffffff,
@@ -206,18 +224,21 @@ export class OceanWaterManager {
   }
 
   updateZonePalette(zone) {
-    // 10-Zone Pacific Coast Water Color Grading
+    // 13-Zone Water Color Grading
     const zoneWaterPalettes = [
       { deep: 0x0a2238, shallow: 0x186884 }, // 0: Mojave (distant basin)
       { deep: 0x004e75, shallow: 0x00c4e8 }, // 1: Malibu (tropical Pacific turquoise)
-      { deep: 0x064268, shallow: 0x1aa8d4 }, // 2: Santa Barbara (coastal azure)
-      { deep: 0x083658, shallow: 0x128eb5 }, // 3: Big Sur (deep sapphire & alpenglow)
-      { deep: 0x0a3248, shallow: 0x1a7288 }, // 4: Monterey Bay (cool oceanic teal)
-      { deep: 0x0c3c34, shallow: 0x188a70 }, // 5: Redwood National Forest (emerald ocean)
+      { deep: 0x064268, shallow: 0x1aa8d4 }, // 2: Big Sur (coastal azure)
+      { deep: 0x083658, shallow: 0x128eb5 }, // 3: Monterey Bay (deep sapphire)
+      { deep: 0x0a3248, shallow: 0x1a7288 }, // 4: NorCal & Golden Gate (cool oceanic teal)
+      { deep: 0x0c3c34, shallow: 0x188a70 }, // 5: Redwood National Forest (emerald stream)
       { deep: 0x0e2838, shallow: 0x1e5a70 }, // 6: Oregon Coast (stormy slate blue)
       { deep: 0x08343c, shallow: 0x1e828a }, // 7: Columbia River Gorge (alpine river teal)
-      { deep: 0x0a2638, shallow: 0x185670 }, // 8: Washington Cascades (cold fjord blue)
-      { deep: 0x061e34, shallow: 0x124868 }  // 9: Olympic Peninsula (deep twilight blue)
+      { deep: 0x0a2638, shallow: 0x185670 }, // 8: Washington Puget Sound (cold fjord blue)
+      { deep: 0x061e34, shallow: 0x124868 }, // 9: Cascade Pass (glacial meltwater)
+      { deep: 0x0b3b5b, shallow: 0x1e8db4 }, // 10: Idaho Panhandle (Lake Coeur d'Alene sapphire)
+      { deep: 0x0d475c, shallow: 0x289cb8 }, // 11: Montana Glacier (Lake McDonald glacial turquoise)
+      { deep: 0x093848, shallow: 0x12929e }  // 12: Las Vegas Strip (Bellagio oasis lagoon cyan)
     ];
 
     const p = zoneWaterPalettes[zone.id] || zoneWaterPalettes[1];

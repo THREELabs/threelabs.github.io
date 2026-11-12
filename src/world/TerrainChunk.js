@@ -92,6 +92,9 @@ export class TerrainChunkManager {
     const cGlacierArgillite = new THREE.Color(0x785648);
     const cGlacierSnow = new THREE.Color(0xf0f6fa);
     const cGlacierLake = new THREE.Color(0x289cb8);
+    const cVegasBasin = new THREE.Color(0x785642);
+    const cRedRockCrimson = new THREE.Color(0x9e3a2b);
+    const cRedRockCream = new THREE.Color(0xdfc298);
 
     for (let c = 0; c < numChunks; c++) {
       const zMin = -200 + c * CHUNK_SIZE;
@@ -248,7 +251,7 @@ export class TerrainChunkManager {
           }
         }
         // Zone 11: Montana Big Sky & Glacier Going-to-the-Sun (Z: 57500m - 62000m)
-        else {
+        else if (vz >= 57500 && vz < 62000) {
           if (vz < 59400 && vx < -18 && elevation < 14.0) {
             vertexCol.copy(cGlacierLake);
           } else if (elevation > 60.0) {
@@ -257,6 +260,19 @@ export class TerrainChunkManager {
             vertexCol.copy(cGlacierArgillite);
           } else {
             vertexCol.copy(cGlacierTundra);
+          }
+        }
+        // Zone 12: Las Vegas Strip & Red Rock Canyon (Z: 62000m - 66500m)
+        else {
+          vertexCol.copy(cVegasBasin);
+          if (vz >= 64600 || elevation > 22.0) {
+            if (elevation > 42.0) {
+              vertexCol.lerp(cRedRockCream, 0.55);
+            } else {
+              vertexCol.lerp(cRedRockCrimson, 0.72);
+            }
+          } else if (Math.abs(vx) > 36) {
+            vertexCol.lerp(cDesertClay, 0.45);
           }
         }
 
@@ -271,7 +287,11 @@ export class TerrainChunkManager {
       chunkGeo.computeBoundingSphere();
 
       let chunkMat = this.matTerrainDesert;
-      if (zMin >= 57500) { // Montana Glacier Alpine Pass
+      if (zMin >= 64600) { // Red Rock Canyon Aztec Sandstone Escarpment
+        chunkMat = this.matTerrainMountain;
+      } else if (zMin >= 62000) { // Las Vegas Mojave Desert Basin
+        chunkMat = this.matTerrainDesert;
+      } else if (zMin >= 57500) { // Montana Glacier Alpine Pass
         chunkMat = this.matTerrainMountain;
       } else if (zMin >= 53500) { // Idaho Panhandle Timber Country
         chunkMat = this.matTerrainForest;

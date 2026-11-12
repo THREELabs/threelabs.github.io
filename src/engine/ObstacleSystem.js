@@ -94,18 +94,17 @@ export class ObstacleSystem {
   initLandmarkBuildingColliders() {
     // Registered world-space solid buildings, side mountains, and architectural structures
     const landmarks = [
-      // --- Zone 0: Desert (0 - 2600m) ---
+      // --- Zone 0: Desert (0 - 6500m) ---
       { name: "Billboard Post Z=380", z: 380, lat: 26.0, hx: 2.0, hz: 4.0 },
-      { name: "Elmer's Bottle Tree Ranch House", z: 350, lat: -34.0, hx: 7.0, hz: 6.0 },
-      { name: 'Wigwam Village Motel Main Office', z: 420, lat: 36.0, hx: 8.0, hz: 6.5 },
-      { name: 'Route 66 Neon Diner Building', z: 750, lat: 36.0, hx: 9.0, hz: 7.5 },
+      { name: "Elmer's Bottle Tree Ranch House", z: 600, lat: -34.0, hx: 7.0, hz: 6.0 },
+      { name: 'Wigwam Village Motel Main Office', z: 1250, lat: 36.0, hx: 8.0, hz: 6.5 },
+      { name: 'Route 66 Neon Diner Building', z: 1900, lat: 36.0, hx: 9.0, hz: 7.5 },
       { name: "Billboard Post Z=1100", z: 1100, lat: -28.0, hx: 2.0, hz: 4.0 },
-      { name: 'Mojave Mesa Arch Stone Footings', z: 1420, lat: -36.0, hx: 8.0, hz: 8.0 },
-      { name: 'Cabazon Giant Dinosaurs', z: 1550, lat: -65.0, hx: 16.0, hz: 32.0 },
-      { name: 'Desert Hills Outlet Store Complex', z: 1615, lat: 36.0, hx: 12.0, hz: 10.0 },
-      { name: "Billboard Post Z=1900", z: 1900, lat: 28.0, hx: 2.0, hz: 4.0 },
-      { name: 'Calico Ghost Town Saloon & Mine Store', z: 1900, lat: 28.0, hx: 9.0, hz: 7.5 },
-      { name: "Roy's Motel Main Lobby & Neon Tower Base", z: 2300, lat: 36.0, hx: 8.5, hz: 8.0 },
+      { name: 'Mojave Mesa Arch Stone Footings', z: 3850, lat: -36.0, hx: 8.0, hz: 8.0 },
+      { name: 'Cabazon Giant Dinosaurs', z: 4500, lat: -65.0, hx: 16.0, hz: 32.0 },
+      { name: 'Desert Hills Outlet Store Complex', z: 5150, lat: 36.0, hx: 12.0, hz: 10.0 },
+      { name: 'Calico Ghost Town Saloon & Mine Store', z: 5700, lat: 28.0, hx: 9.0, hz: 7.5 },
+      { name: "Roy's Motel Main Lobby & Neon Tower Base", z: 6300, lat: 36.0, hx: 8.5, hz: 8.0 },
 
       // --- Zone 1: Malibu & PCH (2600 - 5200m) ---
       { name: 'Santa Monica Sandstone Bluffs Base', z: 2800, lat: 48.0, hx: 14.0, hz: 24.0 },
@@ -179,11 +178,28 @@ export class ObstacleSystem {
       { name: 'Narada Falls Basalt Cliff Face & Overlook Pier', z: 24900, lat: -42.0, hx: 14.0, hz: 16.0 },
       { name: 'Glacial Avalanche Snow Shed Mountain Retaining Wall', z: 25200, lat: 16.0, hx: 2.5, hz: 40.0 },
       { name: 'Glacial Avalanche Snow Shed Colonnade Piers', z: 25200, lat: -14.0, hx: 2.0, hz: 40.0 },
-      { name: 'Rainier Summit Observation Stone Terrace', z: 25600, lat: 38.0, hx: 12.0, hz: 12.0 }
+      { name: 'Rainier Summit Observation Stone Terrace', z: 25600, lat: 38.0, hx: 12.0, hz: 12.0 },
+
+      // --- Zone 10: Idaho Panhandle & Lake Coeur d'Alene (26000 - 28600m) ---
+      { name: "Lake Coeur d'Alene Resort Tower & Marina", z: 26800, lat: -56.0, hx: 18.0, hz: 14.0 },
+      { name: 'Cataldo Old Mission Historic Church (1853)', z: 27600, lat: 54.0, hx: 14.0, hz: 12.0 },
+      { name: 'Silver Valley Mine Headframe & Ore Bin', z: 28300, lat: 40.0, hx: 14.0, hz: 12.0 },
+
+      // --- Zone 11: Montana Big Sky & Glacier (28600 - 31200m) ---
+      { name: 'Lake McDonald Historic Swiss Chalet Lodge', z: 29200, lat: -58.0, hx: 18.0, hz: 14.0 },
+      { name: 'The Weeping Wall & Triple Stone Arches Cliff', z: 30000, lat: 52.0, hx: 18.0, hz: 22.0 },
+      { name: 'Logan Pass Continental Divide Visitor Center', z: 30800, lat: 52.0, hx: 16.0, hz: 12.0 },
+
+      // --- Zone 12: Las Vegas Strip & Red Rock Canyon (31200 - 33800m) ---
+      { name: 'Welcome to Fabulous Las Vegas Sign Pylons', z: 31800, lat: -46.0, hx: 10.0, hz: 16.0 },
+      { name: 'Luxor Obsidian Pyramid & Golden Sphinx', z: 32500, lat: 62.0, hx: 24.0, hz: 26.0 },
+      { name: 'Red Rock Canyon Aztec Sandstone Escarpment', z: 33200, lat: -56.0, hx: 22.0, hz: 28.0 }
     ];
 
     landmarks.forEach(b => {
-      const zoneIdx = b.z < 2600 ? 0 : Math.min(11, Math.floor(b.z / 2600));
+      const zoneIdx = b.z < 2600 && b.name.includes('Billboard') || b.z <= 6300 && !ZONE_CONTROL_POINTS[Math.floor(b.z / 2600)]
+        ? 0
+        : (b.z <= 6300 && b.name.match(/Bottle|Wigwam|Route 66|Mojave|Cabazon|Desert Hills|Calico|Roy/) ? 0 : Math.min(12, Math.floor(b.z / 2600)));
       const targetZ = zoneIdx === 0 ? b.z : interpolateZoneZ(b.z, ZONE_CONTROL_POINTS[zoneIdx]);
       const transform = this.splineRoad ? this.splineRoad.getRoadTransformAtZ(targetZ, b.lat, 0) : null;
       const wx = transform ? transform.pos.x : b.lat;
@@ -216,15 +232,15 @@ export class ObstacleSystem {
       maxZ: -67.0
     });
 
-    // 2. Montana Glacier Terminus Finish Line Deceleration Safety Barrier (Z = 62015m)
+    // 2. Red Rock Canyon Terminus Finish Line Deceleration Safety Barrier (Z = 66515m)
     this.staticObstacles.push({
       type: 'AABB',
-      name: 'Montana Glacier Terminus Finish Line Concrete Safety Barrier',
-      z: 62015,
+      name: 'Red Rock Canyon Terminus Finish Line Concrete Safety Barrier',
+      z: 66515,
       minX: -60.0,
       maxX: 60.0,
-      minZ: 62014.0,
-      maxZ: 62025.0
+      minZ: 66514.0,
+      maxZ: 66525.0
     });
   }
 

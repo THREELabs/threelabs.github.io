@@ -1116,6 +1116,20 @@ export const AUTO_REPAIR_SHOPS = [
     radius: 24.0,
     wallCol: 0xb91c1c,
     neonCol: 0xf87171
+  },
+  {
+    id: 'zone12_bay',
+    zone: 12,
+    name: 'Las Vegas Strip Exotic Customs',
+    sub: '24HR High-Roller Neon Tuner Bay',
+    z: 63700,
+    side: 'right',
+    xOffset: 28.0,
+    width: 48.0,
+    length: 84.0,
+    radius: 24.0,
+    wallCol: 0x7e22ce,
+    neonCol: 0xf472b6
   }
 ];
 

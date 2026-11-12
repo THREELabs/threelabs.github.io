@@ -879,17 +879,18 @@ export class CascadeSceneryBuilder {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 8. CASCADE TERMINUS GRAND FINISH LINE GATEWAY (Z = 53,500m)
+  // 8. CASCADE PASS CONTINENTAL GATEWAY ARCH (Z = 25,980m / World Z = 53,480m)
   // ─────────────────────────────────────────────────────────────────────────
   buildCascadeFinishLine() {
-    const t = this.splineRoad.getRoadTransformAtZ(53500, 0, 0);
+    const t = this.splineRoad.getRoadTransformAtZ(25980, 0, 0);
     const finishGroup = new THREE.Group();
-    finishGroup.name = 'Scenic_CascadeTerminusFinishLine';
+    finishGroup.name = 'Scenic_CascadePassGateway';
     finishGroup.position.copy(t.pos);
     finishGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), t.tangent);
+    finishGroup.rotateY(Math.PI);
 
     // Colossal Stone Gateway Pillars (Subterranean skirt sinking Y <= -2.5m)
-    [-14.5, 14.5].forEach((px) => {
+    [-17.5, 17.5].forEach((px) => {
       const pillar = new THREE.Mesh(
         new THREE.BoxGeometry(3.6, 16.0, 3.6),
         this.matGlacialStone
@@ -906,37 +907,32 @@ export class CascadeSceneryBuilder {
       finishGroup.add(cap);
     });
 
-    // Overhead Timber Archway Span (Height 13.5m)
+    // Overhead Timber Archway Span (Height 13.8m, spans full 32m highway width)
     const archSpan = new THREE.Mesh(
-      new THREE.BoxGeometry(32.0, 2.4, 2.8),
+      new THREE.BoxGeometry(39.0, 2.4, 2.8),
       this.matLodgeLogs
     );
     archSpan.position.set(0, 13.8, 0);
     finishGroup.add(archSpan);
 
-    // Grand Continental Highway Banner
+    // Textured Gateway Banner
+    const bannerTex = this.renderer.textures && this.renderer.textures.highwaySign
+      ? this.renderer.textures.highwaySign('ENTERING IDAHO PANHANDLE', 'COEUR D\'ALENE & SILVER VALLEY CORRIDOR', '#1a4d2e')
+      : null;
+    const bannerFrontMat = bannerTex
+      ? new THREE.MeshBasicMaterial({ map: bannerTex })
+      : this.matFinishBanner;
+    const bannerMats = [
+      this.matParkSignBrown, this.matParkSignBrown,
+      this.matParkSignBrown, this.matParkSignBrown,
+      bannerFrontMat,        this.matParkSignBrown
+    ];
     const banner = new THREE.Mesh(
-      new THREE.BoxGeometry(24.0, 3.0, 0.2),
-      this.matFinishBanner
+      new THREE.BoxGeometry(24.0, 3.0, 0.25),
+      bannerMats
     );
-    banner.position.set(0, 11.2, 0);
+    banner.position.set(0, 11.2, 0.1);
     finishGroup.add(banner);
-
-    const bannerText = new THREE.Mesh(
-      new THREE.BoxGeometry(22.0, 0.8, 0.26),
-      this.matSignWhite
-    );
-    bannerText.position.set(0, 11.2, 0.05);
-    finishGroup.add(bannerText);
-
-    // Checkerboard Road Surface Decal
-    const checker = new THREE.Mesh(
-      new THREE.PlaneGeometry(22.0, 4.0),
-      new THREE.MeshBasicMaterial({ color: 0xffffff })
-    );
-    checker.rotateX(-Math.PI * 0.5);
-    checker.position.set(0, 0.05, 0);
-    finishGroup.add(checker);
 
     this.group.add(finishGroup);
   }

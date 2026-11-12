@@ -235,13 +235,13 @@ export class WorldBoundaries {
   }
 
   buildFinishLineBarrier() {
-    const finishZ = 26015;
+    const finishZ = 66515;
     const finishGroup = new THREE.Group();
-    const transform = this.splineRoad.getRoadTransformAtZ(25990, 0, 0);
+    const transform = this.splineRoad.getRoadTransformAtZ(66495, 0, 0);
     finishGroup.position.set(transform.pos.x, transform.pos.y, finishZ);
     finishGroup.rotation.y = transform.heading;
 
-    // Heavy Concrete Finish Line Barrier
+    // Heavy Concrete Finish Line Barrier at Red Rock Canyon Terminus
     const kRail = new THREE.Mesh(new THREE.BoxGeometry(120, 1.8, 1.5), this.matBarrierConcrete);
     kRail.position.set(0, 0.9, 0);
     kRail.castShadow = true;
@@ -315,7 +315,7 @@ export class WorldBoundaries {
     const reflectorGeo = new THREE.BoxGeometry(0.16, 0.26, 0.06);
 
     const STEP_Z = 35;
-    for (let z = 340; z <= 61950; z += STEP_Z) {
+    for (let z = 340; z <= 66450; z += STEP_Z) {
       // Do not build floating outer boundary fences over open bridge water spans
       if ((z >= 18550 && z <= 18750) || (z >= 28600 && z <= 29200) || (z >= 31750 && z <= 31950) || (z >= 41300 && z <= 41500)) continue;
 
@@ -326,7 +326,8 @@ export class WorldBoundaries {
         const isRight = lateralOffset > 0;
         // Skip perimeter fence if within parking lot area, auto repair shop, or off-road trail corridor
         const isCoyoteTrailOpening = !isRight && z >= 2440 && z <= 3080;
-        if (isCoyoteTrailOpening) return;
+        const isCalicoBasinSpurOpening = isRight && z >= 64840 && z <= 64960;
+        if (isCoyoteTrailOpening || isCalicoBasinSpurOpening) return;
 
         const inTurnoutArea = SCENIC_PARKING_LOTS.some(
           lot => (lot.side === (isRight ? 'right' : 'left')) && Math.abs(z - lot.z) <= (lot.length * 0.5 + 14.0)

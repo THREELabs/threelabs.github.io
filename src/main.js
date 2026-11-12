@@ -307,6 +307,29 @@ function partitionZoneScenery(builder, zMin, zMax) {
   if (builder.pelicanFlock) {
     builder.pelicanFlock.traverse(c => dynamicSet.add(c));
   }
+  if (builder.palmCrowns) {
+    builder.palmCrowns.forEach(item => { if (item.mesh) item.mesh.traverse(c => dynamicSet.add(c)); });
+  }
+  if (builder.auroraRibbons) {
+    builder.auroraRibbons.forEach(item => { if (item.mesh) item.mesh.traverse(c => dynamicSet.add(c)); });
+  }
+  if (builder.beacons) {
+    builder.beacons.forEach(item => { if (item.mesh) item.mesh.traverse(c => dynamicSet.add(c)); });
+  }
+  if (builder.headframeBeacons) {
+    builder.headframeBeacons.forEach(item => { if (item.mesh) item.mesh.traverse(c => dynamicSet.add(c)); });
+  }
+  if (builder.fountainJets) {
+    builder.fountainJets.forEach(item => { if (item.mesh) item.mesh.traverse(c => dynamicSet.add(c)); });
+  }
+  if (builder.mountainGoatFamily) {
+    builder.mountainGoatFamily.forEach(g => { if (g) g.traverse(c => dynamicSet.add(c)); });
+  }
+  for (const prop of ['oreCartMesh', 'searchlightMesh', 'waterfallCascadeMesh', 'redJammerMesh', 'pyramidBeaconMesh', 'getawayCarMesh']) {
+    if (builder[prop]) {
+      builder[prop].traverse(c => dynamicSet.add(c));
+    }
+  }
 
   const preservedZoneGlobals = [];
   const candidateChildren = [];
@@ -519,6 +542,32 @@ zoneBuilders.forEach(zb => {
     zb.builder.auroraRibbons.forEach(r => {
       if (r.mesh) r.mesh.matrixAutoUpdate = true;
     });
+  }
+
+  // Restore matrixAutoUpdate on Zone 9–12 beacons, dancing fountains, and vignette actors
+  for (const listProp of ['beacons', 'headframeBeacons', 'fountainJets']) {
+    if (zb.builder[listProp]) {
+      zb.builder[listProp].forEach(item => {
+        if (item.mesh) {
+          item.mesh.matrixAutoUpdate = true;
+          item.mesh.traverse(c => { c.matrixAutoUpdate = true; });
+        }
+      });
+    }
+  }
+  if (zb.builder.mountainGoatFamily) {
+    zb.builder.mountainGoatFamily.forEach(g => {
+      if (g) {
+        g.matrixAutoUpdate = true;
+        g.traverse(c => { c.matrixAutoUpdate = true; });
+      }
+    });
+  }
+  for (const prop of ['oreCartMesh', 'searchlightMesh', 'waterfallCascadeMesh', 'redJammerMesh', 'pyramidBeaconMesh', 'getawayCarMesh']) {
+    if (zb.builder[prop]) {
+      zb.builder[prop].matrixAutoUpdate = true;
+      zb.builder[prop].traverse(c => { c.matrixAutoUpdate = true; });
+    }
   }
 });
 

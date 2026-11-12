@@ -136,21 +136,25 @@ export class LasVegasSceneryBuilder {
     // Biome Vegetation: Instanced Joshua Trees & Strip Fan Palms
     this.buildInstancedFlora();
 
-    // Highway Roadside Streetlights & Strip Marquees
+    // Highway Roadside Streetlights, Highway Signage & Terminus Archway
     this.buildStripStreetlights();
+    this.buildVegasHighwaySignage();
+    this.buildRedRockTerminusGateway();
   }
 
   // ─── LANDMARK 1: Welcome to Fabulous Las Vegas Sign & Googie Plaza ────────
   buildWelcomeToVegasSign() {
     const zAuthored = 31800; // World Z = 63,100m
-    const latOffset = -28.0; // Left side median island
+    const latOffset = -46.0; // Outboard of left scenic turnout parking stalls
     const t = this.splineRoad.getRoadTransformAtZ(zAuthored, latOffset, 0, false);
     this.vegasSignTransform = t;
 
     const root = new THREE.Group();
+    root.name = 'Scenic_WelcomeToVegasSign';
     root.position.copy(t.pos);
     if (t.quaternion) root.quaternion.copy(t.quaternion);
     else if (t.heading !== undefined) root.rotation.y = t.heading;
+    root.rotateY(Math.PI); // Face oncoming traffic!
 
     // GATE 6: Subterranean foundation slab sinking Y <= -2.0m
     const foundSlab = this._mesh(new THREE.BoxGeometry(26, 3.5, 48), this.matFoundationSlab, 0, -1.75, 0);
@@ -262,6 +266,7 @@ export class LasVegasSceneryBuilder {
     this.casinoTransform = t;
 
     const root = new THREE.Group();
+    root.name = 'Scenic_LuxorPyramidFountains';
     root.position.copy(t.pos);
     if (t.quaternion) root.quaternion.copy(t.quaternion);
     else if (t.heading !== undefined) root.rotation.y = t.heading;
@@ -392,6 +397,7 @@ export class LasVegasSceneryBuilder {
     this.redRockTransform = t;
 
     const root = new THREE.Group();
+    root.name = 'Scenic_RedRockEscarpment';
     root.position.copy(t.pos);
     if (t.quaternion) root.quaternion.copy(t.quaternion);
     else if (t.heading !== undefined) root.rotation.y = t.heading;
@@ -478,6 +484,7 @@ export class LasVegasSceneryBuilder {
     const zAuthored = 31800;
     const t = this.splineRoad.getRoadTransformAtZ(zAuthored, -28.0, 0, false);
     const turnout = new THREE.Group();
+    turnout.name = 'Scenic_VegasSignTurnout';
     turnout.position.copy(t.pos);
     if (t.quaternion) turnout.quaternion.copy(t.quaternion);
     else if (t.heading !== undefined) turnout.rotation.y = t.heading;
@@ -505,6 +512,7 @@ export class LasVegasSceneryBuilder {
     const zAuthored = 33200;
     const t = this.splineRoad.getRoadTransformAtZ(zAuthored, 28.0, 0, false);
     const turnout = new THREE.Group();
+    turnout.name = 'Scenic_RedRockTurnout';
     turnout.position.copy(t.pos);
     if (t.quaternion) turnout.quaternion.copy(t.quaternion);
     else if (t.heading !== undefined) turnout.rotation.y = t.heading;
@@ -532,6 +540,7 @@ export class LasVegasSceneryBuilder {
     const zAuthored = 32850; // World Z = 64,900m
     const t = this.splineRoad.getRoadTransformAtZ(zAuthored, 36.0, 0, false);
     const spur = new THREE.Group();
+    spur.name = 'OffRoad_CalicoBasin4x4Spur';
     spur.position.copy(t.pos);
     if (t.quaternion) spur.quaternion.copy(t.quaternion);
     else if (t.heading !== undefined) spur.rotation.y = t.heading;
@@ -567,34 +576,85 @@ export class LasVegasSceneryBuilder {
 
   // ─── INSTANCED DESERT FLORA & VEGETATION ──────────────────────────────────
   buildInstancedFlora() {
-    // 1. Mojave Joshua Trees (Scattered through foothills & wash)
-    for (let z = 31300; z < 33700; z += 120) {
-      if (z >= 31750 && z <= 31850) continue; // Sign clearance
-      if (z >= 32400 && z <= 32600) continue; // Strip clearance
-      if (z >= 33150 && z <= 33250) continue; // Red Rock lookout clearance
+    const dummy = new THREE.Object3D();
 
-      const latLeft = -42.0 - (Math.abs(Math.sin(z * 0.05)) * 18.0);
-      const tLeft = this.splineRoad.getRoadTransformAtZ(z, latLeft, 0, false);
-      const jtL = new THREE.Group();
-      jtL.position.copy(tLeft.pos);
-      this.buildJoshuaTree(jtL, 0, 0, 0);
-      this.group.add(jtL);
+    // 1. Mojave Joshua Trees (InstancedMesh across desert foothills & Red Rock wash)
+    const jtTrunkGeo = new THREE.CylinderGeometry(0.35, 0.65, 5.5, 7);
+    const jtTuftGeo  = new THREE.ConeGeometry(1.4, 2.4, 6);
+    const jtTrunkMats = [];
+    const jtTuftMats  = [];
 
-      const latRight = 45.0 + (Math.abs(Math.cos(z * 0.04)) * 22.0);
-      const tRight = this.splineRoad.getRoadTransformAtZ(z, latRight, 0, false);
-      const jtR = new THREE.Group();
-      jtR.position.copy(tRight.pos);
-      this.buildJoshuaTree(jtR, 0, 0, 0);
-      this.group.add(jtR);
+    for (let z = 31280; z < 33750; z += 65) {
+      if (z >= 31740 && z <= 31860) continue; // Sign clearance
+      if (z >= 32380 && z <= 32620) continue; // Strip casino clearance
+      if (z >= 33130 && z <= 33270) continue; // Red Rock lookout clearance
+
+      const sides = [
+        -38.0 - Math.abs(Math.sin(z * 0.05)) * 26.0,
+         40.0 + Math.abs(Math.cos(z * 0.04)) * 28.0
+      ];
+      for (const lat of sides) {
+        const t = this.splineRoad.getRoadTransformAtZ(z, lat, 0, true);
+        const sc = 0.85 + Math.abs(Math.sin(z * 0.13 + lat)) * 0.45;
+        dummy.position.set(t.pos.x, t.pos.y + 1.2 * sc, t.pos.z);
+        dummy.scale.set(sc, sc, sc);
+        dummy.rotation.set(0, (z * 0.07 + lat) % (Math.PI * 2), 0);
+        dummy.updateMatrix();
+        jtTrunkMats.push(dummy.matrix.clone());
+
+        dummy.position.set(t.pos.x, t.pos.y + 4.2 * sc, t.pos.z);
+        dummy.updateMatrix();
+        jtTuftMats.push(dummy.matrix.clone());
+      }
     }
 
-    // 2. Mexican Fan Palms along Strip Highway Median
-    for (let z = 32150; z <= 32750; z += 35) {
-      const tMid = this.splineRoad.getRoadTransformAtZ(z, 0, 0, false);
-      const palm = new THREE.Group();
-      palm.position.copy(tMid.pos);
-      this.buildPalmTree(palm, 0, 0, 0);
-      this.group.add(palm);
+    if (jtTrunkMats.length > 0) {
+      const instJTTrunk = new THREE.InstancedMesh(jtTrunkGeo, this.matJoshuaTrunk, jtTrunkMats.length);
+      instJTTrunk.name = 'Instanced_VegasJoshuaTrunks';
+      jtTrunkMats.forEach((m, i) => instJTTrunk.setMatrixAt(i, m));
+      instJTTrunk.instanceMatrix.needsUpdate = true;
+      this.group.add(instJTTrunk);
+
+      const instJTTuft = new THREE.InstancedMesh(jtTuftGeo, this.matJoshuaTuft, jtTuftMats.length);
+      instJTTuft.name = 'Instanced_VegasJoshuaTufts';
+      jtTuftMats.forEach((m, i) => instJTTuft.setMatrixAt(i, m));
+      instJTTuft.instanceMatrix.needsUpdate = true;
+      this.group.add(instJTTuft);
+    }
+
+    // 2. Washingtonia Fan Palms along both sides of The Strip Boulevard (±20.5m)
+    const palmTrunkGeo = new THREE.CylinderGeometry(0.32, 0.58, 13.0, 8);
+    const palmCrownGeo = new THREE.ConeGeometry(2.8, 3.6, 7);
+    const palmTrunkMats = [];
+    const palmCrownMats = [];
+
+    for (let z = 31950; z <= 32780; z += 35) {
+      for (const sideLat of [-20.5, 20.5]) {
+        const t = this.splineRoad.getRoadTransformAtZ(z, sideLat, 0, false);
+        dummy.position.set(t.pos.x, t.pos.y + 5.0, t.pos.z);
+        dummy.scale.set(1, 1, 1);
+        dummy.rotation.set(0, z * 0.1, 0);
+        dummy.updateMatrix();
+        palmTrunkMats.push(dummy.matrix.clone());
+
+        dummy.position.set(t.pos.x, t.pos.y + 11.8, t.pos.z);
+        dummy.updateMatrix();
+        palmCrownMats.push(dummy.matrix.clone());
+      }
+    }
+
+    if (palmTrunkMats.length > 0) {
+      const instPalmTrunk = new THREE.InstancedMesh(palmTrunkGeo, this.matPalmTrunk, palmTrunkMats.length);
+      instPalmTrunk.name = 'Instanced_VegasPalmTrunks';
+      palmTrunkMats.forEach((m, i) => instPalmTrunk.setMatrixAt(i, m));
+      instPalmTrunk.instanceMatrix.needsUpdate = true;
+      this.group.add(instPalmTrunk);
+
+      const instPalmCrown = new THREE.InstancedMesh(palmCrownGeo, this.matPalmFrond, palmCrownMats.length);
+      instPalmCrown.name = 'Instanced_VegasPalmCrowns';
+      palmCrownMats.forEach((m, i) => instPalmCrown.setMatrixAt(i, m));
+      instPalmCrown.instanceMatrix.needsUpdate = true;
+      this.group.add(instPalmCrown);
     }
   }
 
@@ -715,6 +775,88 @@ export class LasVegasSceneryBuilder {
         this.group.add(lightGroup);
       }
     }
+  }
+
+  // ─── LAS VEGAS & RED ROCK HIGHWAY SIGNAGE ─────────────────────────────────
+  buildVegasHighwaySignage() {
+    const signs = [
+      { z: 31450, side: 'left',  title: 'LAS VEGAS BOULEVARD', sub: 'WELCOME SIGN & TURNOUT • 1/2 MILE', hex: '#1e3a8a' },
+      { z: 32200, side: 'right', title: 'THE STRIP CASINO PLAZA', sub: 'LUXOR PYRAMID & BELLAGIO FOUNTAINS', hex: '#4a1d96' },
+      { z: 32720, side: 'right', title: 'CALICO BASIN 4X4 TRAIL', sub: 'SLICKROCK CANYON SPUR • NEXT RIGHT', hex: '#7c2d12' },
+      { z: 33050, side: 'left',  title: 'RED ROCK SCENIC BYWAY', sub: 'AZTEC SANDSTONE ESCARPMENT • OVERLOOK', hex: '#7f1d1d' }
+    ];
+
+    signs.forEach(sign => {
+      const isRight = sign.side === 'right';
+      const lat = isRight ? 18.5 : -18.5;
+      const t = this.splineRoad.getRoadTransformAtZ(sign.z, lat, 0, false);
+      const sg = new THREE.Group();
+      sg.name = `RoadSign_LasVegas_${sign.z}`;
+      sg.position.copy(t.pos);
+      sg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), t.tangent);
+      sg.rotateY(Math.PI); // Face oncoming traffic
+      sg.rotateY(isRight ? -0.55 : 0.55);
+
+      // Support posts sunk Y <= -1.5m
+      sg.add(this._mesh(new THREE.CylinderGeometry(0.14, 0.16, 5.2, 6), this.matCedarTimber, -1.8, 1.4, -0.12));
+      sg.add(this._mesh(new THREE.CylinderGeometry(0.14, 0.16, 5.2, 6), this.matCedarTimber,  1.8, 1.4, -0.12));
+
+      const signTex = this.renderer.textures && this.renderer.textures.highwaySign
+        ? this.renderer.textures.highwaySign(sign.title, sign.sub, sign.hex)
+        : null;
+      const frontMat = signTex
+        ? new THREE.MeshBasicMaterial({ map: signTex })
+        : this.matWhiteNeon;
+      const boardMats = [
+        this.matCedarTimber, this.matCedarTimber,
+        this.matCedarTimber, this.matCedarTimber,
+        frontMat,            this.matCedarTimber
+      ];
+      const board = new THREE.Mesh(new THREE.BoxGeometry(5.6, 2.2, 0.16), boardMats);
+      board.position.set(0, 3.0, 0);
+      sg.add(board);
+
+      this.group.add(sg);
+    });
+  }
+
+  // ─── GRAND SOUTHWEST TERMINUS FINISH LINE GATEWAY (Z = 33,800m / 66,500m) ─
+  buildRedRockTerminusGateway() {
+    const t = this.splineRoad.getRoadTransformAtZ(33800, 0, 0, false);
+    const finishGroup = new THREE.Group();
+    finishGroup.name = 'Scenic_RedRockTerminusGateway';
+    finishGroup.position.copy(t.pos);
+    finishGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), t.tangent);
+    finishGroup.rotateY(Math.PI); // Face oncoming traffic
+
+    // Twin Stratified Aztec Sandstone & Neon Monument Pillars (Subterranean skirt Y <= -2.5m)
+    for (const px of [-17.5, 17.5]) {
+      finishGroup.add(this._mesh(new THREE.BoxGeometry(4.2, 16.5, 4.2), this.matSandstoneCrimson, px, 6.25, 0));
+      finishGroup.add(this._mesh(new THREE.BoxGeometry(4.8, 1.6, 4.8), this.matSandstoneCream, px, 15.0, 0));
+      finishGroup.add(this._mesh(new THREE.BoxGeometry(0.4, 13.0, 4.4), this.matNeonYellow, px > 0 ? px - 2.0 : px + 2.0, 7.5, 0));
+    }
+
+    // Overhead Googie & Red Rock Span Beam
+    finishGroup.add(this._mesh(new THREE.BoxGeometry(39.5, 2.8, 3.2), this.matSandstoneTerracotta, 0, 14.2, 0));
+    finishGroup.add(this._mesh(new THREE.BoxGeometry(40.2, 0.4, 3.5), this.matNeonCyan, 0, 15.6, 0));
+
+    // Textured Finish Banner
+    const bannerTex = this.renderer.textures && this.renderer.textures.highwaySign
+      ? this.renderer.textures.highwaySign('RED ROCK CANYON GRAND TERMINUS', 'DREAMSTATE HIGHWAY FINISH LINE • 66.5 KM', '#7f1d1d')
+      : null;
+    const bannerFrontMat = bannerTex
+      ? new THREE.MeshBasicMaterial({ map: bannerTex })
+      : this.matNeonRed;
+    const bannerMats = [
+      this.matSandstoneCrimson, this.matSandstoneCrimson,
+      this.matSandstoneCrimson, this.matSandstoneCrimson,
+      bannerFrontMat,           this.matSandstoneCrimson
+    ];
+    const banner = new THREE.Mesh(new THREE.BoxGeometry(24.0, 3.2, 0.35), bannerMats);
+    banner.position.set(0, 11.4, 0.2);
+    finishGroup.add(banner);
+
+    this.group.add(finishGroup);
   }
 
   // ─── UTILITY: Mesh helper with shadow flags ───────────────────────────────

@@ -454,15 +454,17 @@ export class MontanaGlacierSceneryBuilder {
         const sc = 0.65 + (i % 4) * 0.18;
 
         const roadInfo = this.splineRoad.getRoadTransformAtZ(tz, tx, 0);
+        const wx = roadInfo ? roadInfo.pos.x : tx;
         const gy = roadInfo ? roadInfo.pos.y : 0;
+        const wz = roadInfo ? roadInfo.pos.z : tz;
 
-        dummy.position.set(tx, gy - 1.5, tz);
+        dummy.position.set(wx, gy - 1.5, wz);
         dummy.scale.set(sc, sc, sc);
         dummy.rotation.y = angle * 1.4;
         dummy.updateMatrix();
         trunkMats.push(dummy.matrix.clone());
 
-        dummy.position.set(tx, gy + 8.5 * sc, tz);
+        dummy.position.set(wx, gy + 8.5 * sc, wz);
         dummy.updateMatrix();
         canopyMats.push(dummy.matrix.clone());
       }
@@ -486,24 +488,41 @@ export class MontanaGlacierSceneryBuilder {
   // ─── HIGHWAY SIGNAGE KIT ─────────────────────────────────────────────────
   buildGlacierHighwaySignage() {
     const signs = [
-      { z: 28800, x: -22, title: 'GLACIER NATIONAL PARK', sub: 'GOING-TO-THE-SUN ROAD', color: 0x14532d },
-      { z: 29050, x: -22, title: 'LAKE MCDONALD LODGE', sub: 'HISTORIC CHALET • NEXT RIGHT', color: 0x422a18 },
-      { z: 29850, x:  22, title: 'THE WEEPING WALL', sub: 'WATERFALL CASCADE • 1/4 MILE', color: 0x14532d },
-      { z: 30650, x:  22, title: 'LOGAN PASS SUMMIT', sub: 'ELEVATION 6,646 FT • CONTINENTAL DIVIDE', color: 0x422a18 }
+      { z: 28800, side: 'left',  title: 'GLACIER NATIONAL PARK', sub: 'GOING-TO-THE-SUN ROAD', hex: '#14532d' },
+      { z: 29050, side: 'left',  title: 'LAKE MCDONALD LODGE', sub: 'HISTORIC CHALET • NEXT LEFT', hex: '#422a18' },
+      { z: 29850, side: 'right', title: 'THE WEEPING WALL', sub: 'WATERFALL CASCADE • 1/4 MILE', hex: '#14532d' },
+      { z: 30650, side: 'right', title: 'LOGAN PASS SUMMIT', sub: 'ELEV 6,646 FT • CONTINENTAL DIVIDE', hex: '#422a18' }
     ];
 
     signs.forEach(sign => {
-      const t = this.splineRoad.getRoadTransformAtZ(sign.z, sign.x, 0);
+      const isRight = sign.side === 'right';
+      const lat = isRight ? 18.5 : -18.5;
+      const t = this.splineRoad.getRoadTransformAtZ(sign.z, lat, 0);
       const sg = new THREE.Group();
+      sg.name = `RoadSign_Glacier_${sign.z}`;
       sg.position.copy(t.pos);
-      sg.rotation.y = t.heading;
+      sg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), t.tangent);
+      sg.rotateY(Math.PI); // Face oncoming traffic
+      sg.rotateY(isRight ? -0.55 : 0.55);
 
-      // Heavy timber posts
-      sg.add(this._mesh(new THREE.CylinderGeometry(0.14, 0.16, 5.5, 6), this.matCedarTimber, -1.8, 2.75, 0));
-      sg.add(this._mesh(new THREE.CylinderGeometry(0.14, 0.16, 5.5, 6), this.matCedarTimber,  1.8, 2.75, 0));
-      // Signboard
-      sg.add(this._mesh(new THREE.BoxGeometry(7.8, 2.2, 0.22), new THREE.MeshBasicMaterial({ color: sign.color }), 0, 5.2, 0));
-      sg.add(this._mesh(new THREE.BoxGeometry(7.5, 1.9, 0.28), this.matSignWhite, 0, 5.2, 0.04));
+      // Heavy timber posts sunk Y <= -1.5m
+      sg.add(this._mesh(new THREE.CylinderGeometry(0.14, 0.16, 5.2, 6), this.matCedarTimber, -1.8, 1.4, -0.12));
+      sg.add(this._mesh(new THREE.CylinderGeometry(0.14, 0.16, 5.2, 6), this.matCedarTimber,  1.8, 1.4, -0.12));
+
+      const signTex = this.renderer.textures && this.renderer.textures.highwaySign
+        ? this.renderer.textures.highwaySign(sign.title, sign.sub, sign.hex)
+        : null;
+      const frontMat = signTex
+        ? new THREE.MeshBasicMaterial({ map: signTex })
+        : this.matSignWhite;
+      const boardMats = [
+        this.matSignBrown, this.matSignBrown,
+        this.matSignBrown, this.matSignBrown,
+        frontMat,          this.matSignBrown
+      ];
+      const board = new THREE.Mesh(new THREE.BoxGeometry(5.6, 2.2, 0.16), boardMats);
+      board.position.set(0, 3.0, 0);
+      sg.add(board);
 
       this.group.add(sg);
     });
@@ -514,6 +533,7 @@ export class MontanaGlacierSceneryBuilder {
     // 1. Lake McDonald Turnout (Z=29,200m, Left)
     const tMc = this.splineRoad.getRoadTransformAtZ(29200, -28, 0);
     const gMc = new THREE.Group();
+    gMc.name = 'Scenic_TurnoutProps_LakeMcDonald';
     gMc.position.copy(tMc.pos);
     gMc.rotation.y = tMc.heading;
 
@@ -539,6 +559,7 @@ export class MontanaGlacierSceneryBuilder {
     // 2. Logan Pass Turnout (Z=30,800m, Right)
     const tLg = this.splineRoad.getRoadTransformAtZ(30800, 28, 0);
     const gLg = new THREE.Group();
+    gLg.name = 'Scenic_TurnoutProps_LoganPass';
     gLg.position.copy(tLg.pos);
     gLg.rotation.y = tLg.heading;
 
